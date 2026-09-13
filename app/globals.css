@@ -4,19 +4,19 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 40 33% 98%;
+    --foreground: 20 14% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 20 14% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 172 76% 36%;
+    --popover-foreground: 20 14% 10%;
+    --primary: 20 14% 10%;
+    --primary-foreground: 40 33% 98%;
+    --secondary: 30 20% 94%;
+    --secondary-foreground: 20 14% 10%;
+    --muted: 30 20% 94%;
+    --muted-foreground: 20 10% 45%;
+    --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -24,44 +24,44 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 199 89% 48%;
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 20 14% 10%;
     --chart-1: 199 89% 48%;
-    --chart-2: 172 76% 36%;
+    --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
-    --chart-4: 142 71% 45%;
+    --chart-4: 20 14% 10%;
     --chart-5: 0 84% 60%;
-    --radius: 0.625rem;
+    --radius: 0.75rem;
   }
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 199 89% 52%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 14%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 172 76% 40%;
-    --accent-foreground: 0 0% 100%;
+    --background: 20 14% 4%;
+    --foreground: 40 33% 98%;
+    --card: 20 14% 7%;
+    --card-foreground: 40 33% 98%;
+    --popover: 20 14% 7%;
+    --popover-foreground: 40 33% 98%;
+    --primary: 40 33% 98%;
+    --primary-foreground: 20 14% 4%;
+    --secondary: 20 14% 12%;
+    --secondary-foreground: 40 33% 98%;
+    --muted: 20 14% 12%;
+    --muted-foreground: 30 10% 60%;
+    --accent: 199 89% 52%;
+    --accent-foreground: 40 33% 98%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 199 89% 52%;
+    --border: 20 14% 16%;
+    --input: 20 14% 16%;
+    --ring: 40 33% 98%;
     --chart-1: 199 89% 52%;
-    --chart-2: 172 76% 40%;
+    --chart-2: 142 71% 45%;
     --chart-3: 38 92% 50%;
-    --chart-4: 142 71% 45%;
+    --chart-4: 40 33% 98%;
     --chart-5: 0 72% 51%;
   }
 }
@@ -73,13 +73,14 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
   }
   .font-display {
-    font-family: var(--font-fraunces), Georgia, serif;
-    font-optical-sizing: auto;
+    font-family: var(--font-nunito), var(--font-inter), system-ui, sans-serif;
+    letter-spacing: -0.01em;
   }
   .font-sans {
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-nunito), var(--font-inter), system-ui, sans-serif;
   }
 }
 
@@ -87,8 +88,30 @@
   .text-balance {
     text-wrap: balance;
   }
-  .marquee-mask {
-    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
-    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 36s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

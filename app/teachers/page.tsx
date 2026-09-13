@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { GraduationCap, SlidersHorizontal, ArrowLeft } from 'lucide-react';
+import { SlidersHorizontal, ArrowLeft, X } from 'lucide-react';
+import Navbar from '@/components/layout/navbar';
+import Footer from '@/components/layout/footer';
 import { useTeachers, type TeacherFilters, type SortOption } from '@/hooks/use-teachers';
 import FilterSidebar from '@/components/teacher/filter-sidebar';
 import TeacherGrid from '@/components/teacher/teacher-grid';
@@ -17,7 +19,6 @@ import {
   DrawerTrigger,
   DrawerClose,
 } from '@/components/ui/drawer';
-import { X } from 'lucide-react';
 
 const DEFAULT_FILTERS: TeacherFilters = {
   language: undefined,
@@ -82,39 +83,27 @@ function TeachersPageContent() {
   }, [teachers, filters]);
 
   return (
-    <main className="min-h-screen bg-slate-50/70">
+    <main className="min-h-screen bg-[#faf9f6] text-stone-900">
       {/* Header */}
-      <header className="border-b bg-background">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
-            </span>
-            ESGlobalLanguageAcademy
-          </Link>
-          <Link
-            href="/auth"
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            Become a teacher
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Page heading */}
-      <section className="mx-auto max-w-7xl px-6 pb-6 pt-12">
+      <section className="mx-auto max-w-7xl px-6 pb-6 pt-24 sm:pt-28">
         <Link
           href="/"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 transition-colors hover:text-stone-900"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home
         </Link>
-        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Find your teacher
+        <h1 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          Find your teacher.{' '}
+          <span className="font-normal text-stone-400">
+            Learn 1-on-1 with native experts
+          </span>
         </h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          Browse our community of language teachers and find a learning style that feels right for you.
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
+          Browse verified educators across 40+ languages, tailored to your schedule and learning goals.
         </p>
       </section>
 
@@ -122,16 +111,16 @@ function TeachersPageContent() {
       <div className="mx-auto max-w-7xl px-6 lg:hidden">
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
-            <Button variant="outline" className="mb-4 w-full">
+            <Button variant="outline" className="mb-4 w-full rounded-full border-stone-300">
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               Filters
             </Button>
           </DrawerTrigger>
           <DrawerContent className="max-h-[85vh]">
             <DrawerHeader className="flex flex-row items-center justify-between">
-              <DrawerTitle>Filters</DrawerTitle>
+              <DrawerTitle className="font-display">Filters</DrawerTitle>
               <DrawerClose asChild>
-                <button className="rounded-full p-1 hover:bg-muted">
+                <button className="rounded-full p-1 hover:bg-stone-100">
                   <X className="h-5 w-5" />
                 </button>
               </DrawerClose>
@@ -153,7 +142,7 @@ function TeachersPageContent() {
         <div className="flex gap-8">
           {/* Sidebar — desktop only */}
           <aside className="hidden w-64 shrink-0 lg:block">
-            <div className="sticky top-24 rounded-2xl border bg-card p-6">
+            <div className="sticky top-28 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
               <FilterSidebar
                 filters={filters}
                 languages={allLanguages}
@@ -176,6 +165,9 @@ function TeachersPageContent() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }

@@ -1,284 +1,335 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  GraduationCap,
-  BookOpen,
-  ArrowRight,
-  Sparkles,
-  Globe2,
-  Users,
-  Star,
-  Play,
-} from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Star, GraduationCap, ShieldCheck, Video, Zap } from 'lucide-react';
 import FeaturedTeachers from '@/components/home/featured-teachers';
+import Navbar from '@/components/layout/navbar';
+import Footer from '@/components/layout/footer';
 
-const GREETINGS = [
-  { word: 'Hello', lang: 'English' },
-  { word: 'Hola', lang: 'Spanish' },
-  { word: 'Bonjour', lang: 'French' },
-  { word: '你好', lang: 'Chinese' },
-  { word: 'こんにちは', lang: 'Japanese' },
-  { word: '안녕하세요', lang: 'Korean' },
-  { word: 'Olá', lang: 'Portuguese' },
-  { word: 'Привет', lang: 'Russian' },
-  { word: 'مرحبا', lang: 'Arabic' },
-  { word: 'नमस्ते', lang: 'Hindi' },
-  { word: 'Ciao', lang: 'Italian' },
-  { word: 'Hallo', lang: 'German' },
-  { word: 'Merhaba', lang: 'Turkish' },
-  { word: 'Sawubona', lang: 'Zulu' },
-  { word: 'Xin chào', lang: 'Vietnamese' },
-  { word: 'สวัสดี', lang: 'Thai' },
-];
-
-const LANGUAGES = [
-  'English', 'Spanish', 'French', 'Mandarin', 'Japanese', 'Korean',
-  'Portuguese', 'Russian', 'Arabic', 'Hindi', 'Italian', 'German',
-  'Turkish', 'Swahili', 'Vietnamese', 'Thai', 'Dutch', 'Polish',
-  'Greek', 'Hebrew', 'Swedish', 'Indonesian',
-];
-
-const STATS = [
-  { icon: Globe2, value: '40+', label: 'Languages' },
-  { icon: Users, value: '12,000+', label: 'Learners' },
-  { icon: GraduationCap, value: '500+', label: 'Teachers' },
-  { icon: Star, value: '4.9', label: 'Avg. rating' },
+const TESTIMONIALS = [
+  {
+    quote: "Booking Elena for Spanish conversation prep helped me pass my DELE B2 exam on the first attempt. The 1-on-1 video classroom is seamless.",
+    author: "Marcus Vance",
+    role: "Software Engineer",
+    language: "Learning Spanish",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
+  },
+  {
+    quote: "As a teacher, ESGlobal provides the cleanest platform for scheduling students, managing my payouts, and running high-quality video lessons.",
+    author: "Antoine Laurent",
+    role: "Certified French Educator",
+    language: "Teaching French",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
+  },
+  {
+    quote: "I tried language apps for years without speaking fluently. Two months of 1-on-1 sessions with Yuki completely unlocked conversational Japanese.",
+    author: "Sophie Lindqvist",
+    role: "Product Designer",
+    language: "Learning Japanese",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&auto=format&fit=crop",
+  },
 ];
 
 export default function Home() {
-  const [greetingIdx, setGreetingIdx] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGreetingIdx((prev) => (prev + 1) % GREETINGS.length);
-    }, 2200);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
+    <div className="flex min-h-screen flex-col bg-[#faf9f6] text-stone-900 selection:bg-sky-500 selection:text-white">
+      <Navbar transparentOverHero={true} />
+
+      {/* ── HERO (Intro.co style: Full 100vh viewport height with press bar at bottom) ── */}
+      <section className="relative flex h-screen min-h-[660px] flex-col justify-between overflow-hidden bg-stone-950">
+        {/* Background image — sunlit luxury study & villa */}
+        <Image
+          src="/hero.jpg"
+          alt="Sunlit modern luxury villa with floor to ceiling glass overlooking green trees"
+          fill
+          priority
+          className="object-cover object-center"
+        />
+        {/* Warm contrast overlay maintaining sunlit daylight while ensuring crisp readability */}
+        <div className="absolute inset-0 bg-stone-950/45" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/25 to-stone-950/65" />
+
+        {/* Top spacer matching fixed navbar */}
+        <div className="h-20 shrink-0" />
+
+        {/* Content — perfectly centered in the full-height viewport */}
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+          {/* Social Proof Pill */}
+          <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/25 bg-black/40 px-4 py-1.5 shadow-lg backdrop-blur-md">
+            <div className="flex -space-x-2 overflow-hidden">
+              <img
+                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Elena"
+              />
+              <img
+                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Antoine"
+              />
+              <img
+                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
+                src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Yuki"
+              />
             </div>
-            <span className="font-display text-lg font-bold tracking-tight">ESGlobalLanguageAcademy</span>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-white/95">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span>4.98 ★</span>
+              <span className="text-white/50">·</span>
+              <span className="text-white/85">15,000+ completed lessons</span>
+            </div>
           </div>
-          <nav className="flex items-center gap-1">
-            <Link
-              href="/auth"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Sign in
-            </Link>
+
+          <h1 className="font-display text-4xl font-medium leading-[1.14] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)] sm:text-5xl md:text-6xl">
+            Book 1-on-1 language lessons with native teachers worldwide
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-2xl text-base font-normal text-white/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.85)] sm:text-lg">
+            Master conversation, ace exams, or gain business fluency with vetted native educators over 1-on-1 video.
+          </p>
+
+          {/* High-Attention Magnetic CTA Button */}
+          <div className="mt-9 flex justify-center">
             <Link
               href="/teachers"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="group relative inline-flex items-center gap-3.5 rounded-full border border-white/90 bg-white py-2.5 pl-8 pr-3 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.04] hover:bg-white hover:ring-white/60 hover:shadow-[0_25px_60px_rgba(0,0,0,0.7),0_0_50px_rgba(255,255,255,0.6)] active:scale-100"
             >
-              Find a teacher
+              <span className="font-display text-base font-bold tracking-tight text-stone-950">
+                Find Your Teacher
+              </span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-950 text-white shadow-md transition-all duration-300 group-hover:translate-x-1 group-hover:bg-amber-400 group-hover:text-stone-950">
+                <ArrowRight className="h-5 w-5" />
+              </span>
             </Link>
-            <Link
-              href="/auth"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:shadow-md hover:brightness-105"
-            >
-              Get started
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <main className="relative flex flex-1 flex-col items-center overflow-hidden px-6 pt-20 pb-12">
-        {/* Decorative background blobs */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/4 top-10 h-72 w-72 rounded-full bg-primary/15 blur-3xl animate-float" />
-          <div className="absolute right-1/4 top-32 h-80 w-80 rounded-full bg-accent/15 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl animate-float" style={{ animationDelay: '4s' }} />
-        </div>
-
-        <div className="mx-auto max-w-3xl text-center">
-          {/* Rotating greeting badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground animate-fade-in">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span className="text-foreground/80">A language academy for the whole world</span>
           </div>
 
-          {/* Rotating greeting */}
-          <div className="mb-4 flex h-16 items-center justify-center">
-            <span
-              key={greetingIdx}
-              className="font-display text-4xl font-semibold text-foreground animate-fade-in sm:text-5xl"
-            >
-              {GREETINGS[greetingIdx].word}
-            </span>
-          </div>
-
-          <h1 className="font-display text-5xl font-bold tracking-tight text-foreground text-balance sm:text-6xl animate-fade-in">
-            Where the world{' '}
-            <span className="bg-gradient-to-r from-primary via-accent to-emerald-500 bg-clip-text text-transparent">
-              learns together
-            </span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground animate-fade-in">
-            Learn any language from native speakers across the globe — or share yours
-            with eager students. One platform, every language, a world of connection.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in">
-            <Link
-              href="/student"
-              className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:brightness-105"
-            >
-              I&apos;m a student
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/teacher"
-              className="group inline-flex items-center gap-2 rounded-xl border bg-background px-6 py-3 text-base font-semibold text-foreground shadow-sm transition-all hover:bg-muted hover:shadow-md"
-            >
-              <BookOpen className="h-4 w-4 text-accent" />
-              I&apos;m a teacher
-            </Link>
+          {/* Quick Language Shortcuts */}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="font-medium text-white/70">Popular:</span>
+            {[
+              { name: 'English', query: 'english' },
+              { name: 'German', query: 'german' },
+              { name: 'French', query: 'french' },
+              { name: 'Amharic', query: 'amharic' },
+              { name: 'Arabic', query: 'arabic' },
+              { name: 'Italian', query: 'italian' },
+              { name: 'Afan Oromo', query: 'oromo' },
+              { name: 'Mandarin', query: 'mandarin' },
+            ].map((lang) => (
+              <Link
+                key={lang.name}
+                href={`/teachers?lang=${lang.query}`}
+                className="rounded-full border border-white/25 bg-black/30 px-3 py-1 font-medium text-white/90 backdrop-blur-sm transition hover:border-white/60 hover:bg-white/20 hover:text-white"
+              >
+                {lang.name}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Language marquee */}
-        <div className="mt-16 w-full">
-          <p className="mb-4 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Languages you can learn
-          </p>
-          <div className="marquee-mask relative overflow-hidden">
-            <div className="flex w-max animate-marquee gap-3">
-              {[...LANGUAGES, ...LANGUAGES].map((lang, i) => (
-                <Link
-                  key={`${lang}-${i}`}
-                  href={`/teachers?lang=${encodeURIComponent(lang)}`}
-                  className="whitespace-nowrap rounded-full border bg-card px-5 py-2 text-sm font-medium text-foreground/80 shadow-sm transition-colors hover:border-primary/50 hover:text-foreground"
-                >
-                  {lang}
-                </Link>
-              ))}
+        {/* Bottom: Refined Editorial Metrics (Bilt luxury style — no rainbow icon clutter) */}
+        <div className="relative z-10 border-t border-white/10 bg-black/45 py-5 backdrop-blur-xl">
+          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 text-center md:grid-cols-4 md:divide-x md:divide-white/10">
+            <div className="px-3">
+              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">40+</p>
+              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Languages Offered</p>
+            </div>
+            <div className="px-3">
+              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">100%</p>
+              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Vetted Native Tutors</p>
+            </div>
+            <div className="px-3">
+              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">4.98 ★</p>
+              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Student Satisfaction</p>
+            </div>
+            <div className="px-3">
+              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">$0</p>
+              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Subscription Required</p>
             </div>
           </div>
-        </div>
-      </main>
-
-      {/* Featured teachers */}
-      <FeaturedTeachers />
-
-      {/* Stats band */}
-      <section className="border-y bg-gradient-to-r from-primary/5 via-accent/5 to-emerald-500/5">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 py-12 lg:grid-cols-4">
-          {STATS.map((stat, i) => (
-            <div
-              key={stat.label}
-              className="flex flex-col items-center text-center animate-fade-in"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <stat.icon className="mb-2 h-6 w-6 text-accent" />
-              <span className="font-display text-3xl font-bold text-foreground">{stat.value}</span>
-              <span className="text-sm text-muted-foreground">{stat.label}</span>
-            </div>
-          ))}
         </div>
       </section>
 
-      {/* Feature cards */}
-      <section className="mx-auto w-full max-w-6xl px-6 py-24">
-        <div className="mb-12 text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            One platform, two journeys
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            Whether you&apos;re learning or teaching, everything you need is here.
-          </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              icon: GraduationCap,
-              title: 'For Students',
-              desc: 'Browse teachers from around the world, book sessions at times that suit you, and track your progress across every language you learn.',
-            },
-            {
-              icon: BookOpen,
-              title: 'For Teachers',
-              desc: 'List your expertise, set your availability, manage your schedule, and grow a global audience of motivated learners.',
-            },
-            {
-              icon: Globe2,
-              title: 'A Global Community',
-              desc: 'Connect across continents with built-in video calls, time-zone-aware scheduling, and a lively community of language lovers.',
-            },
-          ].map((feature, i) => (
-            <div
-              key={feature.title}
-              className="group rounded-2xl border bg-card p-6 text-card-foreground shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 animate-fade-in"
-              style={{ animationDelay: `${i * 100}ms` }}
-            >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 transition-transform group-hover:scale-110">
-                <feature.icon className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-display text-lg font-semibold">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {feature.desc}
+      {/* ── VALUE PROPS (Clean Editorial 3-Column Layout) ── */}
+      <section className="bg-[#faf9f6] py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="border-b border-stone-200/80 pb-8">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+              The ESGlobal Standard
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+              Language learning built around you, not a generic app.
+            </h2>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-16">
+            <div className="flex flex-col">
+              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">01</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+                Accredited Native Tutors
+              </h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600">
+                Curated roster of verified educators across 40+ languages, hand-screened for university credentials, dialect mastery, and teaching dedication.
               </p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA band */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary to-accent px-6 py-20 text-center text-primary-foreground">
-        <div className="pointer-events-none absolute inset-0 -z-10 opacity-20">
-          <div className="absolute left-10 top-10 h-40 w-40 rounded-full bg-white blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-10 h-52 w-52 rounded-full bg-white blur-3xl animate-float" style={{ animationDelay: '3s' }} />
-        </div>
-        <div className="mx-auto max-w-2xl">
-          <Play className="mx-auto mb-4 h-8 w-8" />
-          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Ready to start your language journey?
-          </h2>
-          <p className="mt-4 text-primary-foreground/80">
-            Join thousands of learners and teachers building connections across cultures.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/auth"
-              className="group inline-flex items-center gap-2 rounded-xl bg-background px-6 py-3 text-base font-semibold text-foreground shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5"
-            >
-              Get started free
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/teachers"
-              className="inline-flex items-center gap-2 rounded-xl border border-primary-foreground/30 px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary-foreground/10"
-            >
-              Browse teachers
-            </Link>
+            <div className="flex flex-col">
+              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">02</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+                Tailored 1-on-1 Sessions
+              </h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600">
+                Every minute is personalized to your goals — whether you are preparing for Goethe-Zertifikat, IELTS, business negotiations, or conversational fluency.
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">03</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+                Zero Subscriptions Required
+              </h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600">
+                Book and pay per lesson with upfront, transparent pricing. Free rescheduling up to 24 hours prior with no lock-in contracts.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8">
+      {/* ── FEATURED TEACHERS ── */}
+      <section className="border-t border-stone-200/60 bg-white py-4">
+        <FeaturedTeachers />
+      </section>
+
+      {/* ── HOW IT WORKS (Intro.co Editorial Steps) ── */}
+      <section id="how-it-works" className="border-t border-stone-200/60 bg-[#faf9f6] py-24">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-accent">
-                <GraduationCap className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-display text-sm font-bold">ESGlobalLanguageAcademy</span>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+              Seamless Experience
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+              How it works.{' '}
+              <span className="font-normal text-stone-400">
+                Language mastery made simple
+              </span>
+            </h2>
+          </div>
+
+          <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3">
+            <div className="border-t border-stone-300/80 pt-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">Step 01</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+                Discover top native experts
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                Explore certified tutors filtered by native dialect, hourly rate, verified credentials, and real student reviews.
+              </p>
             </div>
-            <p className="text-center text-sm text-muted-foreground">
-              Learn any language. Teach the world.
+            <div className="border-t border-stone-300/80 pt-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">Step 02</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+                Book a 1-on-1 slot in 60 seconds
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                Pick an available time slot directly from the teacher's calendar with transparent upfront pricing and zero hidden fees.
+              </p>
+            </div>
+            <div className="border-t border-stone-300/80 pt-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">Step 03</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+                Meet in your virtual classroom
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                Connect instantly in an HD video room right on the platform. No app downloads required — just click and start learning.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS (Refined Social Proof) ── */}
+      <section className="border-t border-stone-200/60 bg-white py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+              Verified Feedback
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+              Loved by students and educators worldwide
+            </h2>
+          </div>
+
+          <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
+            {TESTIMONIALS.map((t, idx) => (
+              <div
+                key={idx}
+                className="flex flex-col justify-between rounded-2xl border border-stone-200/70 bg-[#faf9f6] p-8 transition-all duration-300 hover:border-stone-300 hover:shadow-sm"
+              >
+                <div>
+                  <div className="flex gap-1 text-amber-400">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                  <p className="mt-5 text-[15px] leading-relaxed text-stone-700">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                </div>
+
+                <div className="mt-8 flex items-center gap-3.5 border-t border-stone-200/60 pt-5">
+                  <img
+                    src={t.avatar}
+                    alt={t.author}
+                    className="h-10 w-10 rounded-full object-cover ring-1 ring-stone-200"
+                  />
+                  <div>
+                    <h4 className="text-sm font-bold text-stone-900">{t.author}</h4>
+                    <p className="text-xs text-stone-500">
+                      {t.role} · <span className="font-semibold text-stone-800">{t.language}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── BOTTOM CTA (Editorial Luxury Style) ── */}
+      <section className="border-t border-stone-200/60 bg-[#faf9f6] py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="relative overflow-hidden rounded-3xl bg-stone-950 px-8 py-20 text-center text-white shadow-2xl sm:px-16">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">
+              Start speaking fluently today.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base text-stone-300/80">
+              Join students worldwide. Book your first 1-on-1 session with a certified native speaker in under 2 minutes.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3.5 sm:flex-row">
+              <Link
+                href="/teachers"
+                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-sm font-bold text-stone-950 shadow-lg transition-all duration-300 hover:bg-stone-100 hover:scale-[1.02] active:scale-[0.98] sm:w-auto"
+              >
+                Browse All Teachers
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                href="/auth"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/40 hover:bg-white/10 sm:w-auto"
+              >
+                Apply as a Teacher
+              </Link>
+            </div>
+            <p className="mt-6 text-xs text-stone-400">
+              Instant booking · 100% verified native educators · Cancel or reschedule anytime
             </p>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <Footer />
     </div>
   );
 }

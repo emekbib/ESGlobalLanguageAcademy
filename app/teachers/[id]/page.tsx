@@ -9,11 +9,13 @@ import {
   BadgeCheck,
   Award,
 } from 'lucide-react';
+import Navbar from '@/components/layout/navbar';
+import Footer from '@/components/layout/footer';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
 import BookingCard from '@/components/teacher/booking-card';
 import ReviewsSection, { type Review } from '@/components/teacher/reviews-section';
 import type { TeacherType } from '@/lib/types/database';
+import { getSampleTeacherById } from '@/lib/data/sample-teachers';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,179 +32,228 @@ export default async function TeacherProfilePage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
+  // Try fetching from database first
   const { data: teacher, error: teacherError } = await supabase
     .from('teacher_profiles')
     .select('*')
     .eq('id', id)
     .eq('is_published', true)
     .maybeSingle();
-  if (teacherError || !teacher) notFound();
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, avatar_url')
-    .eq('user_id', teacher.user_id)
-    .maybeSingle();
-  if (!profile) notFound();
+  // Check sample teachers fallback if not found in database
+  const sample = !teacher ? getSampleTeacherById(id) : null;
 
-  const { data: rawReviews } = await supabase
-    .from('reviews')
-    .select('id, rating, comment, created_at, student_id')
-    .eq('teacher_id', teacher.id)
-    .order('created_at', { ascending: false });
+  if (!teacher && !sample) {
+    notFound();
+  }
 
-  // Fetch student names for reviews
-  const studentIds = Array.from(new Set((rawReviews ?? []).map((r) => r.student_id)));
-  const { data: studentProfiles } = studentIds.length
-    ? await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', studentIds)
-    : { data: null };
+  // Define normalized fields whether from DB or sample
+  let fullName = '';
+  let avatarUrl: string | null = null;
+  let languagesTaught: string[] = [];
+  let languagesSpoken: string[] = [];
+  let teacherType: TeacherType = 'professional';
+  let hourlyRate = 30;
+  let rating = 5.0;
+  let totalLessons = 0;
+  let bio = '';
+  let specialties: string[] = [];
+  let credentials: string[] = [];
+  let yearsExperience = 3;
+  let videoIntroUrl: string | null = null;
+  let reviews: Review[] = [];
 
-  const studentMap = new Map((studentProfiles ?? []).map((p) => [p.user_id, p.full_name]));
+  if (teacher) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('user_id', teacher.user_id)
+      .maybeSingle();
+    if (!profile) notFound();
 
-  const reviews: Review[] = (rawReviews ?? []).map((r) => ({
-    id: r.id,
-    rating: r.rating,
-    comment: r.comment ?? '',
-    createdAt: r.created_at,
-    studentName: studentMap.get(r.student_id) ?? 'Student',
-  }));
+    fullName = profile.full_name;
+    avatarUrl = profile.avatar_url;
+    languagesTaught = teacher.languages_taught ?? [];
+    languagesSpoken = teacher.languages_spoken ?? [];
+    teacherType = teacher.teacher_type as TeacherType;
+    hourlyRate = Number(teacher.hourly_rate);
+    bio = teacher.bio ?? '';
+    specialties = teacher.specialties ?? [];
+    credentials = teacher.credentials ?? [];
+    yearsExperience = teacher.years_experience ?? 3;
+    videoIntroUrl = teacher.video_intro_url;
 
-  const averageRating = reviews.length
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-    : 0;
-  const totalLessons = await fetchLessonCount(supabase, teacher.id);
+    const { data: rawReviews } = await supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, student_id')
+      .eq('teacher_id', teacher.id)
+      .order('created_at', { ascending: false });
 
-  const teacherType = teacher.teacher_type as TeacherType;
-  const firstName = profile.full_name.split(' ')[0];
+    const studentIds = Array.from(new Set((rawReviews ?? []).map((r) => r.student_id)));
+    const { data: studentProfiles } = studentIds.length
+      ? await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', studentIds)
+      : { data: null };
+
+    const studentMap = new Map((studentProfiles ?? []).map((p) => [p.user_id, p.full_name]));
+
+    reviews = (rawReviews ?? []).map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment ?? '',
+      createdAt: r.created_at,
+      studentName: studentMap.get(r.student_id) ?? 'Student',
+    }));
+
+    rating = reviews.length
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 5.0;
+    totalLessons = await fetchLessonCount(supabase, teacher.id);
+  } else if (sample) {
+    fullName = sample.name;
+    avatarUrl = sample.avatarUrl;
+    languagesTaught = sample.languages;
+    languagesSpoken = sample.languages_spoken;
+    teacherType = sample.teacherType;
+    hourlyRate = sample.hourlyRate;
+    rating = sample.rating;
+    totalLessons = sample.lessonsTaught;
+    bio = sample.bio;
+    specialties = sample.specialties ?? [];
+    credentials = sample.education ?? [];
+    yearsExperience = 5;
+    videoIntroUrl = sample.video_intro_url ?? null;
+    reviews = sample.reviews;
+  }
+
+  const firstName = fullName.split(' ')[0];
 
   return (
-    <main className="min-h-screen bg-slate-50/70">
-      {/* Header */}
-      <header className="border-b bg-background">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
-            </span>
-            ESGlobalLanguageAcademy
-          </Link>
-          <Link
-            href="/teachers"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to teachers
-          </Link>
-        </div>
-      </header>
+    <main className="min-h-screen bg-[#faf9f6] text-stone-900">
+      {/* Navigation Header */}
+      <Navbar />
 
-      <section className="mx-auto max-w-6xl px-6 py-8 sm:py-12">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Left / main column */}
+      <section className="mx-auto max-w-6xl px-6 pb-16 pt-24 sm:pt-28">
+        {/* Back Link */}
+        <Link
+          href="/teachers"
+          className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-500 transition-colors hover:text-stone-900"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to all teachers
+        </Link>
+
+        <div className="flex flex-col gap-10 lg:flex-row">
+          {/* Main Column */}
           <div className="min-w-0 flex-1">
-            {/* Teacher header card */}
-            <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-              <div className="h-28 bg-gradient-to-br from-primary via-cyan-500 to-accent sm:h-36" />
-              <div className="px-6 pb-6 sm:px-8">
-                <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-card bg-primary/10 text-4xl font-bold text-primary shadow-lg sm:h-28 sm:w-28">
-                    {profile.avatar_url ? (
-                      <img
-                        src={profile.avatar_url}
-                        alt={profile.full_name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      profile.full_name.charAt(0).toUpperCase()
-                    )}
-                  </div>
+            {/* Teacher Profile Header Card */}
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 shadow-inner sm:h-32 sm:w-32">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={fullName}
+                      className="h-full w-full object-cover object-center"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-stone-100 text-4xl font-bold text-stone-400">
+                      {fullName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-4">
+                <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
-                      <BadgeCheck className="h-3.5 w-3.5" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 bg-stone-50 px-3 py-1 text-xs font-semibold text-stone-700">
+                      <BadgeCheck className="h-3.5 w-3.5 text-sky-500" />
                       {BADGE_LABEL[teacherType]}
+                    </span>
+                    <span className="rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      Verified Native
                     </span>
                   </div>
 
-                  <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                    {profile.full_name}
+                  <h1 className="mt-2.5 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+                    {fullName}
                   </h1>
 
-                  {averageRating > 0 && (
-                    <div className="mt-2 flex items-center gap-2 text-sm">
-                      <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                      <span className="font-bold">{averageRating.toFixed(1)}</span>
-                      <span className="text-muted-foreground">
-                        · {totalLessons.toLocaleString()} lessons
-                      </span>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-stone-600">
+                    <div className="flex items-center gap-1 font-semibold text-stone-900">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      {rating.toFixed(1)}
                     </div>
-                  )}
+                    <span className="text-stone-300">·</span>
+                    <span>{totalLessons.toLocaleString()} lessons taught</span>
+                  </div>
 
-                  {/* Languages taught */}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {teacher.languages_taught.map((lang: string) => (
+                  {/* Languages Taught */}
+                  <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-medium text-stone-500 mr-1">Teaches:</span>
+                    {languagesTaught.map((lang: string) => (
                       <span
                         key={lang}
-                        className="rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground"
+                        className="rounded-full bg-stone-900 px-3 py-1 text-xs font-semibold text-white"
                       >
                         {lang}
                       </span>
                     ))}
                   </div>
 
-                  {/* Also speaks */}
-                  {teacher.languages_spoken && teacher.languages_spoken.length > 0 && (
-                    <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Globe2 className="h-4 w-4" />
-                      Also speaks: {teacher.languages_spoken.join(', ')}
+                  {/* Also Speaks */}
+                  {languagesSpoken && languagesSpoken.length > 0 && (
+                    <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500">
+                      <Globe2 className="h-3.5 w-3.5 text-stone-400" />
+                      Also speaks: <span className="text-stone-700 font-medium">{languagesSpoken.join(', ')}</span>
                     </p>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Intro video */}
-            {teacher.video_intro_url && (
-              <div className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-sm">
-                <div className="p-5">
-                  <h2 className="mb-3 text-lg font-bold">Video introduction</h2>
-                  <a
-                    href={teacher.video_intro_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative block aspect-video w-full overflow-hidden rounded-xl bg-muted"
-                  >
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/90 shadow-lg transition-transform group-hover:scale-110">
-                        <PlayCircle className="h-8 w-8 text-primary-foreground" />
-                      </div>
+            {/* Video Intro (if available) */}
+            {videoIntroUrl && (
+              <div className="mt-8 overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="mb-4 font-display text-lg font-bold text-stone-900">
+                  Video Introduction
+                </h2>
+                <a
+                  href={videoIntroUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group relative block aspect-video w-full overflow-hidden rounded-2xl bg-stone-950 shadow-md"
+                >
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-stone-950 shadow-xl transition-transform duration-300 group-hover:scale-110">
+                      <PlayCircle className="h-8 w-8" />
                     </div>
-                  </a>
-                </div>
+                  </div>
+                </a>
               </div>
             )}
 
-            {/* About */}
-            <div className="mt-6 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
-              <h2 className="font-display text-xl font-bold">About {firstName}</h2>
-              <p className="mt-4 whitespace-pre-line text-base leading-8 text-muted-foreground">
-                {teacher.bio}
+            {/* About Section */}
+            <div className="mt-8 overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="font-display text-xl font-bold tracking-tight text-stone-900">
+                About {firstName}
+              </h2>
+              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-700 sm:text-base">
+                {bio}
               </p>
 
-              {/* Specialties */}
-              {teacher.specialties && teacher.specialties.length > 0 && (
-                <div className="mt-6">
-                  <p className="mb-2 text-sm font-semibold">Teaching specialties</p>
+              {/* Teaching Specialties */}
+              {specialties && specialties.length > 0 && (
+                <div className="mt-8 border-t border-stone-100 pt-6">
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-stone-400">
+                    Teaching Specialties
+                  </p>
                   <div className="flex flex-wrap gap-2">
-                    {teacher.specialties.map((s: string) => (
+                    {specialties.map((s: string) => (
                       <span
                         key={s}
-                        className="rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
+                        className="rounded-full border border-stone-200/80 bg-[#faf9f6] px-3.5 py-1.5 text-xs font-semibold text-stone-800"
                       >
                         {s}
                       </span>
@@ -211,67 +262,74 @@ export default async function TeacherProfilePage({
                 </div>
               )}
 
-              {/* Credentials */}
-              {teacher.credentials && teacher.credentials.length > 0 && (
-                <div className="mt-6">
-                  <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-                    <Award className="h-4 w-4 text-primary" />
-                    Credentials
+              {/* Credentials & Education */}
+              {credentials && credentials.length > 0 && (
+                <div className="mt-8 border-t border-stone-100 pt-6">
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-stone-400">
+                    Credentials & Education
                   </p>
-                  <ul className="space-y-1.5">
-                    {teacher.credentials.map((c: string) => (
-                      <li key={c} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <BadgeCheck className="h-4 w-4 text-emerald-500" />
-                        {c}
+                  <ul className="space-y-2.5">
+                    {credentials.map((c: string) => (
+                      <li key={c} className="flex items-center gap-2.5 text-sm text-stone-700">
+                        <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                        <span>{c}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Experience */}
-              <div className="mt-6 flex items-center gap-4 rounded-xl bg-muted/50 p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                  <GraduationCap className="h-6 w-6 text-primary" />
+              {/* Experience Badge */}
+              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 bg-[#faf9f6] p-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-white shadow-sm">
+                  <GraduationCap className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{teacher.years_experience}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {teacher.years_experience === 1 ? 'year' : 'years'} teaching experience
+                  <p className="font-display text-xl font-bold text-stone-900">
+                    {yearsExperience}+ Years
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    Professional language teaching experience
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Reviews */}
-            <div className="mt-6 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+            {/* Student Reviews */}
+            <div className="mt-8 overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
               <ReviewsSection reviews={reviews} />
             </div>
           </div>
 
-          {/* Right column — booking card */}
-          <aside className="lg:w-[340px] lg:shrink-0">
-            <div className="lg:sticky lg:top-24">
-              <BookingCard teacherId={teacher.id} hourlyRate={Number(teacher.hourly_rate)} />
+          {/* Right Column: Sticky Booking Card */}
+          <aside className="lg:w-[360px] lg:shrink-0">
+            <div className="lg:sticky lg:top-28">
+              <BookingCard teacherId={id} hourlyRate={hourlyRate} />
             </div>
           </aside>
         </div>
       </section>
 
-      {/* Mobile sticky booking bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 shadow-lg backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <div className="shrink-0">
-            <p className="text-xs text-muted-foreground">From</p>
-            <p className="font-display text-lg font-bold text-primary">
-              ${Number(teacher.hourly_rate)}/hr
+      {/* Mobile Sticky Booking Bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-4 shadow-xl backdrop-blur-md lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-stone-400">Lesson Rate</p>
+            <p className="font-display text-xl font-bold text-stone-900">
+              ${hourlyRate}/hr
             </p>
           </div>
-          <Button asChild size="lg" className="flex-1">
-            <Link href={`/booking/${teacher.id}`}>Book a lesson</Link>
-          </Button>
+          <Link
+            href={`/booking/${id}`}
+            className="inline-flex items-center justify-center rounded-full bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-stone-800"
+          >
+            Book a Lesson
+          </Link>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }

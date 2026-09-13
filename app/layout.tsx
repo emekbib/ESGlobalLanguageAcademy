@@ -1,13 +1,23 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Fraunces } from 'next/font/google';
+import { Nunito, Inter } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces', display: 'swap' });
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800', '900'],
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'ESGlobalLanguageAcademy',
-  description: 'A language academy connecting students and teachers',
+  title: 'ESGlobal Language Academy | Book 1-on-1 Lessons with Native Teachers',
+  description: 'Book personalized 1-on-1 language lessons with verified native teachers worldwide.',
 };
 
 export default function RootLayout({
@@ -17,7 +27,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${fraunces.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${nunito.variable} ${inter.variable} font-sans antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

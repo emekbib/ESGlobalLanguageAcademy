@@ -2,13 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BriefcaseBusiness, GraduationCap, Loader2, UserRound } from 'lucide-react';
+import Image from 'next/image';
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  CheckCircle2,
+  GraduationCap,
+  Loader2,
+  Sparkles,
+  UserRound,
+  ShieldCheck,
+  Globe2,
+} from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { UserRole } from '@/lib/types/database';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
+
   const [role, setRole] = useState<UserRole>('student');
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -19,7 +31,9 @@ export default function OnboardingPage() {
   useEffect(() => {
     let active = true;
     async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         router.replace('/auth');
         return;
@@ -31,23 +45,31 @@ export default function OnboardingPage() {
       }
     }
     void loadUser();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [router, supabase]);
 
   async function completeOnboarding() {
     setSaving(true);
     setError('');
-    const { data: { user } } = await supabase.auth.getUser();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       router.replace('/auth');
       return;
     }
 
-    const { error: profileError } = await supabase.from('profiles').insert({
+    const nameToSave = fullName.trim() || 'ESGlobal Member';
+
+    // Insert or update profile
+    const { error: profileError } = await supabase.from('profiles').upsert({
       user_id: user.id,
       role,
       user_type: role,
-      full_name: fullName.trim() || 'ESGlobalLanguageAcademy member',
+      full_name: nameToSave,
       avatar_url: avatarUrl,
     });
 
@@ -61,37 +83,281 @@ export default function OnboardingPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-stone-500">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-900" />
+        <p className="mt-3 text-xs font-medium uppercase tracking-wider text-stone-400">
+          Loading your account…
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full max-w-2xl animate-fade-in">
-      <div className="mb-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"><GraduationCap className="h-6 w-6" /></div>
-        <h1 className="mt-6 text-3xl font-bold tracking-tight">Make ESGlobalLanguageAcademy yours</h1>
-        <p className="mt-3 text-muted-foreground">Tell us how you’d like to use the platform.</p>
-      </div>
-      <div className="rounded-2xl border bg-card p-6 shadow-lg shadow-slate-200/40 sm:p-8">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {([
-            { value: 'student' as const, title: 'I’m a student', description: 'Find teachers and build your skills.', icon: UserRound },
-            { value: 'teacher' as const, title: 'I’m a teacher', description: 'Share your expertise with learners.', icon: BriefcaseBusiness },
-          ]).map((option) => {
-            const Icon = option.icon;
-            const selected = role === option.value;
-            return (
-              <button key={option.value} type="button" onClick={() => setRole(option.value)} className={`rounded-2xl border p-5 text-left transition ${selected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'hover:border-primary/40 hover:bg-muted/50'}`}>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><Icon className="h-5 w-5" /></div>
-                <h2 className="mt-4 font-semibold">{option.title}</h2>
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">{option.description}</p>
+    <div className="w-full max-w-5xl animate-fade-in py-4">
+      {/* Outer Grand Card with Split Editorial Layout */}
+      <div className="overflow-hidden rounded-[2.5rem] border border-stone-200/90 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12">
+          {/* Left Column: Atmospheric Luxury Editorial Panel (5 cols) */}
+          <div className="relative hidden flex-col justify-between overflow-hidden bg-stone-950 p-10 text-white lg:col-span-5 lg:flex">
+            {/* Background image — sunlit luxury study */}
+            <Image
+              src="/hero.jpg"
+              alt="Sunlit architectural study"
+              fill
+              priority
+              className="object-cover object-center opacity-40"
+            />
+            {/* Dark warm vignette gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-stone-950/80" />
+
+            {/* Top Brand Marker */}
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 backdrop-blur-md">
+                <GraduationCap className="h-4 w-4 text-amber-300" />
+                <span className="font-display text-xs font-bold tracking-wide uppercase text-white">
+                  ESGlobal Academy
+                </span>
+              </div>
+              <p className="mt-4 text-xs font-semibold tracking-widest uppercase text-stone-400">
+                Addis Ababa · Berlin · Worldwide
+              </p>
+            </div>
+
+            {/* Middle Quote & Story */}
+            <div className="relative z-10 my-12">
+              <div className="flex items-center gap-1 text-amber-400">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
+                  The Fluency Standard
+                </span>
+              </div>
+              <blockquote className="mt-4 font-display text-xl font-medium leading-relaxed tracking-tight text-white/95">
+                &ldquo;Real fluency is unlocked through genuine conversations with native speakers, tailored to your personal goals.&rdquo;
+              </blockquote>
+              <div className="mt-6 flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=200&auto=format&fit=crop"
+                  alt="Bethelhem Mengistu"
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-white/20"
+                />
+                <div>
+                  <p className="text-xs font-bold text-white">Bethelhem Mengistu</p>
+                  <p className="text-[11px] text-stone-400">Faculty Lead · Amharic &amp; English</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Key Badges */}
+            <div className="relative z-10 border-t border-white/10 pt-6">
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="font-display text-lg font-bold text-white">40+</p>
+                  <p className="text-[11px] text-stone-400">Languages Offered</p>
+                </div>
+                <div>
+                  <p className="font-display text-lg font-bold text-white">100%</p>
+                  <p className="text-[11px] text-stone-400">Verified Native Tutors</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Premium Setup Experience (7 cols) */}
+          <div className="flex flex-col justify-between p-8 sm:p-12 lg:col-span-7">
+            <div>
+              {/* Step & Title */}
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">
+                  Step 02 / 02
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-full px-2.5 py-0.5">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Account Verified
+                </span>
+              </div>
+
+              <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+                How will you use ESGlobal?
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-stone-500">
+                Choose your learning profile to customize your dashboard and calendar.
+              </p>
+
+              {/* Role Cards */}
+              <div className="mt-8 space-y-4">
+                {/* Option 1: Student */}
+                <div
+                  onClick={() => setRole('student')}
+                  className={`group relative cursor-pointer rounded-2xl border-2 p-5 transition-all duration-300 ${role === 'student'
+                    ? 'border-stone-950 bg-[#faf9f6] shadow-sm'
+                    : 'border-stone-200 bg-white hover:border-stone-400 hover:bg-stone-50/50'
+                    }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${role === 'student'
+                        ? 'bg-stone-950 text-white shadow-md'
+                        : 'bg-stone-100 text-stone-600 group-hover:bg-stone-200'
+                        }`}
+                    >
+                      <UserRound className="h-5 w-5" />
+                    </div>
+
+                    <div className="flex-1 pr-6">
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-display text-base font-bold text-stone-900">
+                          I am a Student
+                        </h2>
+                        {role === 'student' && (
+                          <span className="rounded-full bg-stone-950 px-2 py-0.5 text-[10px] font-bold text-white">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-stone-600">
+                        Book 1-on-1 private video lessons with certified native speakers. Learn on your schedule with zero subscription commitments.
+                      </p>
+
+                      {/* Pill tags */}
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        <span className="rounded-md border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600">
+                          1-on-1 Video Lessons
+                        </span>
+                        <span className="rounded-md border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600">
+                          Pay Per Session
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active Radio Chip */}
+                  <div className="absolute right-5 top-5">
+                    <div
+                      className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all ${role === 'student'
+                        ? 'border-stone-950 bg-stone-950 text-white'
+                        : 'border-stone-300 bg-white'
+                        }`}
+                    >
+                      {role === 'student' && <CheckCircle2 className="h-3.5 w-3.5 fill-current" />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Option 2: Teacher */}
+                <div
+                  onClick={() => setRole('teacher')}
+                  className={`group relative cursor-pointer rounded-2xl border-2 p-5 transition-all duration-300 ${role === 'teacher'
+                    ? 'border-stone-950 bg-[#faf9f6] shadow-sm'
+                    : 'border-stone-200 bg-white hover:border-stone-400 hover:bg-stone-50/50'
+                    }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${role === 'teacher'
+                        ? 'bg-stone-950 text-white shadow-md'
+                        : 'bg-stone-100 text-stone-600 group-hover:bg-stone-200'
+                        }`}
+                    >
+                      <BriefcaseBusiness className="h-5 w-5" />
+                    </div>
+
+                    <div className="flex-1 pr-6">
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-display text-base font-bold text-stone-900">
+                          I am an Educator
+                        </h2>
+                        {role === 'teacher' && (
+                          <span className="rounded-full bg-stone-950 px-2 py-0.5 text-[10px] font-bold text-white">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-stone-600">
+                        Join our vetted faculty to tutor students worldwide. Set your hourly rates, manage your calendar, and receive direct payouts.
+                      </p>
+
+                      {/* Pill tags */}
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        <span className="rounded-md border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600">
+                          Set Your Rates
+                        </span>
+                        <span className="rounded-md border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600">
+                          Global Students
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active Radio Chip */}
+                  <div className="absolute right-5 top-5">
+                    <div
+                      className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all ${role === 'teacher'
+                        ? 'border-stone-950 bg-stone-950 text-white'
+                        : 'border-stone-300 bg-white'
+                        }`}
+                    >
+                      {role === 'teacher' && <CheckCircle2 className="h-3.5 w-3.5 fill-current" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Full Name Input */}
+              <div className="mt-7">
+                <div className="flex items-center justify-between">
+                  <label
+                    className="block text-xs font-bold uppercase tracking-wider text-stone-700"
+                    htmlFor="full-name"
+                  >
+                    Your Full Name
+                  </label>
+                  <span className="text-[11px] text-stone-400">Displayed on your profile</span>
+                </div>
+                <input
+                  id="full-name"
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Dawit Tolosa"
+                  className="mt-2 h-12 w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 text-sm font-semibold text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white focus:ring-1 focus:ring-stone-950"
+                />
+              </div>
+
+              {error && (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+                  {error}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Action Button */}
+            <div className="mt-8 pt-4">
+              <button
+                type="button"
+                onClick={() => void completeOnboarding()}
+                disabled={saving}
+                className="group relative inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-stone-950 py-4 text-sm font-semibold text-white shadow-xl transition-all duration-300 hover:bg-stone-900 hover:shadow-2xl active:scale-[0.99] disabled:opacity-60"
+              >
+                <span className="tracking-tight">
+                  {saving
+                    ? 'Setting up your space…'
+                    : role === 'teacher'
+                      ? 'Continue to Teacher Setup'
+                      : 'Enter Student Dashboard'}
+                </span>
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-white transition-transform duration-300 group-hover:translate-x-0.5">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
               </button>
-            );
-          })}
+
+              <p className="mt-4 text-center text-xs text-stone-400">
+                Protected by 256-bit SSL encryption · Free to join
+              </p>
+            </div>
+          </div>
         </div>
-        <label className="mt-7 block text-sm font-medium" htmlFor="full-name">Your name</label>
-        <input id="full-name" value={fullName} onChange={(event) => setFullName(event.target.value)} className="mt-2 h-12 w-full rounded-xl border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="Your full name" />
-        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-        <button onClick={() => void completeOnboarding()} disabled={saving} className="mt-7 flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition hover:brightness-105 disabled:opacity-60">{saving ? 'Saving your profile…' : 'Continue to ESGlobalLanguageAcademy'}</button>
       </div>
     </div>
   );

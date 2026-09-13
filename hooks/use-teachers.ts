@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Profile, TeacherProfile } from '@/lib/types/database';
 import type { TeacherCardData } from '@/components/teacher/teacher-card';
+import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 
 type RawTeacher = TeacherProfile & {
   profile: Pick<Profile, 'full_name' | 'avatar_url'> | null;
@@ -39,15 +40,11 @@ export function useTeachers() {
 
       if (!active) return;
 
-      if (teacherError || !teacherProfiles) {
-        setError(true);
-        setLoading(false);
-        return;
-      }
-
-      if (teacherProfiles.length === 0) {
-        setTeachers([]);
-        setAllLanguages([]);
+      if (teacherError || !teacherProfiles || teacherProfiles.length === 0) {
+        setTeachers(SAMPLE_TEACHERS);
+        setAllLanguages(
+          Array.from(new Set(SAMPLE_TEACHERS.flatMap((t) => t.languages))).sort(),
+        );
         setLoading(false);
         return;
       }

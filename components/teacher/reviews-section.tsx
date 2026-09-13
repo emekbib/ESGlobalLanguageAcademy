@@ -56,13 +56,13 @@ export default function ReviewsSection({ reviews }: { reviews: Review[] }) {
       {/* Review list */}
       <div className="mt-6 space-y-4">
         {visible.map((review) => (
-          <article key={review.id} className="rounded-2xl border bg-muted/20 p-5">
+          <article key={review.id} className="rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-sm font-bold text-stone-800 ring-1 ring-stone-200">
                 {review.studentName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-semibold">{review.studentName}</p>
+                <p className="text-sm font-semibold text-stone-900">{review.studentName}</p>
                 <div className="flex items-center gap-1.5">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -71,12 +71,12 @@ export default function ReviewsSection({ reviews }: { reviews: Review[] }) {
                         className={`h-3.5 w-3.5 ${
                           star <= review.rating
                             ? 'fill-amber-400 text-amber-400'
-                            : 'text-muted-foreground/30'
+                            : 'text-stone-300'
                         }`}
                       />
                     ))}
                   </div>
-                  <time className="text-xs text-muted-foreground">
+                  <time className="text-xs text-stone-400">
                     {new Intl.DateTimeFormat('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -86,15 +86,15 @@ export default function ReviewsSection({ reviews }: { reviews: Review[] }) {
                 </div>
               </div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-foreground">{review.comment}</p>
+            <p className="mt-3 text-sm leading-relaxed text-stone-700">{review.comment}</p>
           </article>
         ))}
       </div>
 
       {hasMore && (
         <div className="mt-6 flex justify-center">
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={() => {
               if (visibleCount + INITIAL_VISIBLE >= reviews.length) {
                 setShowAll(true);
@@ -102,9 +102,10 @@ export default function ReviewsSection({ reviews }: { reviews: Review[] }) {
                 setVisibleCount((c) => c + INITIAL_VISIBLE);
               }
             }}
+            className="rounded-full border border-stone-200 bg-white px-5 py-2 text-xs font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
           >
             Load more reviews
-          </Button>
+          </button>
         </div>
       )}
     </section>
