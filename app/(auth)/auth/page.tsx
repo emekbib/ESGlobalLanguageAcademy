@@ -81,8 +81,12 @@ export default function AuthPage() {
 
         if (!profile) {
           router.push('/onboarding');
+        } else if (profile.role === 'admin') {
+          router.push('/admin');
+        } else if (profile.role === 'teacher') {
+          router.push('/teacher/dashboard');
         } else {
-          router.push(profile.role === 'teacher' ? '/teacher/dashboard' : '/dashboard');
+          router.push('/dashboard');
         }
       }
     }

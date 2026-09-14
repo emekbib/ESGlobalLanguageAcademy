@@ -29,7 +29,12 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/onboarding`);
     }
 
-    return NextResponse.redirect(`${origin}/${profile.role === 'teacher' ? 'teacher/dashboard' : 'dashboard'}`);
+    const targetPath = profile.role === 'admin'
+      ? 'admin'
+      : profile.role === 'teacher'
+        ? 'teacher/dashboard'
+        : 'dashboard';
+    return NextResponse.redirect(`${origin}/${targetPath}`);
   }
 
   return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('No sign-in code was provided.')}`);

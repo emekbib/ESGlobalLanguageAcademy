@@ -12,6 +12,8 @@ import {
   Moon,
   Sun,
   GraduationCap,
+  ShieldCheck,
+  ArrowRight,
 } from 'lucide-react';
 
 type DashboardSidebarProps = {
@@ -122,6 +124,21 @@ export default function DashboardSidebar({
               );
             })}
           </nav>
+
+          {role === 'admin' && (
+            <div className="mt-5 pt-4 border-t border-stone-100 dark:border-stone-800">
+              <Link
+                href="/admin"
+                className="group flex w-full items-center justify-between rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition shadow-sm"
+              >
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <span>Admin Console</span>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
