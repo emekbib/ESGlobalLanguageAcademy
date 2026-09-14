@@ -45,12 +45,12 @@ export default function FilterSidebar({
   return (
     <div className="flex flex-col gap-7">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-stone-200/70 pb-4">
-        <h2 className="font-display text-base font-bold tracking-tight text-stone-900">Filters</h2>
+      <div className="flex items-center justify-between border-b border-stone-200/70 dark:border-stone-800 pb-4">
+        <h2 className="font-display text-base font-bold tracking-tight text-stone-900 dark:text-white">Filters</h2>
         <button
           type="button"
           onClick={onClear}
-          className="text-xs font-semibold uppercase tracking-wider text-stone-400 transition-colors hover:text-stone-900"
+          className="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 transition-colors hover:text-stone-900 dark:hover:text-stone-200"
         >
           Clear all
         </button>
@@ -58,11 +58,11 @@ export default function FilterSidebar({
 
       {/* Language */}
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Language</label>
+        <label className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Language</label>
         <select
           value={filters.language ?? ''}
           onChange={(e) => update({ language: e.target.value || undefined })}
-          className="h-11 rounded-xl border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-800 shadow-sm transition focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400"
+          className="h-11 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-3.5 text-sm font-medium text-stone-800 dark:text-stone-200 shadow-sm transition focus:border-stone-400 dark:focus:border-stone-600 focus:outline-none focus:ring-1 focus:ring-stone-400 dark:focus:ring-stone-600"
         >
           <option value="">All languages</option>
           {languages.map((lang) => (
@@ -76,8 +76,8 @@ export default function FilterSidebar({
       {/* Price range */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Price range</label>
-          <span className="text-xs font-semibold text-stone-800">
+          <label className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Price range</label>
+          <span className="text-xs font-semibold text-stone-800 dark:text-stone-200">
             ${filters.minPrice ?? 5}–${filters.maxPrice ?? 50} / hr
           </span>
         </div>
@@ -93,10 +93,10 @@ export default function FilterSidebar({
 
       {/* Teacher type */}
       <div className="flex flex-col gap-2.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Teacher type</label>
+        <label className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Teacher type</label>
         <div className="flex flex-col gap-2">
           {(['professional', 'community_tutor'] as const).map((type) => (
-            <label key={type} className="flex cursor-pointer items-center gap-2.5 text-sm text-stone-700">
+            <label key={type} className="flex cursor-pointer items-center gap-2.5 text-sm text-stone-700 dark:text-stone-300">
               <Checkbox
                 checked={filters.teacherType === type}
                 onCheckedChange={() => toggleTeacherType(type)}
@@ -111,10 +111,10 @@ export default function FilterSidebar({
 
       {/* Rating */}
       <div className="flex flex-col gap-2.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Minimum rating</label>
+        <label className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Minimum rating</label>
         <div className="flex flex-col gap-2">
           {RATING_OPTIONS.map((rating) => (
-            <label key={rating} className="flex cursor-pointer items-center gap-2.5 text-sm text-stone-700">
+            <label key={rating} className="flex cursor-pointer items-center gap-2.5 text-sm text-stone-700 dark:text-stone-300">
               <Checkbox
                 checked={filters.minRating === rating}
                 onCheckedChange={() =>
@@ -132,7 +132,7 @@ export default function FilterSidebar({
 
       {/* Specialties */}
       <div className="flex flex-col gap-2.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Specialties</label>
+        <label className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Specialties</label>
         <div className="flex flex-wrap gap-1.5">
           {SPECIALTY_OPTIONS.map((specialty) => {
             const selected = (filters.specialties ?? []).includes(specialty);
@@ -143,8 +143,8 @@ export default function FilterSidebar({
                 onClick={() => toggleSpecialty(specialty)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                   selected
-                    ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
-                    : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
+                    ? 'border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-950 shadow-sm'
+                    : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700'
                 }`}
               >
                 {selected && <X className="mr-1 inline h-3 w-3" />}

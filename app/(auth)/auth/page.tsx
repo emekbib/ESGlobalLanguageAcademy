@@ -109,20 +109,20 @@ export default function AuthPage() {
   return (
     <div className="w-full max-w-[440px] animate-fade-in">
       {/* Outer Card */}
-      <div className="overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-8 sm:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.06)]">
+      <div className="overflow-hidden rounded-3xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 p-8 sm:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-colors">
         {status === 'sent' ? (
           <div className="py-4 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-8 w-8" />
             </div>
-            <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+            <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-stone-900 dark:text-white sm:text-3xl">
               Check your inbox
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-stone-500">
+            <p className="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
               We sent a verification link to{' '}
-              <span className="font-semibold text-stone-900">{email}</span>.
+              <span className="font-semibold text-stone-900 dark:text-white">{email}</span>.
             </p>
-            <div className="mt-6 rounded-2xl bg-stone-50 p-4 text-xs text-stone-600">
+            <div className="mt-6 rounded-2xl bg-stone-50 dark:bg-stone-800/60 p-4 text-xs text-stone-600 dark:text-stone-300">
               Click the link inside the email to immediately access your account.
             </div>
             <button
@@ -132,7 +132,7 @@ export default function AuthPage() {
                 setEmail('');
                 setPassword('');
               }}
-              className="mt-8 inline-flex items-center gap-1.5 text-xs font-semibold text-stone-700 transition hover:text-stone-950"
+              className="mt-8 inline-flex items-center gap-1.5 text-xs font-semibold text-stone-700 dark:text-stone-300 transition hover:text-stone-950 dark:hover:text-white"
             >
               ← Use a different email address
             </button>
@@ -140,7 +140,7 @@ export default function AuthPage() {
         ) : (
           <>
             {/* Mode Switcher Pills */}
-            <div className="flex rounded-full bg-stone-100 p-1">
+            <div className="flex rounded-full bg-stone-100 dark:bg-stone-800 p-1">
               <button
                 type="button"
                 onClick={() => {
@@ -149,8 +149,8 @@ export default function AuthPage() {
                 }}
                 className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-all ${
                   mode === 'signin'
-                    ? 'bg-white text-stone-900 shadow-sm'
-                    : 'text-stone-500 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 Sign In
@@ -163,8 +163,8 @@ export default function AuthPage() {
                 }}
                 className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-all ${
                   mode === 'signup'
-                    ? 'bg-white text-stone-900 shadow-sm'
-                    : 'text-stone-500 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 Create Account
@@ -173,10 +173,10 @@ export default function AuthPage() {
 
             {/* Header Text */}
             <div className="mt-8 text-center">
-              <h1 className="font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+              <h1 className="font-display text-2xl font-bold tracking-tight text-stone-900 dark:text-white sm:text-3xl">
                 {mode === 'signin' ? 'Welcome back' : 'Start learning today'}
               </h1>
-              <p className="mt-2 text-sm leading-relaxed text-stone-500">
+              <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
                 {mode === 'signin'
                   ? 'Access your lessons, calendar, and teachers.'
                   : 'Connect with native educators across Amharic, Tigrigna, Afaan Oromo, Somali & Swahili.'}
@@ -188,7 +188,7 @@ export default function AuthPage() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={googleLoading}
-              className="mt-7 flex h-12 w-full items-center justify-center gap-3 rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-800 shadow-sm transition-all hover:border-stone-400 hover:bg-stone-50 active:scale-[0.99] disabled:opacity-60"
+              className="mt-7 flex h-12 w-full items-center justify-center gap-3 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-semibold text-stone-800 dark:text-stone-200 shadow-sm transition-all hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700 active:scale-[0.99] disabled:opacity-60"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
                 <path
@@ -212,16 +212,16 @@ export default function AuthPage() {
             </button>
 
             {/* Divider */}
-            <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-stone-400">
-              <span className="h-px flex-1 bg-stone-200" />
+            <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
               <span>or email</span>
-              <span className="h-px flex-1 bg-stone-200" />
+              <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
             </div>
 
             {/* Auth Form */}
             <form onSubmit={handleAuthSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700" htmlFor="email">
+                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300" htmlFor="email">
                   Email address
                 </label>
                 <div className="relative mt-1.5">
@@ -233,7 +233,7 @@ export default function AuthPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="name@example.com"
-                    className="h-12 w-full rounded-full border border-stone-200 bg-white pl-11 pr-4 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                    className="h-12 w-full rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 pl-11 pr-4 text-sm font-medium text-stone-900 dark:text-white outline-none transition focus:border-stone-900 dark:focus:border-stone-300 focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-300"
                   />
                 </div>
               </div>
@@ -241,14 +241,14 @@ export default function AuthPage() {
               {authMethod === 'password' && (
                 <div>
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold text-stone-700" htmlFor="password">
+                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300" htmlFor="password">
                       Password
                     </label>
                     {mode === 'signin' && (
                       <button
                         type="button"
                         onClick={() => setAuthMethod('magic-link')}
-                        className="text-xs font-medium text-stone-500 hover:text-stone-900"
+                        className="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white"
                       >
                         Forgot password?
                       </button>
@@ -264,14 +264,14 @@ export default function AuthPage() {
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="••••••••"
-                      className="h-12 w-full rounded-full border border-stone-200 bg-white pl-11 pr-4 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                      className="h-12 w-full rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 pl-11 pr-4 text-sm font-medium text-stone-900 dark:text-white outline-none transition focus:border-stone-900 dark:focus:border-stone-300 focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-300"
                     />
                   </div>
                 </div>
               )}
 
               {error && (
-                <div className="rounded-xl bg-rose-50 p-3 text-xs font-medium text-rose-600">
+                <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 p-3 text-xs font-medium text-rose-600 dark:text-rose-400">
                   {error}
                 </div>
               )}
@@ -279,7 +279,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-stone-900 text-sm font-semibold text-white shadow-md transition-all hover:bg-stone-800 active:scale-[0.99] disabled:opacity-60"
+                className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-stone-900 dark:bg-stone-100 text-sm font-semibold text-white dark:text-stone-950 shadow-md transition-all hover:bg-stone-800 dark:hover:bg-white active:scale-[0.99] disabled:opacity-60"
               >
                 <span>
                   {status === 'loading'
@@ -300,7 +300,7 @@ export default function AuthPage() {
                     setAuthMethod(authMethod === 'password' ? 'magic-link' : 'password');
                     setError('');
                   }}
-                  className="text-xs font-medium text-stone-500 hover:text-stone-900 transition"
+                  className="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition"
                 >
                   {authMethod === 'password'
                     ? '✉ Prefer a passwordless email link? Click here'
@@ -310,20 +310,20 @@ export default function AuthPage() {
             </form>
 
             {/* Trust footer */}
-            <div className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-stone-400">
-              <ShieldCheck className="h-4 w-4 text-stone-400" />
+            <div className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-stone-400 dark:text-stone-500">
+              <ShieldCheck className="h-4 w-4 text-stone-400 dark:text-stone-500" />
               <span>256-bit SSL encrypted · Verified platform</span>
             </div>
 
             {/* Social proof strip inside card */}
-            <div className="mt-6 border-t border-stone-100 pt-5 text-center">
+            <div className="mt-6 border-t border-stone-100 dark:border-stone-800 pt-5 text-center">
               <div className="flex items-center justify-center gap-1 text-amber-400">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className="h-3.5 w-3.5 fill-current" />
                 ))}
-                <span className="ml-1.5 text-xs font-bold text-stone-800">4.98 / 5.0</span>
+                <span className="ml-1.5 text-xs font-bold text-stone-800 dark:text-stone-200">4.98 / 5.0</span>
               </div>
-              <p className="mt-1 text-[11px] text-stone-400">
+              <p className="mt-1 text-[11px] text-stone-400 dark:text-stone-500">
                 Over 15,000 lessons taught by verified educators worldwide
               </p>
             </div>

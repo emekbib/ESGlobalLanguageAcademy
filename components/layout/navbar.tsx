@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Menu, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { GraduationCap, Menu, X, Moon, Sun } from 'lucide-react';
 
 export default function Navbar({
   transparentOverHero = false,
@@ -11,21 +12,29 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const isDark = transparentOverHero && !scrolled;
+  const isDarkMode = mounted && (resolvedTheme ? resolvedTheme === 'dark' : theme === 'dark');
+  const isOverHeroTransparent = transparentOverHero && !scrolled;
+
+  const toggleTheme = () => {
+    setTheme(isDarkMode ? 'light' : 'dark');
+  };
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isDark
+        isOverHeroTransparent
           ? 'bg-transparent text-white'
-          : 'border-b border-stone-200/80 bg-[#faf9f6]/90 backdrop-blur-md text-stone-900 shadow-sm'
+          : 'border-b border-stone-200/80 dark:border-stone-800 bg-[#faf9f6]/90 dark:bg-stone-950/90 backdrop-blur-md text-stone-900 dark:text-stone-100 shadow-sm'
       }`}
     >
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
@@ -33,10 +42,10 @@ export default function Navbar({
         <Link
           href="/"
           className={`flex items-center gap-2.5 transition-opacity hover:opacity-80 ${
-            isDark ? 'text-white' : 'text-stone-900'
+            isOverHeroTransparent ? 'text-white' : 'text-stone-900 dark:text-white'
           }`}
         >
-          <GraduationCap className="h-6 w-6" />
+          <GraduationCap className="h-6 w-6 text-amber-500 dark:text-amber-400" />
           <span className="font-display text-xl font-bold tracking-tight">
             ESGlobal
           </span>
@@ -47,7 +56,9 @@ export default function Navbar({
           <Link
             href="/teachers"
             className={`text-sm font-medium transition-colors ${
-              isDark ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-stone-900'
+              isOverHeroTransparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             Find a Teacher
@@ -55,7 +66,9 @@ export default function Navbar({
           <a
             href="/#how-it-works"
             className={`text-sm font-medium transition-colors ${
-              isDark ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-stone-900'
+              isOverHeroTransparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             How it Works
@@ -63,19 +76,40 @@ export default function Navbar({
           <Link
             href="/auth"
             className={`text-sm font-medium transition-colors ${
-              isDark ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-stone-900'
+              isOverHeroTransparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             Become a Teacher
           </Link>
         </nav>
 
-        {/* Right action buttons */}
-        <div className="hidden items-center gap-5 md:flex">
+        {/* Right action buttons & Theme Toggle */}
+        <div className="hidden items-center gap-4 md:flex">
+          {/* Theme Toggle Button */}
+          {mounted && (
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                isOverHeroTransparent
+                  ? 'border border-white/20 bg-black/20 text-white hover:bg-white/20'
+                  : 'border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-900 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800'
+              }`}
+              aria-label="Toggle visual theme"
+              title={isDarkMode ? 'Switch to light ivory mode' : 'Switch to obsidian dark mode'}
+            >
+              {isDarkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
+            </button>
+          )}
+
           <Link
             href="/auth"
             className={`text-sm font-medium transition-colors ${
-              isDark ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-stone-900'
+              isOverHeroTransparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             Sign in
@@ -83,26 +117,43 @@ export default function Navbar({
           <Link
             href="/auth"
             className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-              isDark
+              isOverHeroTransparent
                 ? 'border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-stone-900'
-                : 'border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'
+                : 'border border-stone-900 dark:border-stone-100 bg-stone-950 dark:bg-stone-100 text-white dark:text-stone-950 hover:bg-stone-800 dark:hover:bg-white shadow-sm'
             }`}
           >
             Sign up
           </Link>
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          type="button"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className={`rounded-lg p-2 md:hidden ${
-            isDark ? 'text-white hover:bg-white/10' : 'text-stone-700 hover:bg-stone-100'
-          }`}
-          aria-label="Toggle navigation menu"
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        {/* Mobile action buttons (Theme + Menu) */}
+        <div className="flex items-center gap-2 md:hidden">
+          {mounted && (
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                isOverHeroTransparent
+                  ? 'border border-white/20 bg-black/30 text-white'
+                  : 'border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-900 text-stone-700 dark:text-stone-300'
+              }`}
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className={`rounded-xl p-2 ${
+              isOverHeroTransparent ? 'text-white hover:bg-white/10' : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+            }`}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile dropdown */}
@@ -115,7 +166,7 @@ export default function Navbar({
               className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
               <span>Find a Teacher</span>
-              <span className="text-xs text-stone-400">Directory</span>
+              <span className="text-xs text-stone-400 dark:text-stone-500">Directory</span>
             </Link>
             <a
               href="/#how-it-works"
@@ -123,7 +174,7 @@ export default function Navbar({
               className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
               <span>How It Works</span>
-              <span className="text-xs text-stone-400">Method</span>
+              <span className="text-xs text-stone-400 dark:text-stone-500">Method</span>
             </a>
             <Link
               href="/auth"

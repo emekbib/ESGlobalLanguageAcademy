@@ -83,7 +83,7 @@ function TeachersPageContent() {
   }, [teachers, filters]);
 
   return (
-    <main className="min-h-screen bg-[#faf9f6] text-stone-900">
+    <main className="min-h-screen bg-[#faf9f6] dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors">
       {/* Header */}
       <Navbar />
 
@@ -91,19 +91,19 @@ function TeachersPageContent() {
       <section className="mx-auto max-w-7xl px-6 pb-6 pt-24 sm:pt-28">
         <Link
           href="/"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 transition-colors hover:text-stone-900"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 dark:text-stone-400 transition-colors hover:text-stone-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home
         </Link>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-stone-900 dark:text-white sm:text-4xl">
           Find your teacher.{' '}
-          <span className="font-normal text-stone-400">
+          <span className="font-normal text-stone-400 dark:text-stone-500">
             Learn 1-on-1 with native experts
           </span>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
-          Browse verified educators across 40+ languages, tailored to your schedule and learning goals.
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+          Browse verified educators across Amharic, Tigrigna, Afaan Oromo, Somali, and Swahili, tailored to your schedule and learning goals.
         </p>
       </section>
 
@@ -111,16 +111,16 @@ function TeachersPageContent() {
       <div className="mx-auto max-w-7xl px-6 lg:hidden">
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
-            <Button variant="outline" className="mb-4 w-full rounded-full border-stone-300">
+            <Button variant="outline" className="mb-4 w-full rounded-full border-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               Filters
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="max-h-[85vh]">
-            <DrawerHeader className="flex flex-row items-center justify-between">
-              <DrawerTitle className="font-display">Filters</DrawerTitle>
+          <DrawerContent className="max-h-[85vh] dark:bg-stone-900 dark:border-stone-800 text-stone-900 dark:text-stone-100">
+            <DrawerHeader className="flex flex-row items-center justify-between border-b border-stone-200/80 dark:border-stone-800 pb-4">
+              <DrawerTitle className="font-display dark:text-white">Filters</DrawerTitle>
               <DrawerClose asChild>
-                <button className="rounded-full p-1 hover:bg-stone-100">
+                <button className="rounded-full p-1 hover:bg-stone-100 dark:hover:bg-stone-800 dark:text-stone-300">
                   <X className="h-5 w-5" />
                 </button>
               </DrawerClose>
@@ -142,7 +142,7 @@ function TeachersPageContent() {
         <div className="flex gap-8">
           {/* Sidebar — desktop only */}
           <aside className="hidden w-64 shrink-0 lg:block">
-            <div className="sticky top-28 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+            <div className="sticky top-28 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.25)]">
               <FilterSidebar
                 filters={filters}
                 languages={allLanguages}

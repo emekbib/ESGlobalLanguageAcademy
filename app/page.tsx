@@ -150,42 +150,42 @@ export default function Home() {
       </section>
 
       {/* ── VALUE PROPS (Clean Editorial 3-Column Layout) ── */}
-      <section className="bg-[#faf9f6] py-24">
+      <section className="bg-[#faf9f6] dark:bg-stone-950 py-24 transition-colors">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="border-b border-stone-200/80 pb-8">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+          <div className="border-b border-stone-200/80 dark:border-stone-800 pb-8">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
               The ESGlobal Standard
             </p>
-            <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-stone-900 dark:text-white sm:text-3xl">
               Language learning built around you, not a generic app.
             </h2>
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-16">
             <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">01</span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400 dark:text-stone-500">01</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900 dark:text-white">
                 Accredited Native Tutors
               </h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-stone-600">
-                Curated roster of verified educators across 40+ languages, hand-screened for university credentials, dialect mastery, and teaching dedication.
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 dark:text-stone-400 font-medium">
+                Curated roster of verified native educators across Amharic, Tigrigna, Afaan Oromo, Somali, and Swahili, hand-screened for linguistic credentials, dialect mastery, and teaching dedication.
               </p>
             </div>
             <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">02</span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400 dark:text-stone-500">02</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900 dark:text-white">
                 Tailored 1-on-1 Sessions
               </h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-stone-600">
-                Every minute is personalized to your goals — whether you are preparing for Goethe-Zertifikat, IELTS, business negotiations, or conversational fluency.
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 dark:text-stone-400 font-medium">
+                Every minute is personalized to your goals — whether you are preparing for heritage conversation, fidel/script literacy, business negotiations, or conversational fluency.
               </p>
             </div>
             <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">03</span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400 dark:text-stone-500">03</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900 dark:text-white">
                 Zero Subscriptions Required
               </h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-stone-600">
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 dark:text-stone-400 font-medium">
                 Book and pay per lesson with upfront, transparent pricing. Free rescheduling up to 24 hours prior with no lock-in contracts.
               </p>
             </div>
@@ -194,50 +194,50 @@ export default function Home() {
       </section>
 
       {/* ── FEATURED TEACHERS ── */}
-      <section className="border-t border-stone-200/60 bg-white py-4">
+      <section className="border-t border-stone-200/60 dark:border-stone-800 bg-white dark:bg-stone-900/50 py-4 transition-colors">
         <FeaturedTeachers />
       </section>
 
       {/* ── HOW IT WORKS (Intro.co Editorial Steps) ── */}
-      <section id="how-it-works" className="border-t border-stone-200/60 bg-[#faf9f6] py-24">
+      <section id="how-it-works" className="border-t border-stone-200/60 dark:border-stone-800 bg-[#faf9f6] dark:bg-stone-950 py-24 transition-colors">
         <div className="mx-auto max-w-6xl px-6">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
               Seamless Experience
             </p>
-            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 dark:text-white sm:text-4xl">
               How it works.{' '}
-              <span className="font-normal text-stone-400">
+              <span className="font-normal text-stone-400 dark:text-stone-500">
                 Language mastery made simple
               </span>
             </h2>
           </div>
 
           <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="border-t border-stone-300/80 pt-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">Step 01</span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+            <div className="border-t border-stone-300/80 dark:border-stone-800 pt-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">Step 01</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900 dark:text-white">
                 Discover top native experts
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+              <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400 font-medium">
                 Explore certified tutors filtered by native dialect, hourly rate, verified credentials, and real student reviews.
               </p>
             </div>
-            <div className="border-t border-stone-300/80 pt-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">Step 02</span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+            <div className="border-t border-stone-300/80 dark:border-stone-800 pt-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">Step 02</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900 dark:text-white">
                 Book a 1-on-1 slot in 60 seconds
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+              <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400 font-medium">
                 Pick an available time slot directly from the teacher's calendar with transparent upfront pricing and zero hidden fees.
               </p>
             </div>
-            <div className="border-t border-stone-300/80 pt-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">Step 03</span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
+            <div className="border-t border-stone-300/80 dark:border-stone-800 pt-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">Step 03</span>
+              <h3 className="mt-3 font-display text-lg font-bold text-stone-900 dark:text-white">
                 Meet in your virtual classroom
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">
+              <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400 font-medium">
                 Connect instantly in an HD video room right on the platform. No app downloads required — just click and start learning.
               </p>
             </div>
@@ -246,13 +246,13 @@ export default function Home() {
       </section>
 
       {/* ── TESTIMONIALS (Refined Social Proof) ── */}
-      <section className="border-t border-stone-200/60 bg-white py-24">
+      <section className="border-t border-stone-200/60 dark:border-stone-800 bg-white dark:bg-stone-900/40 py-24 transition-colors">
         <div className="mx-auto max-w-6xl px-6">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
               Verified Feedback
             </p>
-            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 dark:text-white sm:text-4xl">
               Loved by students and educators worldwide
             </h2>
           </div>
@@ -261,7 +261,7 @@ export default function Home() {
             {TESTIMONIALS.map((t, idx) => (
               <div
                 key={idx}
-                className="flex flex-col justify-between rounded-2xl border border-stone-200/70 bg-[#faf9f6] p-8 transition-all duration-300 hover:border-stone-300 hover:shadow-sm"
+                className="flex flex-col justify-between rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-[#faf9f6] dark:bg-stone-900 p-8 transition-all duration-300 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm"
               >
                 <div>
                   <div className="flex gap-1 text-amber-400">
@@ -269,21 +269,21 @@ export default function Home() {
                       <Star key={i} className="h-4 w-4 fill-current" />
                     ))}
                   </div>
-                  <p className="mt-5 text-[15px] leading-relaxed text-stone-700">
+                  <p className="mt-5 text-[15px] leading-relaxed text-stone-700 dark:text-stone-300 font-medium">
                     &ldquo;{t.quote}&rdquo;
                   </p>
                 </div>
 
-                <div className="mt-8 flex items-center gap-3.5 border-t border-stone-200/60 pt-5">
+                <div className="mt-8 flex items-center gap-3.5 border-t border-stone-200/60 dark:border-stone-800 pt-5">
                   <img
                     src={t.avatar}
                     alt={t.author}
-                    className="h-10 w-10 rounded-full object-cover ring-1 ring-stone-200"
+                    className="h-10 w-10 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700"
                   />
                   <div>
-                    <h4 className="text-sm font-bold text-stone-900">{t.author}</h4>
-                    <p className="text-xs text-stone-500">
-                      {t.role} · <span className="font-semibold text-stone-800">{t.language}</span>
+                    <h4 className="text-sm font-bold text-stone-900 dark:text-white">{t.author}</h4>
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                      {t.role} · <span className="font-semibold text-stone-800 dark:text-stone-200">{t.language}</span>
                     </p>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export default function Home() {
       </section>
 
       {/* ── BOTTOM CTA (Editorial Luxury Style) ── */}
-      <section className="border-t border-stone-200/60 bg-[#faf9f6] py-24">
+      <section className="border-t border-stone-200/60 dark:border-stone-800 bg-[#faf9f6] dark:bg-stone-950 py-24 transition-colors">
         <div className="mx-auto max-w-6xl px-6">
           <div className="relative overflow-hidden rounded-3xl bg-stone-950 px-8 py-20 text-center text-white shadow-2xl sm:px-16">
             <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">

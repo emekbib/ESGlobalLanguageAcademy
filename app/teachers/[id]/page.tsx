@@ -132,7 +132,7 @@ export default async function TeacherProfilePage({
   const firstName = fullName.split(' ')[0];
 
   return (
-    <main className="min-h-screen bg-[#faf9f6] text-stone-900">
+    <main className="min-h-screen bg-[#faf9f6] dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors">
       {/* Navigation Header */}
       <Navbar />
 
@@ -140,7 +140,7 @@ export default async function TeacherProfilePage({
         {/* Back Link */}
         <Link
           href="/teachers"
-          className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 transition-colors hover:text-stone-900"
+          className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 transition-colors hover:text-stone-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to all educators
@@ -150,9 +150,9 @@ export default async function TeacherProfilePage({
           {/* Main Column */}
           <div className="min-w-0 flex-1 space-y-8">
             {/* Teacher Profile Header Card (Intro.co luxury style) */}
-            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
-                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-3xl border border-stone-200 bg-stone-100 shadow-md sm:h-32 sm:w-32">
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 shadow-md sm:h-32 sm:w-32">
                   {avatarUrl ? (
                     <img
                       src={avatarUrl}
@@ -168,25 +168,25 @@ export default async function TeacherProfilePage({
 
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 bg-stone-50 px-3 py-1 text-xs font-bold text-stone-800">
-                      <BadgeCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-1 text-xs font-bold text-stone-800 dark:text-stone-200">
+                      <BadgeCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                       {BADGE_LABEL[teacherType]}
                     </span>
-                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-800">
+                    <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                       Verified Native
                     </span>
                   </div>
 
-                  <h1 className="mt-3 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950">
+                  <h1 className="mt-3 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
                     {fullName}
                   </h1>
 
-                  <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-stone-600 font-medium">
-                    <div className="flex items-center gap-1 font-bold text-stone-950">
+                  <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-stone-600 dark:text-stone-400 font-medium">
+                    <div className="flex items-center gap-1 font-bold text-stone-950 dark:text-white">
                       <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                       {rating.toFixed(1)}
                     </div>
-                    <span className="text-stone-300">·</span>
+                    <span className="text-stone-300 dark:text-stone-700">·</span>
                     <span>{totalLessons.toLocaleString()} 1-on-1 sessions taught</span>
                   </div>
 
@@ -196,7 +196,7 @@ export default async function TeacherProfilePage({
                     {languagesTaught.map((lang: string) => (
                       <span
                         key={lang}
-                        className="rounded-full bg-stone-950 px-3.5 py-1 text-xs font-bold text-white shadow-sm"
+                        className="rounded-full bg-stone-950 dark:bg-stone-800 dark:border dark:border-stone-700 px-3.5 py-1 text-xs font-bold text-white shadow-sm"
                       >
                         {lang}
                       </span>
@@ -205,9 +205,9 @@ export default async function TeacherProfilePage({
 
                   {/* Also Speaks */}
                   {languagesSpoken && languagesSpoken.length > 0 && (
-                    <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500 font-medium">
+                    <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
                       <Globe2 className="h-3.5 w-3.5 text-stone-400" />
-                      Also speaks: <span className="text-stone-800 font-semibold">{languagesSpoken.join(', ')}</span>
+                      Also speaks: <span className="text-stone-800 dark:text-stone-200 font-semibold">{languagesSpoken.join(', ')}</span>
                     </p>
                   )}
                 </div>
@@ -216,11 +216,11 @@ export default async function TeacherProfilePage({
 
             {/* Video Intro (if available) */}
             {videoIntroUrl && (
-              <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+              <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
                   Faculty Preview
                 </span>
-                <h2 className="mt-1 mb-4 font-display text-lg font-bold text-stone-950">
+                <h2 className="mt-1 mb-4 font-display text-lg font-bold text-stone-950 dark:text-white">
                   Video Introduction
                 </h2>
                 <a
@@ -239,20 +239,20 @@ export default async function TeacherProfilePage({
             )}
 
             {/* About Section */}
-            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
               <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
                 Biography &amp; Methodology
               </span>
-              <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-stone-950">
+              <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-stone-950 dark:text-white">
                 About {firstName}
               </h2>
-              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 font-medium sm:text-base">
+              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 dark:text-stone-300 font-medium sm:text-base">
                 {bio}
               </p>
 
               {/* Teaching Specialties */}
               {specialties && specialties.length > 0 && (
-                <div className="mt-8 border-t border-stone-100 pt-6">
+                <div className="mt-8 border-t border-stone-100 dark:border-stone-800 pt-6">
                   <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     Teaching Specialties
                   </p>
@@ -260,7 +260,7 @@ export default async function TeacherProfilePage({
                     {specialties.map((s: string) => (
                       <span
                         key={s}
-                        className="rounded-full border border-stone-200 bg-stone-50/60 px-4 py-1.5 text-xs font-semibold text-stone-800"
+                        className="rounded-full border border-stone-200 dark:border-stone-700 bg-stone-50/60 dark:bg-stone-800 px-4 py-1.5 text-xs font-semibold text-stone-800 dark:text-stone-300"
                       >
                         {s}
                       </span>
@@ -271,14 +271,14 @@ export default async function TeacherProfilePage({
 
               {/* Credentials & Education */}
               {credentials && credentials.length > 0 && (
-                <div className="mt-8 border-t border-stone-100 pt-6">
+                <div className="mt-8 border-t border-stone-100 dark:border-stone-800 pt-6">
                   <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     Accreditations &amp; Degrees
                   </p>
                   <ul className="space-y-2.5">
                     {credentials.map((c: string) => (
-                      <li key={c} className="flex items-center gap-2.5 text-xs sm:text-sm text-stone-700 font-medium">
-                        <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <li key={c} className="flex items-center gap-2.5 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-medium">
+                        <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                         <span>{c}</span>
                       </li>
                     ))}
@@ -287,15 +287,15 @@ export default async function TeacherProfilePage({
               )}
 
               {/* Experience Badge */}
-              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 bg-stone-50/50 p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 text-amber-300 shadow-sm">
+              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 p-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm">
                   <GraduationCap className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-display text-lg font-bold text-stone-950">
+                  <p className="font-display text-lg font-bold text-stone-950 dark:text-white">
                     {yearsExperience}+ Years Experience
                   </p>
-                  <p className="text-xs text-stone-500 font-medium">
+                  <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
                     Verified native educator with direct 1-on-1 student instruction
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export default async function TeacherProfilePage({
             </div>
 
             {/* Student Reviews */}
-            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
               <ReviewsSection reviews={reviews} />
             </div>
           </div>
