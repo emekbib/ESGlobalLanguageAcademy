@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Check, X, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Loader2, Check, X, ShieldAlert, ShieldCheck, Trash2, CheckCircle2 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export function ApplicationActions({ teacherId }: { teacherId: string }) {
@@ -110,3 +110,78 @@ export function SuspensionButton({
     </button>
   );
 }
+
+export function ReviewModerationActions({ reviewId }: { reviewId: string }) {
+  const [loading, setLoading] = useState<'dismiss' | 'delete' | ''>('');
+  const [done, setDone] = useState('');
+
+  async function handleAction(action: 'dismiss' | 'delete') {
+    if (action === 'delete') {
+      const confirmed = window.confirm('Are you sure you want to permanently delete this review?');
+      if (!confirmed) return;
+    }
+
+    setLoading(action);
+    try {
+      const res = await fetch('/api/admin/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId, action }),
+      });
+
+      if (res.ok) {
+        setDone(action === 'dismiss' ? 'Flag Dismissed' : 'Review Deleted');
+        window.location.reload();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to moderate review.');
+      }
+    } catch {
+      alert('Network error while processing review moderation.');
+    } finally {
+      setLoading('');
+    }
+  }
+
+  if (done) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+        <CheckCircle2 className="h-3 w-3" />
+        <span>{done}</span>
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => void handleAction('dismiss')}
+        disabled={Boolean(loading)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3.5 py-1.5 text-xs font-bold text-stone-700 dark:text-stone-300 transition hover:bg-stone-50 dark:hover:bg-stone-750 disabled:opacity-60 cursor-pointer shadow-sm"
+      >
+        {loading === 'dismiss' ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+        )}
+        <span>Dismiss Flag</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => void handleAction('delete')}
+        disabled={Boolean(loading)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-700 dark:text-red-300 transition hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-60 cursor-pointer shadow-sm"
+      >
+        {loading === 'delete' ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <Trash2 className="h-3 w-3" />
+        )}
+        <span>Remove</span>
+      </button>
+    </div>
+  );
+}
+

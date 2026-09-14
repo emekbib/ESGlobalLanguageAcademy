@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import AdminSidebar, { type AdminTab } from './admin-sidebar';
-import { ApplicationActions, SuspensionButton } from './admin-controls';
+import { ApplicationActions, SuspensionButton, ReviewModerationActions } from './admin-controls';
 import LogoutModal from '@/components/dashboard/logout-modal';
 
 type TeacherApplication = {
@@ -422,6 +422,12 @@ export default function AdminDashboardShell({
                           Flag reason: {review.flag_reason}
                         </p>
                       )}
+                      <div className="mt-4 pt-3 border-t border-stone-200/60 dark:border-stone-700/60 flex items-center justify-between">
+                        <span className="text-[11px] font-medium text-stone-400">
+                          Moderation Action
+                        </span>
+                        <ReviewModerationActions reviewId={review.id} />
+                      </div>
                     </article>
                   ))
                 ) : (
