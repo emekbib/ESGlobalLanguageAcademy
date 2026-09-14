@@ -29,7 +29,7 @@ export default function LogoutModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fade-in">
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-2xl transition-all"
+        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl transition-all"
         role="dialog"
         aria-modal="true"
       >
@@ -37,25 +37,25 @@ export default function LogoutModal({
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-700 dark:hover:text-stone-200 transition"
           aria-label="Close modal"
         >
           <X className="h-5 w-5" />
         </button>
 
         <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 ring-4 ring-rose-50/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 ring-4 ring-rose-50/50 dark:ring-rose-950/30">
             <LogOut className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="font-display text-lg font-bold text-stone-900">
+            <h3 className="font-display text-lg font-bold text-stone-900 dark:text-white">
               Sign out of ESGlobal?
             </h3>
-            <p className="text-xs text-stone-500">Confirm sign out</p>
+            <p className="text-xs text-stone-500 dark:text-stone-400">Confirm sign out</p>
           </div>
         </div>
 
-        <p className="mt-4 text-sm text-stone-600 leading-relaxed">
+        <p className="mt-4 text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
           Are you sure you want to sign out? You will need to log back in to access your upcoming 1-on-1 lessons and teacher calendar.
         </p>
 
@@ -64,7 +64,7 @@ export default function LogoutModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-xl border border-stone-200 px-4 py-2.5 text-xs font-semibold text-stone-700 transition hover:border-stone-300 hover:bg-stone-50 disabled:opacity-50"
+            className="rounded-xl border border-stone-200 dark:border-stone-800 px-4 py-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300 transition hover:border-stone-300 dark:hover:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 disabled:opacity-50"
           >
             Cancel
           </button>

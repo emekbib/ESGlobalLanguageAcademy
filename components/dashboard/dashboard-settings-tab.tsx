@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { User, Globe, Clock, Shield, Check, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { User, Globe, Clock, Shield, Check, Loader2, Moon, Sun, Monitor } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function DashboardSettingsTab({
@@ -13,6 +14,10 @@ export default function DashboardSettingsTab({
   avatarUrl: string | null;
   role?: string;
 }) {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const [name, setName] = useState(fullName);
   const [selectedLanguage, setSelectedLanguage] = useState('Amharic');
   const [timezone, setTimezone] = useState(
@@ -143,6 +148,67 @@ export default function DashboardSettingsTab({
             <p className="mt-1.5 text-[11px] text-stone-400 dark:text-stone-500">
               Times automatically convert to your local timezone for scheduling.
             </p>
+          </div>
+        </div>
+
+        {/* Appearance & Theme Card */}
+        <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200">
+              <Sun className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-display text-base font-bold text-stone-950 dark:text-white">
+                Appearance & Theme
+              </h3>
+              <p className="text-xs text-stone-400 dark:text-stone-500 font-medium">
+                Customize interface colors between warm ivory editorial and obsidian dark
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${
+                mounted && (theme === 'light' || (!theme && resolvedTheme === 'light'))
+                  ? 'border-stone-950 bg-stone-50 dark:border-amber-400 dark:bg-stone-800/80 shadow-sm'
+                  : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50/50 dark:hover:bg-stone-800/50'
+              }`}
+            >
+              <Sun className="h-5 w-5 text-amber-500" />
+              <span className="text-xs font-bold text-stone-900 dark:text-white">Light Mode</span>
+              <span className="text-[10px] text-stone-400">Warm Ivory</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${
+                mounted && (theme === 'dark' || (!theme && resolvedTheme === 'dark'))
+                  ? 'border-stone-950 bg-stone-50 dark:border-amber-400 dark:bg-stone-800/80 shadow-sm'
+                  : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50/50 dark:hover:bg-stone-800/50'
+              }`}
+            >
+              <Moon className="h-5 w-5 text-stone-700 dark:text-amber-300" />
+              <span className="text-xs font-bold text-stone-900 dark:text-white">Dark Mode</span>
+              <span className="text-[10px] text-stone-400">Obsidian Luxury</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme('system')}
+              className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${
+                mounted && theme === 'system'
+                  ? 'border-stone-950 bg-stone-50 dark:border-amber-400 dark:bg-stone-800/80 shadow-sm'
+                  : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50/50 dark:hover:bg-stone-800/50'
+              }`}
+            >
+              <Monitor className="h-5 w-5 text-stone-500" />
+              <span className="text-xs font-bold text-stone-900 dark:text-white">System</span>
+              <span className="text-[10px] text-stone-400">Auto Detect</span>
+            </button>
           </div>
         </div>
 

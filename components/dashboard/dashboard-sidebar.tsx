@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   LogOut,
   Moon,
+  Sun,
   GraduationCap,
 } from 'lucide-react';
 
@@ -30,14 +31,18 @@ export default function DashboardSidebar({
   onTabChange,
   onOpenLogout,
 }: DashboardSidebarProps) {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isDark = mounted && theme === 'dark';
+  const isDark = mounted && (resolvedTheme ? resolvedTheme === 'dark' : theme === 'dark');
+
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
 
   const NAV_ITEMS = [
     {
@@ -123,17 +128,36 @@ export default function DashboardSidebar({
       {/* Bottom Controls: Dark Mode Toggle + Editorial User Capsule */}
       <div className="space-y-4 pt-4 border-t border-stone-100 dark:border-stone-800">
         {/* Dark Mode Toggle */}
-        <div className="flex items-center justify-between px-3 py-1.5">
-          <div className="flex items-center gap-2.5 text-xs font-semibold text-stone-600 dark:text-stone-300">
-            <Moon className="h-4 w-4 text-stone-400 dark:text-stone-400" />
-            <span>Dark Mode</span>
+        <div
+          onClick={toggleTheme}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleTheme();
+            }
+          }}
+          className="flex items-center justify-between rounded-2xl px-3 py-2 cursor-pointer transition hover:bg-stone-100 dark:hover:bg-stone-800/80"
+          aria-label="Toggle dark mode"
+        >
+          <div className="flex items-center gap-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300 select-none">
+            {isDark ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-stone-500" />
+            )}
+            <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
           </div>
           <button
             type="button"
             role="switch"
-            aria-label="Toggle dark mode"
+            aria-label="Toggle dark mode switch"
             aria-checked={isDark}
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleTheme();
+            }}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
               isDark ? 'bg-amber-400' : 'bg-stone-200 dark:bg-stone-700'
             }`}

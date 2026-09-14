@@ -20,6 +20,7 @@ import {
   CreditCard,
   SlidersHorizontal,
   Moon,
+  Sun,
   LogOut,
   ArrowRight,
   CalendarDays,
@@ -71,14 +72,18 @@ export default function TeacherDashboardShell({
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isDark = mounted && theme === 'dark';
+  const isDark = mounted && (resolvedTheme ? resolvedTheme === 'dark' : theme === 'dark');
+
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
 
   const firstLetter = profile.full_name?.charAt(0)?.toUpperCase() || 'T';
 
@@ -196,19 +201,38 @@ export default function TeacherDashboardShell({
         {/* Bottom User Area & Logout */}
         <div className="space-y-4 border-t border-stone-100 dark:border-stone-800 pt-5">
           {/* Dark Mode Toggle */}
-          <div className="flex items-center justify-between px-3 py-1">
-            <span className="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400">
-              <Moon className="h-3.5 w-3.5 text-stone-400" />
-              Dark Mode
+          <div
+            onClick={toggleTheme}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+              }
+            }}
+            className="flex items-center justify-between rounded-2xl px-3 py-2 cursor-pointer transition hover:bg-stone-100 dark:hover:bg-stone-800/80"
+            aria-label="Toggle dark mode"
+          >
+            <span className="flex items-center gap-2 text-xs font-semibold text-stone-700 dark:text-stone-300 select-none">
+              {isDark ? (
+                <Sun className="h-4 w-4 text-amber-400" />
+              ) : (
+                <Moon className="h-4 w-4 text-stone-500" />
+              )}
+              <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </span>
             <button
               type="button"
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTheme();
+              }}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                 isDark ? 'bg-amber-400' : 'bg-stone-200 dark:bg-stone-700'
               }`}
               role="switch"
-              aria-label="Toggle dark mode"
+              aria-label="Toggle dark mode switch"
               aria-checked={isDark}
             >
               <span
@@ -313,19 +337,38 @@ export default function TeacherDashboardShell({
 
             <div className="mt-auto border-t border-stone-100 dark:border-stone-800 pt-6 space-y-3">
               {/* Mobile Dark Mode Toggle */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/60">
-                <span className="flex items-center gap-2 text-xs font-semibold text-stone-600 dark:text-stone-300">
-                  <Moon className="h-4 w-4 text-stone-400" />
-                  Dark Mode
+              <div
+                onClick={toggleTheme}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleTheme();
+                  }
+                }}
+                className="flex items-center justify-between px-3 py-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/60 cursor-pointer"
+                aria-label="Toggle dark mode"
+              >
+                <span className="flex items-center gap-2 text-xs font-semibold text-stone-700 dark:text-stone-300 select-none">
+                  {isDark ? (
+                    <Sun className="h-4 w-4 text-amber-400" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-stone-400" />
+                  )}
+                  <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
                 </span>
                 <button
                   type="button"
-                  onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleTheme();
+                  }}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                     isDark ? 'bg-amber-400' : 'bg-stone-200 dark:bg-stone-700'
                   }`}
                   role="switch"
-                  aria-label="Toggle dark mode"
+                  aria-label="Toggle dark mode switch"
                   aria-checked={isDark}
                 >
                   <span
@@ -393,6 +436,21 @@ export default function TeacherDashboardShell({
               <Pencil className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
               <span>Edit Details</span>
             </Link>
+
+            {/* Quick Theme Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-600 dark:text-amber-300 transition hover:bg-stone-50 dark:hover:bg-stone-700 shadow-sm"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle dark mode"
+            >
+              {isDark ? (
+                <Sun className="h-4 w-4 text-amber-400" />
+              ) : (
+                <Moon className="h-4 w-4 text-stone-500" />
+              )}
+            </button>
 
             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-stone-200 dark:ring-stone-800 shadow-sm">
               {profile.avatar_url ? (

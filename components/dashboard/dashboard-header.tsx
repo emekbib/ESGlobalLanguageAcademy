@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   GraduationCap,
   Moon,
+  Sun,
 } from 'lucide-react';
 
 export default function DashboardHeader({
@@ -33,14 +34,18 @@ export default function DashboardHeader({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isDark = mounted && theme === 'dark';
+  const isDark = mounted && (resolvedTheme ? resolvedTheme === 'dark' : theme === 'dark');
+
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -139,6 +144,21 @@ export default function DashboardHeader({
             )}
           </div>
 
+          {/* Theme Quick Toggle (Desktop & Mobile) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-600 dark:text-amber-300 transition hover:bg-stone-50 dark:hover:bg-stone-700 shadow-sm"
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-stone-500" />
+            )}
+          </button>
+
           {/* User Profile Avatar Trigger */}
           <div className="relative" ref={profileRef}>
             <button
@@ -174,6 +194,21 @@ export default function DashboardHeader({
                   >
                     <SlidersHorizontal className="h-4 w-4 text-stone-400" />
                     <span>Profile & Settings</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleTheme();
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-stone-700 dark:text-stone-200 transition hover:bg-stone-50 dark:hover:bg-stone-800"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-stone-400" />}
+                      <span>Theme</span>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+                      {isDark ? 'Dark' : 'Light'}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -248,19 +283,38 @@ export default function DashboardHeader({
 
             <div className="mt-auto border-t border-stone-150 dark:border-stone-800 pt-4 space-y-3">
               {/* Mobile Dark Mode Switch */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/60">
-                <span className="flex items-center gap-2 text-xs font-semibold text-stone-600 dark:text-stone-300">
-                  <Moon className="h-4 w-4 text-stone-400" />
-                  Dark Mode
+              <div
+                onClick={toggleTheme}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleTheme();
+                  }
+                }}
+                className="flex items-center justify-between px-3 py-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/60 cursor-pointer"
+                aria-label="Toggle dark mode"
+              >
+                <span className="flex items-center gap-2 text-xs font-semibold text-stone-700 dark:text-stone-300 select-none">
+                  {isDark ? (
+                    <Sun className="h-4 w-4 text-amber-400" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-stone-400" />
+                  )}
+                  <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
                 </span>
                 <button
                   type="button"
-                  onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleTheme();
+                  }}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                     isDark ? 'bg-amber-400' : 'bg-stone-200 dark:bg-stone-700'
                   }`}
                   role="switch"
-                  aria-label="Toggle dark mode"
+                  aria-label="Toggle dark mode switch"
                   aria-checked={isDark}
                 >
                   <span

@@ -23,7 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={nunito.variable} suppressHydrationWarning>
       <body className={`${nunito.className} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           {children}
         </ThemeProvider>
       </body>
