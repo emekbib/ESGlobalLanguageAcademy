@@ -222,7 +222,7 @@ export default function AdminDashboardShell({
             </div>
 
             {/* Quick Segmented View Tabs */}
-            <div className="inline-flex rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 p-1 shadow-sm">
+            <div className="inline-flex max-w-full overflow-x-auto rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 p-1 shadow-sm no-scrollbar">
               {[
                 { id: 'overview', label: 'All Operations' },
                 { id: 'applications', label: `Applications (${pendingCount})` },
@@ -233,7 +233,7 @@ export default function AdminDashboardShell({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as AdminTab)}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                     activeTab === tab.id
                       ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950 shadow-sm'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white'

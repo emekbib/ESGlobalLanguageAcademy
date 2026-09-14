@@ -98,30 +98,30 @@ export default function DailyCall({
       <div
         ref={containerRef}
         className={`relative w-full overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-stone-950 shadow-xl transition-all duration-300 ${
-          joined ? 'h-[550px] sm:h-[650px]' : 'h-72 sm:h-80'
+          joined ? 'h-[65vh] min-h-[420px] sm:h-[650px] max-h-[85vh]' : 'min-h-[300px] py-8 sm:h-80'
         }`}
       >
         {!joined && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 ring-1 ring-white/20 shadow-inner">
-              <Video className="h-8 w-8 text-amber-300" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-5 sm:p-6 text-center text-white">
+            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-3xl bg-white/10 ring-1 ring-white/20 shadow-inner">
+              <Video className="h-7 w-7 sm:h-8 sm:w-8 text-amber-300" />
             </div>
 
-            <h3 className="mt-4 font-display text-xl font-bold tracking-tight">
+            <h3 className="mt-4 font-display text-lg sm:text-xl font-bold tracking-tight">
               1-on-1 Encrypted Video Classroom
             </h3>
 
-            <p className="mt-1.5 max-w-md text-xs sm:text-sm text-stone-300 font-medium">
+            <p className="mt-1.5 max-w-md text-xs sm:text-sm text-stone-300 font-medium px-2">
               Powered by Daily.co WebRTC with high-definition audio, screen sharing, and live text chat.
             </p>
 
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-4 sm:px-0">
               {canJoin ? (
                 <button
                   type="button"
                   onClick={handleJoin}
                   disabled={loading || creatingRoom}
-                  className="inline-flex items-center gap-2.5 rounded-full bg-white dark:bg-stone-100 px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-stone-950 shadow-lg transition hover:bg-stone-100 dark:hover:bg-white disabled:opacity-60 cursor-pointer active:scale-95"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-full bg-white dark:bg-stone-100 px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-stone-950 shadow-lg transition hover:bg-stone-100 dark:hover:bg-white disabled:opacity-60 cursor-pointer active:scale-95"
                 >
                   {loading || creatingRoom ? (
                     <>
@@ -136,8 +136,8 @@ export default function DailyCall({
                   )}
                 </button>
               ) : (
-                <div className="inline-flex items-center gap-2 rounded-full border border-stone-800 bg-stone-900/80 px-5 py-2.5 text-xs font-medium text-stone-400">
-                  <VideoOff className="h-4 w-4" />
+                <div className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-800 bg-stone-900/80 px-5 py-2.5 text-xs font-medium text-stone-400 text-center">
+                  <VideoOff className="h-4 w-4 shrink-0" />
                   <span>Room opens 10 minutes prior to session</span>
                 </div>
               )}
@@ -147,7 +147,7 @@ export default function DailyCall({
       </div>
 
       {joined && (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />

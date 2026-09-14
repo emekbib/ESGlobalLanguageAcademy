@@ -309,7 +309,7 @@ export default async function TeacherProfilePage({
           </div>
 
           {/* Right Column: Sticky Booking Card */}
-          <aside className="lg:w-[380px] lg:shrink-0">
+          <aside id="booking-section" className="lg:w-[380px] lg:shrink-0 scroll-mt-24">
             <div className="lg:sticky lg:top-28">
               <BookingCard teacherId={id} hourlyRate={hourlyRate} />
             </div>
@@ -318,20 +318,20 @@ export default async function TeacherProfilePage({
       </section>
 
       {/* Mobile Sticky Booking Bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-4 shadow-xl backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 p-4 shadow-2xl backdrop-blur-md lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div>
-            <p className="text-[11px] font-bold text-stone-400">Lesson Rate</p>
-            <p className="font-display text-xl font-black text-stone-950">
-              ${hourlyRate} / 50 min
+            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Lesson Rate</p>
+            <p className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
+              ${hourlyRate} <span className="text-xs font-semibold text-stone-400">/ 50 min</span>
             </p>
           </div>
-          <Link
-            href={`/booking/${id}`}
-            className="inline-flex items-center justify-center rounded-full bg-stone-950 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-stone-800"
+          <a
+            href="#booking-section"
+            className="inline-flex items-center justify-center rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white active:scale-95"
           >
-            Book Lesson
-          </Link>
+            Select Slot
+          </a>
         </div>
       </div>
 

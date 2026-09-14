@@ -18,12 +18,12 @@ export default function DashboardMetrics({
   const hoursCompleted = (completedCount * 1.0).toFixed(1);
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
       {/* Card 1: Upcoming Lessons */}
       <button
         type="button"
         onClick={() => onNavigateTab('lessons')}
-        className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/80 dark:hover:border-amber-400/40 hover:shadow-md cursor-pointer overflow-hidden"
+        className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-3.5 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/80 dark:hover:border-amber-400/40 hover:shadow-md cursor-pointer overflow-hidden"
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300 shadow-sm ring-1 ring-amber-500/20">
@@ -56,7 +56,7 @@ export default function DashboardMetrics({
       </button>
 
       {/* Card 2: 1-on-1 Practice */}
-      <div className="relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
+      <div className="relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-3.5 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
         <div className="flex items-center justify-between gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 shadow-sm ring-1 ring-emerald-500/20">
             <Clock className="h-4 w-4" />
@@ -83,7 +83,7 @@ export default function DashboardMetrics({
       </div>
 
       {/* Card 3: Speaking Streak */}
-      <div className="relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
+      <div className="relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-3.5 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
         <div className="flex items-center justify-between gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400 shadow-sm ring-1 ring-rose-500/20">
             <Flame className="h-4 w-4" />
@@ -113,7 +113,7 @@ export default function DashboardMetrics({
       <button
         type="button"
         onClick={() => onNavigateTab('teachers')}
-        className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 dark:hover:border-sky-400/40 hover:shadow-md cursor-pointer overflow-hidden"
+        className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-3.5 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 dark:hover:border-sky-400/40 hover:shadow-md cursor-pointer overflow-hidden"
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400 shadow-sm ring-1 ring-sky-500/20">

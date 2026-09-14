@@ -36,8 +36,8 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-[#faf9f6] text-stone-900 selection:bg-sky-500 selection:text-white">
       <Navbar transparentOverHero={true} />
 
-      {/* ── HERO (Intro.co style: Full 100vh viewport height with press bar at bottom) ── */}
-      <section className="relative flex h-screen min-h-[660px] flex-col justify-between overflow-hidden bg-stone-950">
+      {/* ── HERO (Intro.co style: Full 100dvh viewport height with press bar at bottom) ── */}
+      <section className="relative flex min-h-[100dvh] flex-col justify-between overflow-hidden bg-stone-950">
         {/* Background image — sunlit luxury study & villa */}
         <Image
           src="/hero.jpg"
@@ -51,12 +51,12 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/25 to-stone-950/65" />
 
         {/* Top spacer matching fixed navbar */}
-        <div className="h-20 shrink-0" />
+        <div className="h-16 sm:h-20 shrink-0" />
 
         {/* Content — perfectly centered in the full-height viewport */}
-        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-8 text-center">
           {/* Social Proof Pill */}
-          <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/25 bg-black/40 px-4 py-1.5 shadow-lg backdrop-blur-md">
+          <div className="mb-5 sm:mb-6 inline-flex max-w-full flex-wrap items-center justify-center gap-2 sm:gap-3 rounded-full border border-white/25 bg-black/40 px-3.5 sm:px-4 py-1.5 shadow-lg backdrop-blur-md">
             <div className="flex -space-x-2 overflow-hidden">
               <img
                 className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
@@ -82,32 +82,32 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="font-display text-4xl font-medium leading-[1.14] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)] sm:text-5xl md:text-6xl">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-medium leading-[1.16] sm:leading-[1.14] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
             Book 1-on-1 language lessons with native teachers worldwide
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base font-normal text-white/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.85)] sm:text-lg">
+          <p className="mx-auto mt-4 sm:mt-5 max-w-2xl text-sm sm:text-base md:text-lg font-normal text-white/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.85)] leading-relaxed">
             Master conversation, ace exams, or gain business fluency with vetted native educators over 1-on-1 video.
           </p>
 
           {/* High-Attention Magnetic CTA Button */}
-          <div className="mt-9 flex justify-center">
+          <div className="mt-7 sm:mt-9 flex justify-center">
             <Link
               href="/teachers"
-              className="group relative inline-flex items-center gap-3.5 rounded-full border border-white/90 bg-white py-2.5 pl-8 pr-3 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.04] hover:bg-white hover:ring-white/60 hover:shadow-[0_25px_60px_rgba(0,0,0,0.7),0_0_50px_rgba(255,255,255,0.6)] active:scale-100"
+              className="group relative inline-flex w-full max-w-xs sm:w-auto items-center justify-between sm:justify-start gap-3.5 rounded-full border border-white/90 bg-white py-2.5 pl-6 sm:pl-8 pr-2.5 sm:pr-3 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.03] hover:bg-white hover:ring-white/60 active:scale-100"
             >
-              <span className="font-display text-base font-bold tracking-tight text-stone-950">
+              <span className="font-display text-sm sm:text-base font-bold tracking-tight text-stone-950">
                 Find Your Teacher
               </span>
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-950 text-white shadow-md transition-all duration-300 group-hover:translate-x-1 group-hover:bg-amber-400 group-hover:text-stone-950">
-                <ArrowRight className="h-5 w-5" />
+              <span className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-stone-950 text-white shadow-md transition-all duration-300 group-hover:translate-x-1 group-hover:bg-amber-400 group-hover:text-stone-950">
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </span>
             </Link>
           </div>
 
           {/* Quick Language Shortcuts */}
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className="font-medium text-white/70">Focus Languages:</span>
+          <div className="mt-6 sm:mt-7 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
+            <span className="font-medium text-white/70 w-full sm:w-auto mb-1 sm:mb-0">Focus Languages:</span>
             {[
               { name: 'Amharic', query: 'amharic' },
               { name: 'Tigrigna', query: 'tigrigna' },
@@ -118,7 +118,7 @@ export default function Home() {
               <Link
                 key={lang.name}
                 href={`/teachers?lang=${lang.query}`}
-                className="rounded-full border border-white/25 bg-black/30 px-3 py-1 font-medium text-white/90 backdrop-blur-sm transition hover:border-white/60 hover:bg-white/20 hover:text-white"
+                className="rounded-full border border-white/25 bg-black/30 px-3 py-1 font-medium text-white/90 backdrop-blur-sm transition hover:border-white/60 hover:bg-white/20 hover:text-white text-[11px] sm:text-xs"
               >
                 {lang.name}
               </Link>
@@ -126,24 +126,24 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom: Refined Editorial Metrics (Bilt luxury style — no rainbow icon clutter) */}
-        <div className="relative z-10 border-t border-white/10 bg-black/45 py-5 backdrop-blur-xl">
-          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 text-center md:grid-cols-4 md:divide-x md:divide-white/10">
-            <div className="px-3">
-              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">5</p>
-              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Core Languages</p>
+        {/* Bottom: Refined Editorial Metrics (Responsive 2-column to 4-column) */}
+        <div className="relative z-10 border-t border-white/10 bg-black/45 py-4 sm:py-5 backdrop-blur-xl">
+          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 text-center md:grid-cols-4 md:divide-x md:divide-white/10">
+            <div className="px-2 sm:px-3">
+              <p className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">5</p>
+              <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Core Languages</p>
             </div>
-            <div className="px-3">
-              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">100%</p>
-              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Vetted Native Tutors</p>
+            <div className="px-2 sm:px-3">
+              <p className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">100%</p>
+              <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Vetted Native Tutors</p>
             </div>
-            <div className="px-3">
-              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">4.98 ★</p>
-              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Student Satisfaction</p>
+            <div className="px-2 sm:px-3">
+              <p className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">4.98 ★</p>
+              <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Student Satisfaction</p>
             </div>
-            <div className="px-3">
-              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">$0</p>
-              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Subscription Required</p>
+            <div className="px-2 sm:px-3">
+              <p className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">$0</p>
+              <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Subscription Required</p>
             </div>
           </div>
         </div>

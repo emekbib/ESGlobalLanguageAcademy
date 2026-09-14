@@ -107,43 +107,72 @@ export default function Navbar({
 
       {/* Mobile dropdown */}
       {mobileOpen && (
-        <div className="border-t border-stone-200 bg-[#faf9f6] px-6 py-6 text-stone-900 md:hidden shadow-xl">
-          <div className="flex flex-col gap-4">
+        <div className="border-t border-stone-200/80 dark:border-stone-800 bg-[#faf9f6]/98 dark:bg-stone-900/98 px-6 py-6 text-stone-900 dark:text-stone-100 md:hidden shadow-2xl backdrop-blur-xl animate-fade-in max-h-[calc(100dvh-5rem)] overflow-y-auto">
+          <div className="flex flex-col gap-3">
             <Link
               href="/teachers"
               onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium text-stone-700"
+              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
-              Find a Teacher
+              <span>Find a Teacher</span>
+              <span className="text-xs text-stone-400">Directory</span>
             </Link>
             <a
               href="/#how-it-works"
               onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium text-stone-700"
+              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
-              How it Works
+              <span>How It Works</span>
+              <span className="text-xs text-stone-400">Method</span>
             </a>
             <Link
               href="/auth"
               onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium text-stone-700"
+              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
-              Become a Teacher
+              <span>Become a Teacher</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">Join Faculty</span>
             </Link>
-            <div className="mt-2 flex flex-col gap-2 border-t border-stone-200 pt-4">
+
+            {/* Quick Language Shortcuts on Mobile */}
+            <div className="pt-2">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                Explore Languages
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5 px-2">
+                {[
+                  { name: 'Amharic', q: 'amharic' },
+                  { name: 'Tigrigna', q: 'tigrigna' },
+                  { name: 'Afaan Oromo', q: 'afaan oromo' },
+                  { name: 'Somali', q: 'somali' },
+                  { name: 'Swahili', q: 'swahili' },
+                ].map((l) => (
+                  <Link
+                    key={l.name}
+                    href={`/teachers?lang=${l.q}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-1 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:border-amber-400 transition"
+                  >
+                    {l.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-col gap-2.5 border-t border-stone-200/80 dark:border-stone-800 pt-5">
               <Link
                 href="/auth"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-stone-600"
+                className="rounded-2xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 py-3 text-center text-xs font-bold text-stone-900 dark:text-white shadow-sm hover:bg-stone-50 dark:hover:bg-stone-700 transition"
               >
-                Sign in
+                Sign In to Account
               </Link>
               <Link
                 href="/auth"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-full bg-stone-900 py-2.5 text-center text-sm font-semibold text-white"
+                className="rounded-2xl bg-stone-950 dark:bg-white py-3 text-center text-xs font-bold text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-stone-100"
               >
-                Sign up
+                Get Started Free
               </Link>
             </div>
           </div>
