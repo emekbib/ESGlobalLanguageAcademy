@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Video, VideoOff } from 'lucide-react';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { Loader2, Video, VideoOff, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function DailyCall({
   roomUrl,
@@ -19,25 +18,29 @@ export default function DailyCall({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [creatingRoom, setCreatingRoom] = useState(false);
-  const supabase = createSupabaseBrowserClient();
 
   const ensureRoom = useCallback(async (): Promise<string | null> => {
     if (roomUrl) return roomUrl;
     setCreatingRoom(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('create-daily-room', { body: { bookingId } });
-      if (fnError || !data?.url) {
-        setError('Could not start the video room. Please refresh and try again.');
+      const res = await fetch('/api/classroom/create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.url) {
+        setError(data?.error || 'Could not start the video classroom. Please refresh and try again.');
         return null;
       }
       return data.url as string;
     } catch {
-      setError('Could not start the video room. Please refresh and try again.');
+      setError('Could not start the video classroom. Please check your network and try again.');
       return null;
     } finally {
       setCreatingRoom(false);
     }
-  }, [roomUrl, bookingId, supabase]);
+  }, [roomUrl, bookingId]);
 
   const handleJoin = useCallback(async () => {
     setError('');
@@ -48,14 +51,23 @@ export default function DailyCall({
     try {
       const DailyIframe = (await import('@daily-co/daily-js')).default;
       const call = DailyIframe.createFrame(containerRef.current!, {
-        iframeStyle: { width: '100%', height: '100%', border: '0', borderRadius: '12px' },
+        iframeStyle: {
+          width: '100%',
+          height: '100%',
+          border: '0',
+          borderRadius: '1.5rem',
+        },
+        showLeaveButton: true,
       });
       callObjectRef.current = call;
+      call.on('left-meeting', () => {
+        setJoined(false);
+      });
       await call.join({ url });
       setJoined(true);
     } catch (err) {
       console.error('Daily join failed', err);
-      setError('Could not join the video call. Please try again.');
+      setError('Could not connect to video session. Please check browser permissions and try again.');
       if (callObjectRef.current) {
         callObjectRef.current.destroy();
         callObjectRef.current = null;
@@ -65,52 +77,103 @@ export default function DailyCall({
     }
   }, [ensureRoom]);
 
+  const handleLeave = useCallback(() => {
+    if (callObjectRef.current) {
+      callObjectRef.current.destroy();
+      callObjectRef.current = null;
+    }
+    setJoined(false);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (callObjectRef.current) {
         callObjectRef.current.destroy();
-        callObjectRef.current = null;
       }
     };
   }, []);
 
-  if (!canJoin) {
-    return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border bg-muted/30 px-6 py-16 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-          <VideoOff className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <div>
-          <p className="font-semibold">The lesson room opens 10 minutes before start time</p>
-          <p className="mt-1 text-sm text-muted-foreground">Check back closer to your scheduled time.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (joined) {
-    return <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-2xl border shadow-lg" />;
-  }
-
   return (
-    <div className="flex flex-col items-center gap-5 rounded-2xl border bg-background px-6 py-16 text-center shadow-sm">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-        <Video className="h-6 w-6 text-primary" />
-      </div>
-      <div>
-        <p className="font-semibold">Ready to join your lesson</p>
-        <p className="mt-1 text-sm text-muted-foreground">Click below to enter the video classroom.</p>
-      </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <button
-        type="button"
-        onClick={handleJoin}
-        disabled={loading || creatingRoom}
-        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition hover:brightness-105 disabled:opacity-60"
+    <div className="space-y-4">
+      <div
+        ref={containerRef}
+        className={`relative w-full overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-stone-950 shadow-xl transition-all duration-300 ${
+          joined ? 'h-[550px] sm:h-[650px]' : 'h-72 sm:h-80'
+        }`}
       >
-        {(loading || creatingRoom) && <Loader2 className="h-4 w-4 animate-spin" />}
-        {creatingRoom ? 'Preparing room…' : loading ? 'Joining…' : 'Join lesson'}
-      </button>
+        {!joined && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 ring-1 ring-white/20 shadow-inner">
+              <Video className="h-8 w-8 text-amber-300" />
+            </div>
+
+            <h3 className="mt-4 font-display text-xl font-bold tracking-tight">
+              1-on-1 Encrypted Video Classroom
+            </h3>
+
+            <p className="mt-1.5 max-w-md text-xs sm:text-sm text-stone-300 font-medium">
+              Powered by Daily.co WebRTC with high-definition audio, screen sharing, and live text chat.
+            </p>
+
+            <div className="mt-6 flex items-center gap-3">
+              {canJoin ? (
+                <button
+                  type="button"
+                  onClick={handleJoin}
+                  disabled={loading || creatingRoom}
+                  className="inline-flex items-center gap-2.5 rounded-full bg-white dark:bg-stone-100 px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-stone-950 shadow-lg transition hover:bg-stone-100 dark:hover:bg-white disabled:opacity-60 cursor-pointer active:scale-95"
+                >
+                  {loading || creatingRoom ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-stone-950" />
+                      <span>{creatingRoom ? 'Generating Room…' : 'Connecting Call…'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Video className="h-4 w-4 text-emerald-600" />
+                      <span>Join Live Lesson</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="inline-flex items-center gap-2 rounded-full border border-stone-800 bg-stone-900/80 px-5 py-2.5 text-xs font-medium text-stone-400">
+                  <VideoOff className="h-4 w-4" />
+                  <span>Room opens 10 minutes prior to session</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {joined && (
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              Live Session Active
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleLeave}
+            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-4 py-1.5 text-xs font-bold text-red-700 dark:text-red-300 hover:bg-red-100 transition cursor-pointer"
+          >
+            Leave Classroom
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-4 text-xs font-medium text-red-800 dark:text-red-300 flex items-center gap-2.5">
+          <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+          <span>{error}</span>
+        </div>
+      )}
     </div>
   );
 }
