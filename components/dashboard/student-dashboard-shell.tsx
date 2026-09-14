@@ -82,34 +82,21 @@ export default function StudentDashboardShell({
           onOpenLogout={() => setLogoutModalOpen(true)}
         />
 
-        <main className="mx-auto w-full max-w-6xl px-6 py-8 sm:px-10 space-y-8">
+        <main className="mx-auto w-full max-w-6xl px-6 py-5 sm:px-10 space-y-5">
           {/* TAB 1: MY LESSONS & SPOTLIGHT */}
           {activeTab === 'lessons' && (
-            <div className="space-y-8 animate-fade-in">
+            <div className="space-y-4 animate-fade-in">
               {/* Header Greeting */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-stone-200/80 pb-6">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                    Learner Portal
-                  </span>
-                  <h1 className="mt-1 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950">
-                    Welcome back, {profile.full_name}
-                  </h1>
-                  <p className="mt-1 text-xs text-stone-500 font-medium">
-                    Manage your scheduled 1-on-1 video lessons and connect with verified native educators.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('teachers')}
-                  className="group inline-flex items-center justify-center gap-3 rounded-full bg-stone-950 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-stone-800 active:scale-95"
-                >
-                  <span>Find a Native Tutor</span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-amber-300 transition-transform group-hover:translate-x-0.5">
-                    <ArrowRight className="h-3 w-3" />
-                  </span>
-                </button>
+              <div className="border-b border-stone-200/80 pb-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                  Learner Portal
+                </span>
+                <h1 className="mt-0.5 font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950">
+                  Welcome back, {profile.full_name}
+                </h1>
+                <p className="mt-0.5 text-xs text-stone-500 font-medium">
+                  Manage your scheduled 1-on-1 video lessons and connect with verified native educators.
+                </p>
               </div>
 
               {/* Intro.co Luxury Hero Spotlight Card (Positioned prominent and high) */}

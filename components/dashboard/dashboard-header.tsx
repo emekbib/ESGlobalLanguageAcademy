@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Flame,
-  Sparkles,
   Bell,
   Menu,
   X,
@@ -63,20 +61,20 @@ export default function DashboardHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex h-22 sm:h-24 w-full items-center justify-between border-b border-stone-200/80 bg-white/95 px-6 sm:px-10 backdrop-blur-md">
+      <header className="sticky top-0 z-20 flex h-16 sm:h-18 w-full items-center justify-between border-b border-stone-200/80 bg-white/95 px-6 sm:px-10 backdrop-blur-md">
         {/* Left on Mobile: Hamburger & Brand */}
         <div className="flex items-center gap-3 md:hidden">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-700 shadow-sm hover:bg-stone-50 transition"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-700 shadow-sm hover:bg-stone-50 transition"
             aria-label="Open navigation"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-950 text-amber-300 shadow-sm">
-              <GraduationCap className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-950 text-amber-300 shadow-sm">
+              <GraduationCap className="h-3.5 w-3.5" />
             </div>
             <span className="font-display text-sm font-black text-stone-950">ESGlobal</span>
           </div>
@@ -84,45 +82,27 @@ export default function DashboardHeader({
 
         {/* Left on Desktop: Intro.co Style Clean Bold Page Title */}
         <div className="hidden md:block">
-          <h1 className="font-display text-2xl font-black tracking-tight text-stone-900">
+          <h1 className="font-display text-xl font-black tracking-tight text-stone-900">
             {currentTitle}
           </h1>
         </div>
 
-        {/* Right Status Badges & Profile Capsule */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          {/* Speaking Streak Pill (Intro.co warm luxury style) */}
-          <div
-            className="flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 border border-amber-200/80 shadow-sm transition hover:bg-amber-100/60 cursor-pointer"
-            title="Active 1-on-1 speaking streak with verified tutors"
-          >
-            <Flame className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-            <span>3 Week Streak</span>
-          </div>
-
-          {/* Membership Tier Badge */}
-          <div
-            className="hidden sm:flex items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-xs font-bold text-stone-800 border border-stone-200 shadow-sm"
-            title="Verified Learner Account"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-stone-600" />
-            <span>Verified Student</span>
-          </div>
-
+        {/* Right Action Items: Clean Notifications & Profile */}
+        <div className="flex items-center gap-3">
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button
               type="button"
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-600 transition hover:bg-stone-50 shadow-sm"
+              className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 transition hover:bg-stone-50 shadow-sm"
               aria-label="Notifications"
             >
               <Bell className="h-4 w-4" />
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white" />
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl animate-fade-in">
+              <div className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl animate-fade-in">
                 <div className="flex items-center justify-between border-b border-stone-100 px-4 py-3 bg-stone-50">
                   <span className="text-xs font-bold uppercase tracking-wider text-stone-800">
                     Notifications
@@ -149,24 +129,22 @@ export default function DashboardHeader({
             )}
           </div>
 
-          {/* User Profile Pill Trigger */}
+          {/* User Profile Avatar Trigger */}
           <div className="relative" ref={profileRef}>
             <button
               type="button"
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="flex items-center gap-2.5 rounded-full border border-stone-200 bg-white py-1.5 pl-1.5 pr-4 shadow-sm transition hover:bg-stone-50"
+              className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-stone-200 shadow-sm transition hover:ring-stone-400"
               aria-expanded={profileDropdownOpen}
+              aria-label="User menu"
             >
-              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-950 text-xs font-bold text-amber-300 shadow-sm">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={fullName} className="h-full w-full object-cover" />
-                ) : (
-                  firstLetter
-                )}
-              </div>
-              <span className="hidden text-xs font-bold text-stone-900 sm:inline max-w-[120px] truncate">
-                {fullName}
-              </span>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={fullName} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-stone-950 text-xs font-bold text-amber-300">
+                  {firstLetter}
+                </div>
+              )}
             </button>
 
             {profileDropdownOpen && (

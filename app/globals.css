@@ -69,6 +69,15 @@
 @layer base {
   * {
     @apply border-border;
+    font-family: inherit;
+  }
+  html,
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-family: var(--font-nunito), 'Nunito', system-ui, sans-serif !important;
   }
   body {
     @apply bg-background text-foreground;
@@ -76,11 +85,11 @@
     -webkit-font-smoothing: antialiased;
   }
   .font-display {
-    font-family: var(--font-nunito), var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-nunito), 'Nunito', system-ui, sans-serif !important;
     letter-spacing: -0.01em;
   }
   .font-sans {
-    font-family: var(--font-nunito), var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-nunito), 'Nunito', system-ui, sans-serif !important;
   }
 }
 

@@ -15,8 +15,8 @@ const config: Config = {
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       fontFamily: {
-        sans: ['var(--font-nunito)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-nunito)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-nunito)', 'Nunito', 'sans-serif'],
+        display: ['var(--font-nunito)', 'Nunito', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
