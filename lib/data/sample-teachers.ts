@@ -61,7 +61,7 @@ My teaching method focuses on rapid conversational fluency through immersion, cu
   {
     id: 'sample-2',
     name: 'Semhar Berhane',
-    avatarUrl: 'https://images.unsplash.com/photo-1580894732415-0d29661fa25d?q=80&w=800&auto=format&fit=crop',
+    avatarUrl: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?q=80&w=800&auto=format&fit=crop',
     languages: ['Tigrigna'],
     rating: 4.98,
     lessonsTaught: 1420,
@@ -162,7 +162,7 @@ Whether you are connecting with family, preparing for humanitarian work, or expl
   {
     id: 'sample-5',
     name: 'Juma Bakari',
-    avatarUrl: 'https://images.unsplash.com/photo-1507081323647-4d2504a4b919?q=80&w=800&auto=format&fit=crop',
+    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop',
     languages: ['Swahili'],
     rating: 4.99,
     lessonsTaught: 1680,
