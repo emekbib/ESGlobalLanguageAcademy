@@ -100,7 +100,21 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
           (b.hold_expires_at && new Date(b.hold_expires_at).getTime() > now),
       );
       if (active) {
-        setAvailability(avail ?? []);
+        const effectiveAvail =
+          avail && avail.length > 0
+            ? avail
+            : [1, 2, 3, 4, 5].map((day) => ({
+                id: `default-${day}`,
+                teacher_id: teacherId,
+                weekday: day,
+                start_time: '09:00',
+                end_time: '18:00',
+                timezone: browserTz || 'UTC',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }));
+
+        setAvailability(effectiveAvail);
         setExistingBookings(
           activeBookings.map((b) => ({ startUtc: b.start_time_utc, endUtc: b.end_time_utc })),
         );
