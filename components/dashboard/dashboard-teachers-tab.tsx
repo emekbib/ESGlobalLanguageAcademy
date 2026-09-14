@@ -47,21 +47,21 @@ export default function DashboardTeachersTab() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Top Header Section with Right-Aligned Filter Pills */}
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between border-b border-stone-200/80 pb-6">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between border-b border-stone-200/80 dark:border-stone-800 pb-6">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
             Vetted Native Faculty
           </span>
-          <h2 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950">
+          <h2 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
             Book 1-on-1 Lessons
           </h2>
-          <p className="mt-1 text-xs text-stone-500 font-medium">
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-medium">
             Select verified native educators, compare hourly rates, and schedule private video sessions.
           </p>
         </div>
 
         {/* Filter Segment Pill Bar (Intro.co style) */}
-        <div className="inline-flex flex-wrap items-center gap-1 rounded-full bg-stone-100 p-1 border border-stone-200/80 self-start lg:self-auto">
+        <div className="inline-flex flex-wrap items-center gap-1 rounded-full bg-stone-100 dark:bg-stone-900 p-1 border border-stone-200/80 dark:border-stone-800 self-start lg:self-auto">
           {LANGUAGES.slice(0, 6).map((lang) => {
             const isSelected = selectedLanguage.toLowerCase() === lang.toLowerCase();
             return (
@@ -71,8 +71,8 @@ export default function DashboardTeachersTab() {
                 onClick={() => setSelectedLanguage(lang)}
                 className={`rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition ${
                   isSelected
-                    ? 'bg-stone-950 text-white shadow-sm'
-                    : 'text-stone-600 hover:text-stone-950 hover:bg-white'
+                    ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950 shadow-sm'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white hover:bg-white dark:hover:bg-stone-800'
                 }`}
               >
                 {lang}
@@ -90,13 +90,13 @@ export default function DashboardTeachersTab() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by teacher name, language, or exam prep (e.g. Goethe, IELTS, Fidel)…"
-          className="w-full rounded-full border border-stone-200 bg-white py-3.5 pl-12 pr-4 text-xs font-medium text-stone-800 placeholder-stone-400 shadow-sm transition focus:border-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-950"
+          className="w-full rounded-full border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 py-3.5 pl-12 pr-4 text-xs font-medium text-stone-800 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 shadow-sm transition focus:border-stone-950 dark:focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-950 dark:focus:ring-stone-500"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => setSearchQuery('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
           >
             <X className="h-4 w-4" />
           </button>
@@ -111,11 +111,11 @@ export default function DashboardTeachersTab() {
           return (
             <div
               key={teacher.id}
-              className="group flex flex-col justify-between overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-stone-300 hover:shadow-xl"
+              className="group flex flex-col justify-between overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-xl"
             >
               <div>
                 {/* Photo Header */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800">
                   <img
                     src={teacher.avatarUrl || undefined}
                     alt={teacher.name}
@@ -124,7 +124,7 @@ export default function DashboardTeachersTab() {
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-transparent to-transparent" />
                   
                   {/* Rating Badge */}
-                  <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-stone-900 shadow-sm backdrop-blur-md">
+                  <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/95 dark:bg-stone-900/95 px-2.5 py-1 text-[11px] font-bold text-stone-900 dark:text-white shadow-sm backdrop-blur-md">
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                     <span>{teacher.rating.toFixed(1)}</span>
                     <span className="text-stone-400 font-normal">({teacher.lessonsTaught})</span>
@@ -136,8 +136,8 @@ export default function DashboardTeachersTab() {
                     onClick={() => toggleBookmark(teacher.id)}
                     className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full shadow-sm backdrop-blur-md transition ${
                       isBookmarked
-                        ? 'bg-stone-950 text-amber-300'
-                        : 'bg-white/90 text-stone-700 hover:bg-white'
+                        ? 'bg-stone-950 dark:bg-stone-800 text-amber-300'
+                        : 'bg-white/90 dark:bg-stone-900/90 text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800'
                     }`}
                     aria-label="Bookmark tutor"
                   >
@@ -156,16 +156,16 @@ export default function DashboardTeachersTab() {
                 {/* Info */}
                 <div className="p-5">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-display text-base font-bold text-stone-900 group-hover:text-stone-700 transition">
+                    <h3 className="font-display text-base font-bold text-stone-900 dark:text-white group-hover:text-stone-700 dark:group-hover:text-stone-300 transition">
                       {teacher.name}
                     </h3>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       <BadgeCheck className="h-3.5 w-3.5" />
                       Verified
                     </span>
                   </div>
 
-                  <p className="mt-1 line-clamp-2 text-xs text-stone-500 leading-relaxed font-medium">
+                  <p className="mt-1 line-clamp-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
                     {teacher.headline}
                   </p>
 
@@ -174,7 +174,7 @@ export default function DashboardTeachersTab() {
                     {teacher.languages.map((lang) => (
                       <span
                         key={lang}
-                        className="rounded-lg bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-700"
+                        className="rounded-lg bg-stone-100 dark:bg-stone-800 px-2 py-0.5 text-[11px] font-semibold text-stone-700 dark:text-stone-300"
                       >
                         {lang}
                       </span>
@@ -188,9 +188,9 @@ export default function DashboardTeachersTab() {
                 <button
                   type="button"
                   onClick={() => setSelectedTeacherForBooking(teacher)}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-stone-950 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-stone-800 active:scale-95"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-stone-950 dark:bg-stone-100 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white active:scale-95"
                 >
-                  <Calendar className="h-3.5 w-3.5 text-amber-300" />
+                  <Calendar className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
                   Book 1-on-1 Lesson
                 </button>
               </div>
@@ -203,22 +203,22 @@ export default function DashboardTeachersTab() {
       {selectedTeacherForBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-stone-950/60 backdrop-blur-sm transition-opacity"
             onClick={() => setSelectedTeacherForBooking(null)}
           />
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-stone-200 bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl animate-fade-in">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-3">
                 <img
                   src={selectedTeacherForBooking.avatarUrl || undefined}
                   alt={selectedTeacherForBooking.name}
-                  className="h-12 w-12 rounded-2xl object-cover"
+                  className="h-12 w-12 rounded-2xl object-cover ring-2 ring-stone-200 dark:ring-stone-700"
                 />
                 <div>
-                  <h3 className="font-display font-bold text-stone-900 text-base">
+                  <h3 className="font-display font-bold text-stone-900 dark:text-white text-base">
                     Book Lesson with {selectedTeacherForBooking.name}
                   </h3>
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
                     ${selectedTeacherForBooking.hourlyRate} / 50 min session
                   </p>
                 </div>
@@ -226,7 +226,7 @@ export default function DashboardTeachersTab() {
               <button
                 type="button"
                 onClick={() => setSelectedTeacherForBooking(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
               >
                 <X className="h-4 w-4" />
               </button>

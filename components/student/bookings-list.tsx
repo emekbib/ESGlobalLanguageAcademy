@@ -43,18 +43,18 @@ export default function BookingsList({
   return (
     <div className="mt-8">
       <div className="mb-4">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-stone-500">
           Lesson Schedule
         </span>
-        <h2 className="font-display text-xl font-black tracking-tight text-slate-900">{title}</h2>
+        <h2 className="font-display text-xl font-black tracking-tight text-slate-900 dark:text-white">{title}</h2>
       </div>
 
       {bookings.length === 0 ? (
-        <div className="rounded-3xl border border-slate-200/80 bg-white px-6 py-10 text-center shadow-sm">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 px-6 py-10 text-center shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 dark:bg-stone-800 text-slate-400 dark:text-stone-500">
             <Calendar className="h-6 w-6" />
           </div>
-          <p className="mt-3 text-xs text-slate-500 font-medium">{emptyMessage}</p>
+          <p className="mt-3 text-xs text-slate-500 dark:text-stone-400 font-medium">{emptyMessage}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -65,23 +65,23 @@ export default function BookingsList({
             return (
               <div
                 key={booking.id}
-                className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm transition hover:shadow-md"
+                className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 px-5 py-4 shadow-sm transition hover:shadow-md hover:border-stone-300 dark:hover:border-stone-700"
               >
                 <Link
                   href={`/booking/${booking.id}`}
                   className="flex min-w-0 flex-1 items-center gap-4 transition group"
                 >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#2563eb]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 dark:bg-stone-800 text-[#2563eb] dark:text-amber-300">
                     <Clock className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-display font-bold text-slate-900 group-hover:text-[#2563eb] transition">
+                    <p className="font-display font-bold text-slate-900 dark:text-white group-hover:text-[#2563eb] dark:group-hover:text-amber-300 transition">
                       {start.date}
                     </p>
-                    <p className="text-xs text-slate-400 font-medium">
+                    <p className="text-xs text-slate-400 dark:text-stone-400 font-medium">
                       {start.time} – {end.time}
                     </p>
-                    <p className="text-xs text-slate-600 font-medium mt-0.5">
+                    <p className="text-xs text-slate-600 dark:text-stone-300 font-medium mt-0.5">
                       with {otherParty}
                     </p>
                   </div>
@@ -96,7 +96,7 @@ export default function BookingsList({
                   {viewerRole === 'student' && booking.status === 'completed' && (
                     <Link
                       href={`/booking/${booking.id}#review`}
-                      className="text-xs font-bold text-[#2563eb] hover:underline"
+                      className="text-xs font-bold text-[#2563eb] dark:text-amber-400 hover:underline"
                     >
                       Leave a review
                     </Link>

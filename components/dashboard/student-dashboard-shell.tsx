@@ -60,7 +60,7 @@ export default function StudentDashboardShell({
   const featuredTeachers = SAMPLE_TEACHERS.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#faf9f6]">
+    <div className="min-h-screen bg-[#faf9f6] dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors duration-200">
       {/* Intro.co Style Sidebar Navigation */}
       <DashboardSidebar
         fullName={profile.full_name || 'Student'}
@@ -87,14 +87,14 @@ export default function StudentDashboardShell({
           {activeTab === 'lessons' && (
             <div className="space-y-4 animate-fade-in">
               {/* Header Greeting */}
-              <div className="border-b border-stone-200/80 pb-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+              <div className="border-b border-stone-200/80 dark:border-stone-800 pb-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
                   Learner Portal
                 </span>
-                <h1 className="mt-0.5 font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950">
+                <h1 className="mt-0.5 font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950 dark:text-white">
                   Welcome back, {profile.full_name}
                 </h1>
-                <p className="mt-0.5 text-xs text-stone-500 font-medium">
+                <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
                   Manage your scheduled 1-on-1 video lessons and connect with verified native educators.
                 </p>
               </div>
@@ -117,17 +117,17 @@ export default function StudentDashboardShell({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
                       Top Faculty
                     </span>
-                    <h2 className="font-display text-xl font-black tracking-tight text-stone-950">
+                    <h2 className="font-display text-xl font-black tracking-tight text-stone-950 dark:text-white">
                       Featured Native Educators
                     </h2>
                   </div>
                   <button
                     type="button"
                     onClick={() => setActiveTab('teachers')}
-                    className="text-xs font-bold text-stone-950 hover:underline transition"
+                    className="text-xs font-bold text-stone-950 dark:text-white hover:underline transition"
                   >
                     View all tutors →
                   </button>
@@ -137,7 +137,7 @@ export default function StudentDashboardShell({
                   {featuredTeachers.map((teacher) => (
                     <div
                       key={teacher.id}
-                      className="flex flex-col justify-between overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-1 hover:border-stone-300 hover:shadow-lg"
+                      className="flex flex-col justify-between overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-1 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-lg"
                     >
                       <div>
                         <div className="flex items-center gap-3.5">
@@ -145,42 +145,42 @@ export default function StudentDashboardShell({
                             <img
                               src={teacher.avatarUrl}
                               alt={teacher.name}
-                              className="h-13 w-13 rounded-2xl object-cover ring-2 ring-stone-200 shadow-sm"
+                              className="h-13 w-13 rounded-2xl object-cover ring-2 ring-stone-200 dark:ring-stone-700 shadow-sm"
                             />
                           ) : (
-                            <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-stone-950 text-sm font-bold text-amber-300 shadow-sm">
+                            <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-sm font-bold text-amber-300 shadow-sm">
                               {teacher.name.charAt(0)}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <h4 className="truncate font-display text-sm font-bold text-stone-950">
+                            <h4 className="truncate font-display text-sm font-bold text-stone-950 dark:text-white">
                               {teacher.name}
                             </h4>
-                            <p className="truncate text-xs text-stone-400 font-medium">
+                            <p className="truncate text-xs text-stone-400 dark:text-stone-500 font-medium">
                               {teacher.languages.join(' · ')}
                             </p>
-                            <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-amber-600">
+                            <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                               <span>{teacher.rating}</span>
-                              <span className="text-stone-400 font-normal">({teacher.lessonsTaught} sessions)</span>
+                              <span className="text-stone-400 dark:text-stone-500 font-normal">({teacher.lessonsTaught} sessions)</span>
                             </div>
                           </div>
                         </div>
 
-                        <p className="mt-3 line-clamp-2 text-xs text-stone-500 font-medium leading-relaxed">
+                        <p className="mt-3 line-clamp-2 text-xs text-stone-500 dark:text-stone-400 font-medium leading-relaxed">
                           {teacher.headline}
                         </p>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3">
-                        <span className="font-display text-base font-black text-stone-950">
+                      <div className="mt-4 flex items-center justify-between border-t border-stone-100 dark:border-stone-800 pt-3">
+                        <span className="font-display text-base font-black text-stone-950 dark:text-white">
                           ${teacher.hourlyRate}
-                          <span className="text-xs font-normal text-stone-400">/hr</span>
+                          <span className="text-xs font-normal text-stone-400 dark:text-stone-500">/hr</span>
                         </span>
                         <button
                           type="button"
                           onClick={() => setSelectedTeacherForBooking(teacher)}
-                          className="rounded-2xl bg-stone-950 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-stone-800 active:scale-95"
+                          className="rounded-2xl bg-stone-950 dark:bg-stone-100 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white active:scale-95"
                         >
                           Book Lesson
                         </button>
@@ -232,27 +232,27 @@ export default function StudentDashboardShell({
 
       {/* In-Dashboard Quick Booking Modal */}
       {selectedTeacherForBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/50 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-stone-200 bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl">
             <button
               type="button"
               onClick={() => setSelectedTeacherForBooking(null)}
-              className="absolute right-4 top-4 rounded-xl p-1.5 text-stone-400 hover:bg-stone-100 transition"
+              className="absolute right-4 top-4 rounded-xl p-1.5 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
               ✕
             </button>
 
-            <div className="flex items-center gap-3.5 pb-4 border-b border-stone-100">
+            <div className="flex items-center gap-3.5 pb-4 border-b border-stone-100 dark:border-stone-800">
               <img
                 src={selectedTeacherForBooking.avatarUrl || undefined}
                 alt={selectedTeacherForBooking.name}
-                className="h-12 w-12 rounded-2xl object-cover ring-2 ring-stone-200 shadow-sm"
+                className="h-12 w-12 rounded-2xl object-cover ring-2 ring-stone-200 dark:ring-stone-700 shadow-sm"
               />
               <div>
-                <h3 className="font-display text-base font-bold text-stone-950">
+                <h3 className="font-display text-base font-bold text-stone-950 dark:text-white">
                   {selectedTeacherForBooking.name}
                 </h3>
-                <p className="text-xs text-stone-400 font-medium">
+                <p className="text-xs text-stone-400 dark:text-stone-500 font-medium">
                   {selectedTeacherForBooking.languages.join(' · ')} · ${selectedTeacherForBooking.hourlyRate}/hr
                 </p>
               </div>
