@@ -29,6 +29,7 @@ import AvailabilityEditor from './availability-editor';
 import BookingsList from '@/components/student/bookings-list';
 import ConnectPayoutButton from './connect-payout-button';
 import LogoutModal from '@/components/dashboard/logout-modal';
+import TeacherAccountTab from './teacher-account-tab';
 
 type BookingItem = {
   id: string;
@@ -69,7 +70,7 @@ export default function TeacherDashboardShell({
   upcomingBookings,
   pastBookings,
 }: TeacherDashboardShellProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts' | 'profile'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -108,6 +109,11 @@ export default function TeacherDashboardShell({
       label: 'Stripe Payouts',
       icon: CreditCard,
     },
+    {
+      id: 'profile',
+      label: 'Account Details',
+      icon: SlidersHorizontal,
+    },
   ];
 
   const TAB_TITLES: Record<string, string> = {
@@ -115,6 +121,7 @@ export default function TeacherDashboardShell({
     schedule: 'Weekly Availability Schedule',
     bookings: 'Student Lesson Roster',
     payouts: 'Direct Bank Payouts',
+    profile: 'Educator Profile & Account Details',
   };
 
   return (
@@ -429,13 +436,14 @@ export default function TeacherDashboardShell({
               </Link>
             )}
 
-            <Link
-              href="/teacher/onboarding"
-              className="inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-4 py-2 text-xs font-bold text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white"
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className="inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-4 py-2 text-xs font-bold text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white cursor-pointer"
             >
               <Pencil className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
               <span>Edit Details</span>
-            </Link>
+            </button>
 
             {/* Quick Theme Toggle */}
             <button
@@ -466,7 +474,12 @@ export default function TeacherDashboardShell({
 
         {/* Main Body */}
         <main className="mx-auto w-full max-w-5xl px-6 py-6 sm:px-10 space-y-6">
-          {!teacherProfile ? (
+          {activeTab === 'profile' ? (
+            <TeacherAccountTab
+              profile={profile}
+              teacherProfile={teacherProfile}
+            />
+          ) : !teacherProfile ? (
             <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm">
                 <Sparkles className="h-6 w-6" />
@@ -477,13 +490,14 @@ export default function TeacherDashboardShell({
               <p className="mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-stone-500 dark:text-stone-400 font-medium">
                 Set up your bio, languages, hourly rate, and experience to start appearing in the public teacher directory.
               </p>
-              <Link
-                href="/teacher/onboarding"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white"
+              <button
+                type="button"
+                onClick={() => setActiveTab('profile')}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white cursor-pointer"
               >
-                Build My Teacher Profile
+                <span>Build My Teacher Profile</span>
                 <ArrowRight className="h-4 w-4 text-amber-300 dark:text-stone-950" />
-              </Link>
+              </button>
             </div>
           ) : (
             <>
