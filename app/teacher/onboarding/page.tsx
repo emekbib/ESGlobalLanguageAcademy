@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, DollarSign, Video, GraduationCap, ShieldCheck } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
@@ -23,7 +23,7 @@ const AVAILABLE_LANGUAGES = [
 
 const SPECIALTY_OPTIONS = [
   'Conversational Fluency',
-  'Exam Preparation (IELTS / Goethe)',
+  'Exam Preparation (IELTS / Goethe / DELF)',
   'Business & Professional',
   'Grammar & Pronunciation',
   'Fidel Script / Alphabet',
@@ -41,7 +41,7 @@ export default function TeacherOnboardingPage() {
   const [teacherType, setTeacherType] = useState<TeacherType>('professional');
   const [languagesTaught, setLanguagesTaught] = useState<string[]>(['English']);
   const [languagesSpoken, setLanguagesSpoken] = useState<string>('English, Amharic');
-  const [hourlyRate, setHourlyRate] = useState<number>(30);
+  const [hourlyRate, setHourlyRate] = useState<number>(35);
   const [yearsExperience, setYearsExperience] = useState<number>(4);
   const [bio, setBio] = useState<string>('');
   const [specialties, setSpecialties] = useState<string[]>(['Conversational Fluency']);
@@ -167,77 +167,77 @@ export default function TeacherOnboardingPage() {
       <section className="mx-auto max-w-3xl px-6 pb-20 pt-28">
         <Link
           href="/teacher/dashboard"
-          className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-500 transition hover:text-stone-900"
+          className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 transition hover:text-stone-900"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to dashboard
+          Back to workspace
         </Link>
 
         {/* Header */}
         <div className="border-b border-stone-200/80 pb-6">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
             Educator Registration
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          </span>
+          <h1 className="mt-2 font-display text-3xl font-black tracking-tight text-stone-950 sm:text-4xl">
             Complete your teacher profile
           </h1>
-          <p className="mt-2 text-sm text-stone-500">
-            This information will be displayed to students in the public directory and booking pages.
+          <p className="mt-2 text-xs sm:text-sm text-stone-500 font-medium">
+            This information will be displayed to prospective language students in the public directory and booking pages.
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSaveProfile} className="mt-8 space-y-8">
-          {/* Teacher Type */}
-          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+          {/* 1. Teaching Category */}
+          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">
               1. Teaching Category
             </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => setTeacherType('professional')}
-                className={`rounded-2xl border p-4 text-left transition ${
+                className={`rounded-2xl border p-5 text-left transition ${
                   teacherType === 'professional'
-                    ? 'border-stone-950 bg-[#faf9f6] ring-2 ring-stone-950'
-                    : 'border-stone-200 bg-white hover:border-stone-400'
+                    ? 'border-stone-950 bg-stone-50/60 ring-2 ring-stone-950'
+                    : 'border-stone-200 bg-white hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-display font-bold text-stone-900">Professional Teacher</span>
-                  {teacherType === 'professional' && <Check className="h-4 w-4 text-stone-900" />}
+                  <span className="font-display font-bold text-stone-950 text-base">Professional Teacher</span>
+                  {teacherType === 'professional' && <Check className="h-4 w-4 text-stone-950" />}
                 </div>
-                <p className="mt-1 text-xs text-stone-500">
-                  Certified educator with university degree or accredited language certificate (Goethe, CELTA, etc.).
+                <p className="mt-2 text-xs text-stone-500 leading-relaxed font-medium">
+                  Certified educator with university degree or accredited language certification (Goethe, CELTA, DELF, etc.).
                 </p>
               </button>
 
               <button
                 type="button"
                 onClick={() => setTeacherType('community_tutor')}
-                className={`rounded-2xl border p-4 text-left transition ${
+                className={`rounded-2xl border p-5 text-left transition ${
                   teacherType === 'community_tutor'
-                    ? 'border-stone-950 bg-[#faf9f6] ring-2 ring-stone-950'
-                    : 'border-stone-200 bg-white hover:border-stone-400'
+                    ? 'border-stone-950 bg-stone-50/60 ring-2 ring-stone-950'
+                    : 'border-stone-200 bg-white hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-display font-bold text-stone-900">Community Tutor</span>
-                  {teacherType === 'community_tutor' && <Check className="h-4 w-4 text-stone-900" />}
+                  <span className="font-display font-bold text-stone-950 text-base">Community Tutor</span>
+                  {teacherType === 'community_tutor' && <Check className="h-4 w-4 text-stone-950" />}
                 </div>
-                <p className="mt-1 text-xs text-stone-500">
-                  Native or advanced speaker passionate about informal conversation practice and cultural exchange.
+                <p className="mt-2 text-xs text-stone-500 leading-relaxed font-medium">
+                  Native or near-native speaker passionate about conversational practice, vocabulary, and cultural immersion.
                 </p>
               </button>
             </div>
           </div>
 
-          {/* Languages */}
-          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+          {/* 2. Languages You Teach */}
+          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">
               2. Languages You Teach
             </h2>
-            <p className="mt-1 text-xs text-stone-400">
+            <p className="mt-1 text-xs text-stone-500 font-medium">
               Select all languages you are qualified to tutor:
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -248,13 +248,12 @@ export default function TeacherOnboardingPage() {
                     key={lang}
                     type="button"
                     onClick={() => toggleLanguage(lang)}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                    className={`rounded-full px-4 py-2 text-xs font-bold transition ${
                       isSelected
-                        ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
-                        : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
+                        ? 'bg-stone-950 text-white shadow-sm'
+                        : 'border border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
                     }`}
                   >
-                    {isSelected && <Check className="mr-1.5 inline h-3 w-3" />}
                     {lang}
                   </button>
                 );
@@ -262,142 +261,147 @@ export default function TeacherOnboardingPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                Other Languages You Speak
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                Languages You Speak (Comma separated)
               </label>
               <input
                 type="text"
                 value={languagesSpoken}
                 onChange={(e) => setLanguagesSpoken(e.target.value)}
-                placeholder="e.g. Amharic (Native), English (Fluent), German (B2)"
-                className="mt-2 h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-900 focus:bg-white"
+                placeholder="e.g. English (Native), Amharic (Fluent), German (B2)"
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
               />
             </div>
           </div>
 
-          {/* Rates & Experience */}
-          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-stone-500">
-              3. Rate &amp; Experience
+          {/* 3. Pricing & Experience */}
+          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">
+              3. Rate & Experience
             </h2>
-            <div className="mt-4 grid gap-6 sm:grid-cols-2">
+            <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                  Hourly Rate ($ USD)
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                  Hourly Rate (USD / 50-min lesson)
                 </label>
-                <div className="relative mt-2">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">
-                    $
-                  </span>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
                   <input
                     type="number"
-                    min={5}
-                    max={150}
-                    required
+                    min={10}
+                    max={200}
                     value={hourlyRate}
                     onChange={(e) => setHourlyRate(Number(e.target.value))}
-                    className="h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 pl-8 pr-4 text-sm font-semibold text-stone-900 outline-none transition focus:border-stone-900 focus:bg-white"
+                    className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 py-3 pl-8 pr-4 text-sm font-bold text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
                   />
                 </div>
+                <p className="mt-1.5 text-[11px] text-emerald-700 font-semibold">
+                  You earn ${hourlyRate} per completed lesson.
+                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                  Years of Experience
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                  Years of Teaching Experience
                 </label>
                 <input
                   type="number"
                   min={0}
-                  max={50}
-                  required
+                  max={40}
                   value={yearsExperience}
                   onChange={(e) => setYearsExperience(Number(e.target.value))}
-                  className="mt-2 h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 text-sm font-semibold text-stone-900 outline-none transition focus:border-stone-900 focus:bg-white"
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm font-bold text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
                 />
               </div>
             </div>
           </div>
 
-          {/* Bio & Specialties */}
-          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-stone-500">
-              4. Bio &amp; Specialties
+          {/* 4. Specialties */}
+          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">
+              4. Teaching Specialties
+            </h2>
+            <p className="mt-1 text-xs text-stone-500 font-medium">
+              Select topics you specialize in:
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {SPECIALTY_OPTIONS.map((spec) => {
+                const isSelected = specialties.includes(spec);
+                return (
+                  <button
+                    key={spec}
+                    type="button"
+                    onClick={() => toggleSpecialty(spec)}
+                    className={`rounded-full px-4 py-2 text-xs font-bold transition ${
+                      isSelected
+                        ? 'bg-stone-950 text-white shadow-sm'
+                        : 'border border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
+                    }`}
+                  >
+                    {spec}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 5. Biography & Video Intro */}
+          <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8 space-y-5">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400">
+              5. Profile Bio & Video Intro
             </h2>
 
-            <div className="mt-4">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                Teacher Bio &amp; Introduction
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                Teacher Headline &amp; Bio
               </label>
               <textarea
                 rows={5}
                 required
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Introduce yourself, your teaching philosophy, and what students will accomplish in your lessons…"
-                className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50/50 p-4 text-sm font-medium leading-relaxed text-stone-900 outline-none transition focus:border-stone-900 focus:bg-white"
+                placeholder="Introduce yourself, your teaching philosophy, and what students can expect in a 1-on-1 session with you..."
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 p-4 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
               />
             </div>
 
-            <div className="mt-6">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                Specialties
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                Video Introduction URL (YouTube or Vimeo)
               </label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {SPECIALTY_OPTIONS.map((spec) => {
-                  const active = specialties.includes(spec);
-                  return (
-                    <button
-                      key={spec}
-                      type="button"
-                      onClick={() => toggleSpecialty(spec)}
-                      className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
-                        active
-                          ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
-                          : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
-                      }`}
-                    >
-                      {spec}
-                    </button>
-                  );
-                })}
+              <div className="relative">
+                <Video className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+                <input
+                  type="url"
+                  value={videoIntroUrl}
+                  onChange={(e) => setVideoIntroUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 py-3 pl-11 pr-4 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
+                />
               </div>
-            </div>
-
-            <div className="mt-6">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
-                Video Introduction URL (Optional)
-              </label>
-              <input
-                type="url"
-                value={videoIntroUrl}
-                onChange={(e) => setVideoIntroUrl(e.target.value)}
-                placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
-                className="mt-2 h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-900 focus:bg-white"
-              />
+              <p className="mt-1.5 text-[11px] text-stone-400">
+                A 1–2 minute video welcoming prospective students significantly increases booking rates.
+              </p>
             </div>
           </div>
 
           {error && (
-            <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-medium text-red-700">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-medium text-red-700">
               {error}
-            </p>
+            </div>
           )}
 
           {/* Submit */}
-          <div className="flex justify-end gap-3 pt-4">
-            <Link
-              href="/teacher/dashboard"
-              className="inline-flex items-center rounded-full border border-stone-200 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
-            >
-              Cancel
-            </Link>
+          <div className="pt-2">
             <button
               type="submit"
               disabled={saving}
-              className="group inline-flex items-center gap-2 rounded-full bg-stone-950 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-stone-800 disabled:opacity-60"
+              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-stone-950 py-4 text-sm font-bold text-white shadow-xl transition hover:bg-stone-800 active:scale-[0.99] disabled:opacity-60"
             >
-              <span>{saving ? 'Publishing Profile…' : 'Save & Publish Profile'}</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <span>{saving ? 'Publishing Profile…' : 'Publish Teacher Profile & Enter Workspace'}</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-amber-300 transition-transform group-hover:translate-x-0.5">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
             </button>
           </div>
         </form>

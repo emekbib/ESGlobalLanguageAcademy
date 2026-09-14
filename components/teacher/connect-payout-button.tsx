@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, CreditCard, Loader2 } from 'lucide-react';
+import { CheckCircle2, CreditCard, Loader2, ArrowRight } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function ConnectPayoutButton({ connected }: { connected: boolean }) {
@@ -22,17 +22,50 @@ export default function ConnectPayoutButton({ connected }: { connected: boolean 
   }
 
   return (
-    <div className="rounded-3xl border bg-background p-8 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <div className="rounded-3xl border border-stone-200/80 bg-white p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Teacher payouts</p>
-          <h2 className="mt-2 text-2xl font-bold">{connected ? 'Payout account connected' : 'Set up your payout account'}</h2>
-          <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">Connect a Stripe Express account to receive 80% of each lesson after you mark it completed. The academy keeps a 20% platform commission.</p>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+            Escrow &amp; Banking
+          </span>
+          <h2 className="mt-1 font-display text-xl font-bold text-stone-950">
+            {connected ? 'Payout Account Active' : 'Set Up Direct Stripe Payouts'}
+          </h2>
+          <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-stone-500 font-medium">
+            Connect your bank account via Stripe Express to receive direct payouts after each 1-on-1 session is completed.
+          </p>
         </div>
-        {connected ? <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-600" /> : <CreditCard className="h-8 w-8 shrink-0 text-primary" />}
+        <div className="shrink-0 self-start">
+          {connected ? (
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+          ) : (
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-stone-100 text-stone-700">
+              <CreditCard className="h-5 w-5" />
+            </div>
+          )}
+        </div>
       </div>
-      {!connected && <button type="button" onClick={startOnboarding} disabled={loading} className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition hover:brightness-105 disabled:opacity-60">{loading && <Loader2 className="h-4 w-4 animate-spin" />}{loading ? 'Opening Stripe…' : 'Connect Stripe Express'}</button>}
-      {error && <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
+
+      {!connected && (
+        <button
+          type="button"
+          onClick={startOnboarding}
+          disabled={loading}
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-950 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-stone-800 disabled:opacity-60"
+        >
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>{loading ? 'Opening Stripe…' : 'Connect Stripe Express'}</span>
+          <ArrowRight className="h-3.5 w-3.5 text-amber-300" />
+        </button>
+      )}
+
+      {error && (
+        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

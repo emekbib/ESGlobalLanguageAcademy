@@ -6,15 +6,13 @@ import { useTeachers } from '@/hooks/use-teachers';
 import TeacherCard, { TeacherCardData } from '@/components/teacher/teacher-card';
 import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 
-
-
 const CATEGORIES = [
-  { id: 'all', label: 'All Teachers' },
+  { id: 'all', label: 'All Faculty' },
   { id: 'english', label: 'English' },
   { id: 'german', label: 'German' },
-  { id: 'amharic', label: 'Amharic (አማርኛ)' },
+  { id: 'amharic', label: 'Amharic' },
   { id: 'french', label: 'French' },
-  { id: 'arabic', label: 'Arabic (العربية)' },
+  { id: 'arabic', label: 'Arabic' },
   { id: 'oromo', label: 'Afan Oromo' },
   { id: 'italian', label: 'Italian' },
   { id: 'mandarin', label: 'Mandarin' },
@@ -41,26 +39,25 @@ export default function FeaturedTeachers() {
     }
   };
 
-  // Duplicate list for infinite moving animation when viewing "all"
   const isMarquee = selectedCategory === 'all';
   const marqueeList = [...filteredTeachers, ...filteredTeachers];
 
   return (
     <section className="mx-auto w-full max-w-6xl px-6 py-20">
-      {/* Header with Title and Sleek Nav Chevrons */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      {/* Header with Title and Sleek Nav Chevrons (Intro.co style) */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-stone-200/80 pb-6">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
-            Curated Faculty
-          </p>
-          <h2 className="mt-1 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            Top Teachers.{' '}
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+            Curated Native Faculty
+          </span>
+          <h2 className="mt-1 font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-950">
+            Top Educators.{' '}
             <span className="font-normal text-stone-400">
-              Access to verified native educators
+              Verified 1-on-1 language masters
             </span>
           </h2>
-          <p className="mt-2 text-sm text-stone-500">
-            Learn at your own pace with vetted professionals tailored to your goals.
+          <p className="mt-2 text-xs sm:text-sm text-stone-500 font-medium">
+            Book private lessons with certified native speakers tailored to your fluency goals.
           </p>
         </div>
 
@@ -69,33 +66,33 @@ export default function FeaturedTeachers() {
           <button
             type="button"
             onClick={() => scroll('left')}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition-all hover:border-stone-400 hover:bg-stone-50 active:scale-95"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:scale-95"
             aria-label="Scroll left"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={() => scroll('right')}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition-all hover:border-stone-400 hover:bg-stone-50 active:scale-95"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:scale-95"
             aria-label="Scroll right"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      {/* Category Pills (Clean tactile pills) */}
-      <div className="no-scrollbar mt-8 flex items-center gap-2 overflow-x-auto pb-2">
+      {/* Category Pills (Intro.co style) */}
+      <div className="no-scrollbar mt-6 flex items-center gap-2 overflow-x-auto pb-2">
         {CATEGORIES.map((cat) => {
           const active = selectedCategory === cat.id;
           return (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
                 active
-                  ? 'bg-stone-900 text-white shadow-sm'
+                  ? 'bg-stone-950 text-white shadow-sm'
                   : 'border border-stone-200/80 bg-white text-stone-600 hover:border-stone-400 hover:bg-stone-50 hover:text-stone-900'
               }`}
             >
@@ -105,10 +102,9 @@ export default function FeaturedTeachers() {
         })}
       </div>
 
-      {/* Teacher Cards Container — Completely hidden native scrollbar with auto-glide animation */}
+      {/* Teacher Cards Container */}
       <div className="relative mt-8 overflow-hidden">
         {isMarquee ? (
-          /* Smooth Infinite Moving Marquee (pauses on hover) */
           <div className="overflow-hidden">
             <div className="animate-marquee flex gap-6">
               {marqueeList.map((teacher, index) => (
@@ -119,7 +115,6 @@ export default function FeaturedTeachers() {
             </div>
           </div>
         ) : (
-          /* Filtered Category Smooth Scroll (native scrollbar hidden) */
           <div
             ref={scrollContainerRef}
             className="no-scrollbar flex gap-6 overflow-x-auto pb-4 scroll-smooth"

@@ -8,6 +8,7 @@ import {
   Globe2,
   BadgeCheck,
   Award,
+  ShieldCheck,
 } from 'lucide-react';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
@@ -20,8 +21,8 @@ import { getSampleTeacherById } from '@/lib/data/sample-teachers';
 export const dynamic = 'force-dynamic';
 
 const BADGE_LABEL: Record<TeacherType, string> = {
-  professional: 'Professional Teacher',
-  community_tutor: 'Community Tutor',
+  professional: 'Certified Professional Teacher',
+  community_tutor: 'Native Community Tutor',
 };
 
 export default async function TeacherProfilePage({
@@ -53,7 +54,7 @@ export default async function TeacherProfilePage({
   let languagesTaught: string[] = [];
   let languagesSpoken: string[] = [];
   let teacherType: TeacherType = 'professional';
-  let hourlyRate = 30;
+  let hourlyRate = 35;
   let rating = 5.0;
   let totalLessons = 0;
   let bio = '';
@@ -135,23 +136,23 @@ export default async function TeacherProfilePage({
       {/* Navigation Header */}
       <Navbar />
 
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-24 sm:pt-28">
+      <section className="mx-auto max-w-6xl px-6 pb-20 pt-28 sm:pt-32">
         {/* Back Link */}
         <Link
           href="/teachers"
-          className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-500 transition-colors hover:text-stone-900"
+          className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-500 transition-colors hover:text-stone-900"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to all teachers
+          Back to all educators
         </Link>
 
         <div className="flex flex-col gap-10 lg:flex-row">
           {/* Main Column */}
-          <div className="min-w-0 flex-1">
-            {/* Teacher Profile Header Card */}
-            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
+          <div className="min-w-0 flex-1 space-y-8">
+            {/* Teacher Profile Header Card (Intro.co luxury style) */}
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
-                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 shadow-inner sm:h-32 sm:w-32">
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-3xl border border-stone-200 bg-stone-100 shadow-md sm:h-32 sm:w-32">
                   {avatarUrl ? (
                     <img
                       src={avatarUrl}
@@ -159,7 +160,7 @@ export default async function TeacherProfilePage({
                       className="h-full w-full object-cover object-center"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-stone-100 text-4xl font-bold text-stone-400">
+                    <div className="flex h-full w-full items-center justify-center bg-stone-950 text-3xl font-bold text-amber-300">
                       {fullName.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -167,35 +168,35 @@ export default async function TeacherProfilePage({
 
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 bg-stone-50 px-3 py-1 text-xs font-semibold text-stone-700">
-                      <BadgeCheck className="h-3.5 w-3.5 text-sky-500" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 bg-stone-50 px-3 py-1 text-xs font-bold text-stone-800">
+                      <BadgeCheck className="h-3.5 w-3.5 text-emerald-600" />
                       {BADGE_LABEL[teacherType]}
                     </span>
-                    <span className="rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-800">
                       Verified Native
                     </span>
                   </div>
 
-                  <h1 className="mt-2.5 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+                  <h1 className="mt-3 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950">
                     {fullName}
                   </h1>
 
-                  <div className="mt-2 flex items-center gap-2 text-sm text-stone-600">
-                    <div className="flex items-center gap-1 font-semibold text-stone-900">
+                  <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-stone-600 font-medium">
+                    <div className="flex items-center gap-1 font-bold text-stone-950">
                       <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                       {rating.toFixed(1)}
                     </div>
                     <span className="text-stone-300">·</span>
-                    <span>{totalLessons.toLocaleString()} lessons taught</span>
+                    <span>{totalLessons.toLocaleString()} 1-on-1 sessions taught</span>
                   </div>
 
                   {/* Languages Taught */}
                   <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs font-medium text-stone-500 mr-1">Teaches:</span>
+                    <span className="text-xs font-semibold text-stone-400 mr-1">Teaches:</span>
                     {languagesTaught.map((lang: string) => (
                       <span
                         key={lang}
-                        className="rounded-full bg-stone-900 px-3 py-1 text-xs font-semibold text-white"
+                        className="rounded-full bg-stone-950 px-3.5 py-1 text-xs font-bold text-white shadow-sm"
                       >
                         {lang}
                       </span>
@@ -204,9 +205,9 @@ export default async function TeacherProfilePage({
 
                   {/* Also Speaks */}
                   {languagesSpoken && languagesSpoken.length > 0 && (
-                    <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500">
+                    <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500 font-medium">
                       <Globe2 className="h-3.5 w-3.5 text-stone-400" />
-                      Also speaks: <span className="text-stone-700 font-medium">{languagesSpoken.join(', ')}</span>
+                      Also speaks: <span className="text-stone-800 font-semibold">{languagesSpoken.join(', ')}</span>
                     </p>
                   )}
                 </div>
@@ -215,8 +216,11 @@ export default async function TeacherProfilePage({
 
             {/* Video Intro (if available) */}
             {videoIntroUrl && (
-              <div className="mt-8 overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="mb-4 font-display text-lg font-bold text-stone-900">
+              <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                  Faculty Preview
+                </span>
+                <h2 className="mt-1 mb-4 font-display text-lg font-bold text-stone-950">
                   Video Introduction
                 </h2>
                 <a
@@ -235,25 +239,28 @@ export default async function TeacherProfilePage({
             )}
 
             {/* About Section */}
-            <div className="mt-8 overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="font-display text-xl font-bold tracking-tight text-stone-900">
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                Biography &amp; Methodology
+              </span>
+              <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-stone-950">
                 About {firstName}
               </h2>
-              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-700 sm:text-base">
+              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 font-medium sm:text-base">
                 {bio}
               </p>
 
               {/* Teaching Specialties */}
               {specialties && specialties.length > 0 && (
                 <div className="mt-8 border-t border-stone-100 pt-6">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-stone-400">
+                  <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
                     Teaching Specialties
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {specialties.map((s: string) => (
                       <span
                         key={s}
-                        className="rounded-full border border-stone-200/80 bg-[#faf9f6] px-3.5 py-1.5 text-xs font-semibold text-stone-800"
+                        className="rounded-full border border-stone-200 bg-stone-50/60 px-4 py-1.5 text-xs font-semibold text-stone-800"
                       >
                         {s}
                       </span>
@@ -265,12 +272,12 @@ export default async function TeacherProfilePage({
               {/* Credentials & Education */}
               {credentials && credentials.length > 0 && (
                 <div className="mt-8 border-t border-stone-100 pt-6">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-stone-400">
-                    Credentials & Education
+                  <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
+                    Accreditations &amp; Degrees
                   </p>
                   <ul className="space-y-2.5">
                     {credentials.map((c: string) => (
-                      <li key={c} className="flex items-center gap-2.5 text-sm text-stone-700">
+                      <li key={c} className="flex items-center gap-2.5 text-xs sm:text-sm text-stone-700 font-medium">
                         <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600" />
                         <span>{c}</span>
                       </li>
@@ -280,29 +287,29 @@ export default async function TeacherProfilePage({
               )}
 
               {/* Experience Badge */}
-              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 bg-[#faf9f6] p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-white shadow-sm">
+              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 bg-stone-50/50 p-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 text-amber-300 shadow-sm">
                   <GraduationCap className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-display text-xl font-bold text-stone-900">
-                    {yearsExperience}+ Years
+                  <p className="font-display text-lg font-bold text-stone-950">
+                    {yearsExperience}+ Years Experience
                   </p>
-                  <p className="text-xs text-stone-500">
-                    Professional language teaching experience
+                  <p className="text-xs text-stone-500 font-medium">
+                    Verified native educator with direct 1-on-1 student instruction
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Student Reviews */}
-            <div className="mt-8 overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
+            <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8">
               <ReviewsSection reviews={reviews} />
             </div>
           </div>
 
           {/* Right Column: Sticky Booking Card */}
-          <aside className="lg:w-[360px] lg:shrink-0">
+          <aside className="lg:w-[380px] lg:shrink-0">
             <div className="lg:sticky lg:top-28">
               <BookingCard teacherId={id} hourlyRate={hourlyRate} />
             </div>
@@ -314,16 +321,16 @@ export default async function TeacherProfilePage({
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-4 shadow-xl backdrop-blur-md lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-stone-400">Lesson Rate</p>
-            <p className="font-display text-xl font-bold text-stone-900">
-              ${hourlyRate}/hr
+            <p className="text-[11px] font-bold text-stone-400">Lesson Rate</p>
+            <p className="font-display text-xl font-black text-stone-950">
+              ${hourlyRate} / 50 min
             </p>
           </div>
           <Link
             href={`/booking/${id}`}
-            className="inline-flex items-center justify-center rounded-full bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-stone-800"
+            className="inline-flex items-center justify-center rounded-full bg-stone-950 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-stone-800"
           >
-            Book a Lesson
+            Book Lesson
           </Link>
         </div>
       </div>

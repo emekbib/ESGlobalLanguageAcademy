@@ -2,12 +2,14 @@ import Link from 'next/link';
 import {
   ArrowRight,
   CheckCircle2,
-  CircleAlert,
+  Calendar,
   Clock,
   Eye,
   GraduationCap,
   Pencil,
   Sparkles,
+  DollarSign,
+  Users,
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
@@ -114,123 +116,141 @@ export default async function TeacherDashboardPage() {
     <main className="min-h-screen bg-[#faf9f6] text-stone-900">
       <Navbar />
 
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-28">
+      <section className="mx-auto max-w-5xl px-6 pb-20 pt-28 space-y-8">
         {/* Welcome Header */}
-        <div className="border-b border-stone-200/80 pb-8">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
-            Educator Workspace
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            Welcome back, {profile.full_name}
-          </h1>
-          <p className="mt-2 text-sm text-stone-500">
-            Manage your teaching profile, availability calendar, and student bookings.
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-stone-200/80 pb-8">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+              Educator Workspace
+            </span>
+            <h1 className="mt-1 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950">
+              Welcome back, {profile.full_name}
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-stone-500 font-medium">
+              Manage your teaching profile, weekly availability calendar, and student lesson roster.
+            </p>
+          </div>
+
+          {teacherProfile && (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/teacher/onboarding"
+                className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-5 py-2.5 text-xs font-bold text-stone-800 shadow-sm transition hover:bg-stone-50"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit Profile
+              </Link>
+              {teacherProfile.is_published && (
+                <Link
+                  href={`/teachers/${teacherProfile.id}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-stone-950 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-stone-800"
+                >
+                  <Eye className="h-3.5 w-3.5 text-amber-300" />
+                  View Public Profile
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         {!teacherProfile ? (
-          <div className="mt-10 rounded-3xl border border-stone-200/80 bg-white p-8 shadow-sm">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 text-white shadow-md">
+          <div className="rounded-3xl border border-stone-200/80 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 text-amber-300 shadow-sm">
               <Sparkles className="h-6 w-6" />
             </div>
-            <h2 className="mt-5 font-display text-2xl font-bold text-stone-900">
+            <h2 className="mt-5 font-display text-2xl font-black text-stone-950">
               Your profile is waiting for you
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-500">
+            <p className="mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-stone-500 font-medium">
               Set up your bio, languages, hourly rate, and experience to start appearing in the public
               teacher directory.
             </p>
             <Link
               href="/teacher/onboarding"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-stone-800"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-950 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-stone-800"
             >
-              Build my profile
-              <ArrowRight className="h-4 w-4" />
+              Build My Teacher Profile
+              <ArrowRight className="h-4 w-4 text-amber-300" />
             </Link>
           </div>
         ) : (
-          <div className="mt-10 space-y-8">
-            {/* Status Grid */}
-            <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-              <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-sm sm:p-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-stone-400">
-                      Profile Status
-                    </p>
-                    <h2 className="mt-1 font-display text-2xl font-bold text-stone-900">
-                      {teacherProfile.is_published ? 'Live in Directory' : 'Saved Privately'}
-                    </h2>
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      teacherProfile.is_published
-                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                        : 'border border-amber-200 bg-amber-50 text-amber-700'
-                    }`}
-                  >
-                    {teacherProfile.is_published ? '● Live' : '○ Private'}
-                  </span>
+          <div className="space-y-8">
+            {/* 4-Card Luxury Metric Grid (Intro.co style) */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Metric 1: Rate */}
+              <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-stone-950 text-amber-300 shadow-sm">
+                  <DollarSign className="h-5 w-5" />
                 </div>
-
-                <p className="mt-4 text-sm leading-relaxed text-stone-600">
-                  {teacherProfile.is_published
-                    ? 'Students can discover your profile in the directory and book slots from your calendar.'
-                    : complete
-                    ? 'Your profile is ready. Publish it to start accepting new students.'
-                    : 'Complete your profile details before publishing to students.'}
-                </p>
-
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Link
-                    href="/teacher/onboarding"
-                    className="inline-flex items-center gap-2 rounded-full bg-stone-950 px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-stone-800"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Edit Profile
-                  </Link>
-                  {teacherProfile.is_published && (
-                    <Link
-                      href={`/teachers/${teacherProfile.id}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-6 py-2.5 text-xs font-semibold text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      View Public Profile
-                    </Link>
-                  )}
+                <div className="mt-4">
+                  <span className="font-display text-3xl font-black text-stone-950">
+                    ${teacherProfile.hourly_rate}
+                  </span>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                    Per 50-Min Lesson
+                  </p>
+                  <p className="mt-2 text-xs font-semibold text-emerald-700">
+                    100% Direct Payout
+                  </p>
                 </div>
               </div>
 
-              {/* Profile Stats Card */}
-              <aside className="rounded-3xl border border-stone-200/80 bg-stone-950 p-6 text-white shadow-lg sm:p-7">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
+              {/* Metric 2: Upcoming Lessons */}
+              <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div className="mt-4">
+                  <span className="font-display text-3xl font-black text-stone-950">
+                    {upcomingBookings.length}
+                  </span>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                    Upcoming Bookings
+                  </p>
+                  <p className="mt-2 text-xs font-semibold text-stone-600">
+                    Next session scheduled
+                  </p>
+                </div>
+              </div>
+
+              {/* Metric 3: Experience */}
+              <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div className="mt-4">
+                  <span className="font-display text-3xl font-black text-stone-950">
+                    {teacherProfile.years_experience} Yrs
+                  </span>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                    Teaching Experience
+                  </p>
+                  <p className="mt-2 text-xs font-semibold text-amber-700">
+                    Verified Educator
+                  </p>
+                </div>
+              </div>
+
+              {/* Metric 4: Directory Status */}
+              <div className="rounded-3xl border border-stone-200/80 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-stone-100 text-stone-800">
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
-                <h2 className="mt-4 font-display text-lg font-bold text-white">Overview</h2>
-                <dl className="mt-6 space-y-4 text-xs">
-                  <div className="flex justify-between gap-4 border-b border-white/10 pb-3">
-                    <dt className="text-stone-400">Languages Taught</dt>
-                    <dd className="font-semibold text-white">
-                      {teacherProfile.languages_taught?.length ?? 0}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4 border-b border-white/10 pb-3">
-                    <dt className="text-stone-400">Experience</dt>
-                    <dd className="font-semibold text-white">
-                      {teacherProfile.years_experience} Years
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-stone-400">Lesson Rate</dt>
-                    <dd className="font-semibold text-white">
-                      ${teacherProfile.hourly_rate} / hr
-                    </dd>
-                  </div>
-                </dl>
-              </aside>
+                <div className="mt-4">
+                  <span className="font-display text-xl font-black text-stone-950">
+                    {teacherProfile.is_published ? 'Live in Directory' : 'Private Draft'}
+                  </span>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                    Profile Visibility
+                  </p>
+                  <p className="mt-2 text-xs font-semibold text-emerald-700">
+                    {teacherProfile.is_published ? '● Accepting Students' : '○ Unpublished'}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Payout & Availability */}
+            {/* Payout Setup & Availability */}
             <div className="space-y-6">
               <ConnectPayoutButton
                 connected={Boolean(
@@ -240,18 +260,18 @@ export default async function TeacherDashboardPage() {
               <AvailabilityEditor teacherId={teacherProfile.id} />
             </div>
 
-            {/* Bookings */}
+            {/* Lessons Section */}
             {(upcomingBookings.length > 0 || pastBookings.length > 0) && (
               <div className="space-y-6">
                 <BookingsList
                   bookings={upcomingBookings}
-                  title="Upcoming Lessons"
-                  emptyMessage="No upcoming lessons scheduled."
+                  title="Upcoming Student Lessons"
+                  emptyMessage="No upcoming student lessons scheduled."
                   viewerRole="teacher"
                 />
                 <BookingsList
                   bookings={pastBookings}
-                  title="Past Lessons"
+                  title="Lesson History"
                   emptyMessage="Your past lesson history will appear here."
                   viewerRole="teacher"
                 />

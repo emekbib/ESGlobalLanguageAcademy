@@ -10,13 +10,14 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircle,
+  ShieldCheck,
+  ArrowRight,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { generateSlots } from '@/lib/availability/slots';
 import type { TeacherAvailability } from '@/lib/types/database';
 import type { Booking as SlotBooking } from '@/lib/availability/slots';
-import { Button } from '@/components/ui/button';
 
 const LESSON_LENGTHS = [30, 45, 60];
 const DAYS_PER_PAGE = 5;
@@ -48,7 +49,6 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
       const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       if (active) setViewerTz(browserTz);
 
-      // Provide realistic schedule for sample teachers
       if (teacherId.startsWith('sample-')) {
         const sampleAvail: TeacherAvailability[] = [1, 2, 3, 4, 5].map((day) => ({
           id: `avail-${day}`,
@@ -123,18 +123,8 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
 
   const pricePerLesson = useMemo(() => {
     const hourly = Number(hourlyRate);
-    return Math.round((hourly * lessonMinutes) / 60 * 100) / 100;
+    return Math.round(((hourly * lessonMinutes) / 60) * 100) / 100;
   }, [hourlyRate, lessonMinutes]);
-
-  const bookingHref = useMemo(() => {
-    if (!selectedSlot) return `/booking/${teacherId}`;
-    const params = new URLSearchParams({
-      start: selectedSlot.startUtc,
-      end: selectedSlot.endUtc,
-      duration: String(lessonMinutes),
-    });
-    return `/booking/${teacherId}?${params.toString()}`;
-  }, [selectedSlot, lessonMinutes, teacherId]);
 
   const canGoBack = dayOffset > 0;
   const canGoForward = dayOffset + DAYS_PER_PAGE < grouped.length;
@@ -188,16 +178,18 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-6 text-stone-500 shadow-sm">
+      <div className="flex items-center gap-3 rounded-3xl border border-stone-200 bg-white p-6 text-stone-500 shadow-sm">
         <Loader2 className="h-5 w-5 animate-spin text-stone-900" />
-        <span className="text-sm font-medium">Checking calendar availability…</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+          Checking calendar availability…
+        </span>
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50/50 p-6 text-red-700">
+      <div className="flex items-center gap-3 rounded-3xl border border-red-200 bg-red-50/50 p-6 text-red-700">
         <AlertCircle className="h-5 w-5 shrink-0" />
         <p className="text-sm font-medium">We couldn&apos;t load availability. Please refresh.</p>
       </div>
@@ -205,29 +197,35 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm">
-      {/* Price Header */}
-      <div className="border-b border-stone-200/70 bg-[#faf9f6] p-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Lesson Rate</p>
-        <p className="mt-1 font-display text-3xl font-bold tracking-tight text-stone-900">
-          ${pricePerLesson}
-          <span className="text-sm font-normal text-stone-500"> / {lessonMinutes} min</span>
-        </p>
+    <div className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+      {/* Price Header (Intro.co style) */}
+      <div className="border-b border-stone-200/80 bg-stone-50/60 p-6 sm:p-7">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+          Lesson Investment
+        </span>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-950">
+            ${pricePerLesson}
+          </span>
+          <span className="text-xs font-semibold text-stone-500">/ {lessonMinutes} min session</span>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-6 p-6">
-        {/* Lesson length selector */}
+      <div className="flex flex-col gap-6 p-6 sm:p-7">
+        {/* Lesson duration selector */}
         <div>
-          <p className="mb-2.5 text-xs font-bold uppercase tracking-wider text-stone-500">Duration</p>
+          <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+            Session Length
+          </p>
           <div className="grid grid-cols-3 gap-2">
             {LESSON_LENGTHS.map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => handleLessonChange(m)}
-                className={`rounded-xl border py-2 text-center text-xs font-semibold transition-all ${
+                className={`rounded-2xl border py-2.5 text-center text-xs font-bold transition-all ${
                   lessonMinutes === m
-                    ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
+                    ? 'border-stone-950 bg-stone-950 text-white shadow-sm'
                     : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
                 }`}
               >
@@ -240,16 +238,16 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
         {/* Mini calendar */}
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-500">
+            <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-500">
               <CalendarDays className="h-4 w-4 text-stone-700" />
-              Available Times
+              Available Schedule
             </p>
             <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => setDayOffset((o) => Math.max(0, o - DAYS_PER_PAGE))}
                 disabled={!canGoBack}
-                className="flex h-7 w-7 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:border-stone-400 hover:bg-stone-50 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 transition hover:border-stone-400 hover:bg-stone-50 disabled:opacity-30"
                 aria-label="Previous days"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -258,7 +256,7 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
                 type="button"
                 onClick={() => setDayOffset((o) => o + DAYS_PER_PAGE)}
                 disabled={!canGoForward}
-                className="flex h-7 w-7 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:border-stone-400 hover:bg-stone-50 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 transition hover:border-stone-400 hover:bg-stone-50 disabled:opacity-30"
                 aria-label="Next days"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -267,29 +265,30 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
           </div>
 
           {slots.length === 0 ? (
-            <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-6 text-center">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-6 text-center">
               <Clock className="mx-auto h-5 w-5 text-stone-400" />
-              <p className="mt-2 text-xs text-stone-500">
-                No availability set for these dates.
+              <p className="mt-2 text-xs text-stone-500 font-medium">
+                No open slots found for these dates.
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {visibleDays.map(({ day, slots: daySlots }) => (
                 <div key={day}>
-                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-400">{day}</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                    {day}
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
                     {daySlots.map((slot) => {
-                      const isSelected =
-                        selectedSlot?.startUtc === slot.startUtc;
+                      const isSelected = selectedSlot?.startUtc === slot.startUtc;
                       return (
                         <button
                           key={slot.startUtc}
                           type="button"
                           onClick={() => setSelectedSlot(slot)}
-                          className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
+                          className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
                             isSelected
-                              ? 'border-stone-900 bg-stone-900 text-white shadow-sm'
+                              ? 'border-stone-950 bg-stone-950 text-white shadow-sm'
                               : 'border-stone-200 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50'
                           }`}
                         >
@@ -305,9 +304,9 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
         </div>
 
         {/* CTA */}
-        <div className="flex flex-col gap-2.5 pt-2">
+        <div className="flex flex-col gap-3 pt-2">
           {bookingError && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
               {bookingError}
             </div>
           )}
@@ -316,33 +315,38 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
             type="button"
             onClick={handleBookSlot}
             disabled={bookingInProgress}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-stone-900 py-3 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-stone-800 hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
+            className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-stone-950 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-stone-800 active:scale-95 disabled:opacity-60"
           >
             {bookingInProgress ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Preparing Checkout…
               </>
-            ) : selectedSlot ? (
-              'Book Selected Slot'
             ) : (
-              'Instant Book Lesson'
+              <>
+                <span>{selectedSlot ? 'Book Selected Slot' : 'Instant Book Lesson'}</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-amber-300 transition-transform group-hover:translate-x-0.5">
+                  <ArrowRight className="h-3 w-3" />
+                </span>
+              </>
             )}
           </button>
+
           <Link
             href="/auth"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 transition-colors hover:border-stone-400 hover:bg-stone-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-200 bg-white py-3 text-xs font-bold uppercase tracking-wider text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
           >
-            <MessageCircle className="h-4 w-4" />
+            <MessageCircle className="h-3.5 w-3.5 text-stone-400" />
             Message Teacher
           </Link>
         </div>
 
-        {selectedSlot && (
-          <p className="text-center text-xs font-medium text-stone-500">
-            Selected: {selectedSlot.dayLocal}, {selectedSlot.startLocal} – {selectedSlot.endLocal}
+        <div className="border-t border-stone-150 pt-3 text-center">
+          <p className="flex items-center justify-center gap-1.5 text-[11px] text-stone-400 font-medium">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+            100% Escrow Protection · Instant Confirmation
           </p>
-        )}
+        </div>
       </div>
     </div>
   );
