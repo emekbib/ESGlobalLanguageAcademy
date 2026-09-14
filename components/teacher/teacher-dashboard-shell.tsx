@@ -453,7 +453,7 @@ export default function TeacherDashboardShell({
                       </span>
                       <div className="mt-1 flex items-baseline gap-1.5">
                         <span className="font-display text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                          ${teacherProfile.hourly_rate}
+                          ${teacherProfile.hourly_rate ?? 35}
                         </span>
                         <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">/ 50 min</span>
                       </div>
@@ -469,7 +469,7 @@ export default function TeacherDashboardShell({
                       </span>
                       <div className="mt-1 flex items-baseline gap-2">
                         <span className="font-display text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                          {upcomingBookings.length}
+                          {upcomingBookings?.length ?? 0}
                         </span>
                         <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Sessions</span>
                       </div>
@@ -481,7 +481,7 @@ export default function TeacherDashboardShell({
                       </span>
                       <div className="mt-1 flex items-baseline gap-1.5">
                         <span className="font-display text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                          {teacherProfile.years_experience} Yrs
+                          {teacherProfile.years_experience ?? 1} Yrs
                         </span>
                         <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Verified</span>
                       </div>
