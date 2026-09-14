@@ -517,63 +517,149 @@ export default function TeacherDashboardShell({
                     </p>
                   </div>
 
-                  {/* 4-Metric Executive Strip */}
-                  <div className="grid grid-cols-2 divide-y divide-stone-100 dark:divide-stone-800 sm:grid-cols-4 sm:divide-y-0 sm:divide-x sm:divide-stone-100 sm:dark:divide-stone-800 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm overflow-hidden">
-                    <div className="flex flex-col justify-center px-5 py-4 text-left">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                        Lesson Rate
-                      </span>
-                      <div className="mt-1 flex items-baseline gap-1.5">
-                        <span className="font-display text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                          ${teacherProfile.hourly_rate ?? 35}
-                        </span>
-                        <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">/ 50 min</span>
-                      </div>
-                    </div>
-
+                  {/* 4-Metric Executive Cards */}
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                    {/* Card 1: Lesson Rate */}
                     <button
                       type="button"
-                      onClick={() => setActiveTab('bookings')}
-                      className="flex flex-col justify-center px-5 py-4 text-left transition hover:bg-stone-50/80 dark:hover:bg-stone-800/80"
+                      onClick={() => setActiveTab('profile')}
+                      className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/80 dark:hover:border-emerald-400/40 hover:shadow-md cursor-pointer overflow-hidden"
                     >
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                        Upcoming Bookings
-                      </span>
-                      <div className="mt-1 flex items-baseline gap-2">
-                        <span className="font-display text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                          {upcomingBookings?.length ?? 0}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 shadow-sm ring-1 ring-emerald-500/20">
+                          <DollarSign className="h-4 w-4" />
+                        </div>
+                        <span className="rounded-full border border-stone-200/60 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-800/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
+                          Per 50 min
                         </span>
-                        <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Sessions</span>
+                      </div>
+                      <div className="mt-4">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
+                            ${teacherProfile.hourly_rate ?? 35}
+                          </span>
+                          <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">USD</span>
+                        </div>
+                        <p className="mt-1 text-xs font-bold text-stone-800 dark:text-stone-200">
+                          Lesson Base Rate
+                        </p>
+                        <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+                          <span>Adjust hourly pricing</span>
+                          <ArrowRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
+                        </div>
                       </div>
                     </button>
 
-                    <div className="flex flex-col justify-center px-5 py-4 text-left">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                        Experience
-                      </span>
-                      <div className="mt-1 flex items-baseline gap-1.5">
-                        <span className="font-display text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                          {teacherProfile.years_experience ?? 1} Yrs
+                    {/* Card 2: Upcoming Bookings */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('bookings')}
+                      className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/80 dark:hover:border-amber-400/40 hover:shadow-md cursor-pointer overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300 shadow-sm ring-1 ring-amber-500/20">
+                          <CalendarDays className="h-4 w-4" />
+                        </div>
+                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                          Roster
                         </span>
-                        <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Verified</span>
+                      </div>
+                      <div className="mt-4">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
+                            {upcomingBookings?.length ?? 0}
+                          </span>
+                          <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">Sessions</span>
+                        </div>
+                        <p className="mt-1 text-xs font-bold text-stone-800 dark:text-stone-200">
+                          Upcoming Bookings
+                        </p>
+                        <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+                          <span>View student lessons</span>
+                          <ArrowRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Card 3: Experience */}
+                    <div className="relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400 shadow-sm ring-1 ring-indigo-500/20">
+                          <GraduationCap className="h-4 w-4" />
+                        </div>
+                        <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                          Verified
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
+                            {teacherProfile.years_experience ?? 1}
+                          </span>
+                          <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">Years</span>
+                        </div>
+                        <p className="mt-1 text-xs font-bold text-stone-800 dark:text-stone-200">
+                          Teaching Tenure
+                        </p>
+                        <p className="mt-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+                          Accredited educator
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-col justify-center px-5 py-4 text-left">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                        Directory Status
-                      </span>
-                      <div className="mt-1 flex items-center gap-1.5">
-                        <span
-                          className={`h-2 w-2 rounded-full ${
-                            teacherProfile.is_published ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-stone-600'
+                    {/* Card 4: Directory Status */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (teacherProfile.is_published && teacherProfile.id) {
+                          window.open(`/teachers/${teacherProfile.id}`, '_blank');
+                        } else {
+                          setActiveTab('profile');
+                        }
+                      }}
+                      className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-stone-200/80 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-4 sm:p-5 text-left shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/80 dark:hover:border-emerald-400/40 hover:shadow-md cursor-pointer overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm ${
+                            teacherProfile.is_published
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 ring-1 ring-emerald-500/20'
+                              : 'bg-stone-200/50 text-stone-500 dark:bg-stone-800 dark:text-stone-400'
                           }`}
-                        />
-                        <span className="font-display text-sm font-bold text-stone-950 dark:text-white">
-                          {teacherProfile.is_published ? 'Live in Directory' : 'Draft'}
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                        </div>
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            teacherProfile.is_published
+                              ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                              : 'border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
+                          }`}
+                        >
+                          {teacherProfile.is_published && (
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            </span>
+                          )}
+                          <span>{teacherProfile.is_published ? 'Live' : 'Draft'}</span>
                         </span>
                       </div>
-                    </div>
+                      <div className="mt-4">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950 dark:text-white">
+                            {teacherProfile.is_published ? 'Active' : 'Draft'}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs font-bold text-stone-800 dark:text-stone-200">
+                          Directory Status
+                        </p>
+                        <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
+                          <span>{teacherProfile.is_published ? 'View public profile' : 'Complete setup to publish'}</span>
+                          <ArrowRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
+                        </div>
+                      </div>
+                    </button>
                   </div>
 
                   {/* Payout Setup */}
