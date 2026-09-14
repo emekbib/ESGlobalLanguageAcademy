@@ -87,7 +87,7 @@ export default function DashboardMetrics({
             Native Educators
           </p>
           <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-stone-600">
-            <span>Across 8 languages</span>
+            <span>Across 5 languages</span>
           </p>
         </div>
       </div>

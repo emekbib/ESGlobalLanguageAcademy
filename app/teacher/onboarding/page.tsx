@@ -10,24 +10,20 @@ import Footer from '@/components/layout/footer';
 import type { TeacherType } from '@/lib/types/database';
 
 const AVAILABLE_LANGUAGES = [
-  'English',
   'Amharic',
-  'German',
-  'French',
-  'Afan Oromo',
-  'Arabic',
-  'Italian',
-  'Mandarin',
-  'Spanish',
+  'Tigrigna',
+  'Afaan Oromo',
+  'Somali',
+  'Swahili',
 ];
 
 const SPECIALTY_OPTIONS = [
   'Conversational Fluency',
-  'Exam Preparation (IELTS / Goethe / DELF)',
-  'Business & Professional',
+  'Reading & Writing (Fidel / Qubee / Latin)',
+  'Heritage & Family Connection',
   'Grammar & Pronunciation',
-  'Fidel Script / Alphabet',
   'Children & Beginners',
+  'Business & Professional',
 ];
 
 export default function TeacherOnboardingPage() {
@@ -39,8 +35,8 @@ export default function TeacherOnboardingPage() {
   const [error, setError] = useState('');
 
   const [teacherType, setTeacherType] = useState<TeacherType>('professional');
-  const [languagesTaught, setLanguagesTaught] = useState<string[]>(['English']);
-  const [languagesSpoken, setLanguagesSpoken] = useState<string>('English, Amharic');
+  const [languagesTaught, setLanguagesTaught] = useState<string[]>(['Amharic']);
+  const [languagesSpoken, setLanguagesSpoken] = useState<string>('Amharic, English');
   const [hourlyRate, setHourlyRate] = useState<number>(35);
   const [yearsExperience, setYearsExperience] = useState<number>(4);
   const [bio, setBio] = useState<string>('');

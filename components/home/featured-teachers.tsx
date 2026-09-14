@@ -8,14 +8,11 @@ import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 
 const CATEGORIES = [
   { id: 'all', label: 'All Faculty' },
-  { id: 'english', label: 'English' },
-  { id: 'german', label: 'German' },
   { id: 'amharic', label: 'Amharic' },
-  { id: 'french', label: 'French' },
-  { id: 'arabic', label: 'Arabic' },
-  { id: 'oromo', label: 'Afan Oromo' },
-  { id: 'italian', label: 'Italian' },
-  { id: 'mandarin', label: 'Mandarin' },
+  { id: 'tigrigna', label: 'Tigrigna' },
+  { id: 'oromo', label: 'Afaan Oromo' },
+  { id: 'somali', label: 'Somali' },
+  { id: 'swahili', label: 'Swahili' },
 ];
 
 export default function FeaturedTeachers() {

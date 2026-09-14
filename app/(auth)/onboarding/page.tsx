@@ -18,21 +18,18 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { UserRole } from '@/lib/types/database';
 
 const LEARNING_LANGUAGES = [
-  'German',
   'Amharic',
-  'English',
-  'French',
-  'Arabic',
-  'Afan Oromo',
-  'Italian',
-  'Mandarin',
-  'Spanish',
+  'Tigrigna',
+  'Afaan Oromo',
+  'Somali',
+  'Swahili',
 ];
 
 const LEARNING_GOALS = [
   'Conversational Fluency',
-  'Exam Prep (Goethe / IELTS / DELF)',
-  'Career & Business Fluency',
+  'Reading & Writing (Fidel / Qubee / Latin)',
+  'Heritage & Family Connection',
+  'Career & Professional Fluency',
   'Travel & Cultural Immersion',
 ];
 
@@ -43,7 +40,7 @@ export default function OnboardingPage() {
   const [role, setRole] = useState<UserRole>('student');
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [targetLanguage, setTargetLanguage] = useState('German');
+  const [targetLanguage, setTargetLanguage] = useState('Amharic');
   const [learningGoal, setLearningGoal] = useState('Conversational Fluency');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -164,7 +161,7 @@ export default function OnboardingPage() {
                 />
                 <div>
                   <p className="text-xs font-bold text-white">Bethelhem Mengistu</p>
-                  <p className="text-[11px] text-stone-400">Faculty Lead · Amharic &amp; English</p>
+                  <p className="text-[11px] text-stone-400">Faculty Lead · Native Amharic Educator</p>
                 </div>
               </div>
             </div>

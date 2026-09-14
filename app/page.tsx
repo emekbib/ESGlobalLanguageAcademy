@@ -107,16 +107,13 @@ export default function Home() {
 
           {/* Quick Language Shortcuts */}
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className="font-medium text-white/70">Popular:</span>
+            <span className="font-medium text-white/70">Focus Languages:</span>
             {[
-              { name: 'English', query: 'english' },
-              { name: 'German', query: 'german' },
-              { name: 'French', query: 'french' },
               { name: 'Amharic', query: 'amharic' },
-              { name: 'Arabic', query: 'arabic' },
-              { name: 'Italian', query: 'italian' },
-              { name: 'Afan Oromo', query: 'oromo' },
-              { name: 'Mandarin', query: 'mandarin' },
+              { name: 'Tigrigna', query: 'tigrigna' },
+              { name: 'Afaan Oromo', query: 'afaan oromo' },
+              { name: 'Somali', query: 'somali' },
+              { name: 'Swahili', query: 'swahili' },
             ].map((lang) => (
               <Link
                 key={lang.name}
@@ -133,8 +130,8 @@ export default function Home() {
         <div className="relative z-10 border-t border-white/10 bg-black/45 py-5 backdrop-blur-xl">
           <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 text-center md:grid-cols-4 md:divide-x md:divide-white/10">
             <div className="px-3">
-              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">40+</p>
-              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Languages Offered</p>
+              <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">5</p>
+              <p className="mt-1 text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">Core Languages</p>
             </div>
             <div className="px-3">
               <p className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">100%</p>

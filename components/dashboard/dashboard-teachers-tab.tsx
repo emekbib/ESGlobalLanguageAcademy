@@ -15,13 +15,10 @@ import BookingCard from '@/components/teacher/booking-card';
 const LANGUAGES = [
   'All',
   'Amharic',
-  'German',
-  'English',
-  'French',
-  'Arabic',
-  'Afan Oromo',
-  'Italian',
-  'Mandarin',
+  'Tigrigna',
+  'Afaan Oromo',
+  'Somali',
+  'Swahili',
 ];
 
 export default function DashboardTeachersTab() {

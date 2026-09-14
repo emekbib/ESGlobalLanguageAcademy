@@ -14,7 +14,7 @@ export default function DashboardSettingsTab({
   role?: string;
 }) {
   const [name, setName] = useState(fullName);
-  const [selectedLanguage, setSelectedLanguage] = useState('German');
+  const [selectedLanguage, setSelectedLanguage] = useState('Amharic');
   const [timezone, setTimezone] = useState(
     typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC'
   );
@@ -124,14 +124,11 @@ export default function DashboardSettingsTab({
               onChange={(e) => setSelectedLanguage(e.target.value)}
               className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-sm font-medium text-stone-900 shadow-sm transition focus:border-stone-950 focus:outline-none focus:ring-1 focus:ring-stone-950"
             >
-              <option value="German">German (Goethe / telc / Ausbildung)</option>
-              <option value="Amharic">Amharic (Fidel Script & Conversational)</option>
-              <option value="English">English (IELTS / Cambridge / TOEFL)</option>
-              <option value="French">French (DELF / DALF / Conversational)</option>
-              <option value="Arabic">Arabic (Modern Standard / Dialects)</option>
-              <option value="Afan Oromo">Afan Oromo (Conversational)</option>
-              <option value="Italian">Italian (Conversational)</option>
-              <option value="Mandarin">Mandarin (HSK 1–6)</option>
+              <option value="Amharic">Amharic (Fidel Script &amp; Conversational)</option>
+              <option value="Tigrigna">Tigrigna (Ge&apos;ez Script &amp; Conversational)</option>
+              <option value="Afaan Oromo">Afaan Oromo (Qubee &amp; Conversational)</option>
+              <option value="Somali">Somali (Conversational &amp; Grammar)</option>
+              <option value="Swahili">Swahili (Kiswahili Sanifu &amp; Immersion)</option>
             </select>
           </div>
 

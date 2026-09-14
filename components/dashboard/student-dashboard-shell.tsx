@@ -112,18 +112,18 @@ export default function StudentDashboardShell({
                 </button>
               </div>
 
+              {/* Intro.co Luxury Hero Spotlight Card (Positioned prominent and high) */}
+              <DashboardSpotlight
+                nextBooking={nextBooking}
+                onNavigateTeachers={() => setActiveTab('teachers')}
+              />
+
               {/* Intro.co Luxury Metric Cards */}
               <DashboardMetrics
                 upcomingCount={upcoming.length}
                 completedCount={completedCount}
                 tutorsCount={uniqueTeachersCount}
                 onNavigateTab={(tab) => setActiveTab(tab as any)}
-              />
-
-              {/* Intro.co Luxury Hero Spotlight Card */}
-              <DashboardSpotlight
-                nextBooking={nextBooking}
-                onNavigateTeachers={() => setActiveTab('teachers')}
               />
 
               {/* Featured Educators */}
