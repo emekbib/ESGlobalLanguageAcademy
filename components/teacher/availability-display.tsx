@@ -67,23 +67,34 @@ export default function AvailabilityDisplay({ teacherId }: { teacherId: string }
       return;
     }
 
-    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      body: { teacherId, startUtc, endUtc },
-    });
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherId, startUtc, endUtc }),
+      });
 
-    setBookingSlot(null);
+      const data = await res.json();
+      setBookingSlot(null);
 
-    if (error || !data || typeof data.checkoutUrl !== 'string') {
+      if (!res.ok || !data || typeof data.checkoutUrl !== 'string') {
+        setBookingResult({
+          ok: false,
+          message: data?.error || 'That slot may no longer be available. Please choose another time and try again.',
+        });
+        return;
+      }
+
+      setBookingResult({ ok: true, message: 'Your slot is held for 15 minutes while you complete payment.' });
+      window.location.assign(data.checkoutUrl);
+    } catch {
+      setBookingSlot(null);
       setBookingResult({
         ok: false,
-        message: 'That slot may no longer be available. Please choose another time and try again.',
+        message: 'An unexpected error occurred while initiating checkout. Please try again.',
       });
-      return;
     }
-
-    setBookingResult({ ok: true, message: 'Your slot is held for 15 minutes while you complete payment.' });
-    window.location.assign(data.checkoutUrl);
-  }, [supabase, teacherId, router]);
+  }, [teacherId, router]);
 
   if (loading) return <div className="flex items-center gap-3 py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin text-primary" />Loading availability…</div>;
   if (loadError) return <div className="flex items-center gap-3 py-8 text-destructive"><AlertCircle className="h-5 w-5" /><p className="text-sm font-medium">We couldn\u2019t load availability. Please refresh.</p></div>;

@@ -167,15 +167,19 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
     setBookingInProgress(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           teacherId,
           startUtc: slotToBook.startUtc,
           endUtc: slotToBook.endUtc,
-        },
+        }),
       });
 
-      if (error || !data || typeof data.checkoutUrl !== 'string') {
+      const data = await res.json();
+
+      if (!res.ok || !data || typeof data.checkoutUrl !== 'string') {
         setBookingError(
           data?.error || 'Could not start checkout session. Please try another time slot.',
         );

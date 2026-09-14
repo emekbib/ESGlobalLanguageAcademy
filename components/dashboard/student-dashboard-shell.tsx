@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -9,6 +9,7 @@ import {
   Clock,
   ArrowRight,
   ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import DashboardSidebar from './dashboard-sidebar';
 import DashboardHeader from './dashboard-header';
@@ -52,6 +53,17 @@ export default function StudentDashboardShell({
   const [activeTab, setActiveTab] = useState<'lessons' | 'teachers' | 'tutors' | 'settings'>('lessons');
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [selectedTeacherForBooking, setSelectedTeacherForBooking] = useState<SampleTeacherDetail | null>(null);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success' || params.get('booking') === 'confirmed') {
+        const teacherName = params.get('teacher') || 'your educator';
+        setSuccessBanner(`Booking confirmed with ${teacherName}! Your 1-on-1 speaking session is scheduled.`);
+      }
+    }
+  }, []);
 
   const nextBooking = upcoming.length > 0 ? upcoming[0] : null;
   const completedCount = past.filter((b) => b.status === 'completed').length;
@@ -86,6 +98,23 @@ export default function StudentDashboardShell({
           {/* TAB 1: MY LESSONS & SPOTLIGHT */}
           {activeTab === 'lessons' && (
             <div className="space-y-4 animate-fade-in">
+              {/* Checkout / Booking Success Notification */}
+              {successBanner && (
+                <div className="flex items-center justify-between rounded-2xl border border-emerald-300/80 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 p-4 text-emerald-900 dark:text-emerald-200 shadow-sm animate-fade-in">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <p className="text-xs font-bold sm:text-sm">{successBanner}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSuccessBanner(null)}
+                    className="rounded-lg p-1 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               {/* Header Greeting */}
               <div className="border-b border-stone-200/80 dark:border-stone-800 pb-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
