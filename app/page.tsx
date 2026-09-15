@@ -74,9 +74,9 @@ export default function Home() {
         <div className="h-16 sm:h-20 shrink-0" />
 
         {/* Content — perfectly centered in the full-height viewport */}
-        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-8 text-center">
-          {/* Social Proof Pill with verified East African faculty */}
-          <div className="mb-5 sm:mb-6 inline-flex max-w-full flex-wrap items-center justify-center gap-2 sm:gap-3 rounded-full border border-white/25 bg-black/40 px-3.5 sm:px-4 py-1.5 shadow-lg backdrop-blur-md">
+        <div className="relative z-10 mx-auto flex flex-1 flex-col items-center justify-center max-w-4xl px-4 sm:px-6 py-10 sm:py-16 text-center">
+          {/* Social Proof Pill */}
+          <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 sm:gap-3 rounded-full border border-white/20 bg-black/35 px-4 py-1.5 backdrop-blur-md">
             <div className="flex -space-x-2 overflow-hidden">
               <img
                 className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
@@ -94,28 +94,26 @@ export default function Home() {
                 alt="Tutor Dawit"
               />
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-white/95">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span>4.98 ★</span>
-              <span className="text-white/50">·</span>
-              <span className="text-white/85">15,000+ diaspora lessons completed</span>
-            </div>
+            <span className="text-xs font-semibold text-white/90">
+              <Star className="inline h-3.5 w-3.5 fill-amber-400 text-amber-400 mr-1" />
+              4.98 · 15,000+ lessons completed
+            </span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-medium leading-[1.16] sm:leading-[1.14] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-medium leading-[1.14] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
             Master Amharic, Tigrigna, Afaan Oromo, Somali &amp; Swahili
           </h1>
 
-          <p className="mx-auto mt-4 sm:mt-5 max-w-2xl text-sm sm:text-base md:text-lg font-normal text-white/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.85)] leading-relaxed">
+          <p className="mx-auto mt-5 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg text-white drop-shadow-[0_2px_16px_rgba(0,0,0,1)] leading-relaxed" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7)' }}>
             1-on-1 private video lessons with accredited native educators. Tailored for heritage
             learners reconnecting with family, diaspora youth, and professional interpreters.
           </p>
 
-          {/* High-Attention Magnetic CTA Button */}
-          <div className="mt-7 sm:mt-9 flex flex-col items-center justify-center gap-3">
+          {/* CTA Button */}
+          <div className="mt-8 sm:mt-10">
             <Link
               href="/teachers"
-              className="group relative inline-flex w-full max-w-xs sm:w-auto items-center justify-between sm:justify-start gap-3.5 rounded-full border border-white/90 bg-white py-2.5 pl-6 sm:pl-8 pr-2.5 sm:pr-3 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.03] hover:bg-white hover:ring-white/60 active:scale-100"
+              className="group relative inline-flex items-center gap-3.5 rounded-full border border-white/90 bg-white py-2.5 pl-7 sm:pl-8 pr-2.5 sm:pr-3 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.03] hover:ring-white/60 active:scale-100"
             >
               <span className="font-display text-sm sm:text-base font-bold tracking-tight text-stone-950">
                 Find Your Educator
@@ -124,42 +122,13 @@ export default function Home() {
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </span>
             </Link>
-
-            {/* Trial Offer Callout & Escrow Protection Badge */}
-            <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-white/90 drop-shadow-sm font-medium">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-1 text-amber-300 backdrop-blur-sm border border-amber-400/30 font-semibold">
-                <Sparkles className="h-3.5 w-3.5" />
-                First 15-Minute Trial Free or 100% Satisfaction Guarantee
-              </span>
-              <span className="hidden sm:inline text-white/40">·</span>
-              <span className="inline-flex items-center gap-1 text-white/80">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                Escrow-Protected Booking
-              </span>
-            </div>
           </div>
 
-          {/* Quick Language Shortcuts */}
-          <div className="mt-6 sm:mt-7 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
-            <span className="font-medium text-white/70 w-full sm:w-auto mb-1 sm:mb-0">
-              5 Core Languages:
-            </span>
-            {[
-              { name: 'Amharic (አማርኛ)', query: 'amharic' },
-              { name: 'Tigrigna (ትግርኛ)', query: 'tigrigna' },
-              { name: 'Afaan Oromo', query: 'afaan oromo' },
-              { name: 'Somali (Soomaali)', query: 'somali' },
-              { name: 'Swahili (Kiswahili)', query: 'swahili' },
-            ].map((lang) => (
-              <Link
-                key={lang.name}
-                href={`/teachers?lang=${lang.query}`}
-                className="rounded-full border border-white/25 bg-black/30 px-3 py-1 font-medium text-white/90 backdrop-blur-sm transition hover:border-white/60 hover:bg-white/20 hover:text-white text-[11px] sm:text-xs"
-              >
-                {lang.name}
-              </Link>
-            ))}
-          </div>
+          {/* Subtle trust line */}
+          <p className="mt-4 text-xs text-white/90 font-medium" style={{ textShadow: '0 1px 12px rgba(0,0,0,0.9)' }}>
+            <Sparkles className="inline h-3 w-3 text-amber-400 mr-1" />
+            First 15 min free · Escrow-protected · No subscriptions
+          </p>
         </div>
 
         {/* Bottom: Refined Editorial Metrics with Escrow & Diaspora Signals */}
