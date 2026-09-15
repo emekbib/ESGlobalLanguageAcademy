@@ -94,7 +94,7 @@ export default function AvailabilityDisplay({ teacherId }: { teacherId: string }
         message: 'An unexpected error occurred while initiating checkout. Please try again.',
       });
     }
-  }, [teacherId, router]);
+  }, [teacherId, router, supabase]);
 
   if (loading) return <div className="flex items-center gap-3 py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin text-primary" />Loading availability…</div>;
   if (loadError) return <div className="flex items-center gap-3 py-8 text-destructive"><AlertCircle className="h-5 w-5" /><p className="text-sm font-medium">We couldn\u2019t load availability. Please refresh.</p></div>;

@@ -54,7 +54,7 @@ export default function Navbar({
           >
             Find a Teacher
           </Link>
-          <a
+          <Link
             href="/#how-it-works"
             className={`text-sm font-medium transition-colors ${
               isOverHeroTransparent
@@ -63,7 +63,7 @@ export default function Navbar({
             }`}
           >
             How it Works
-          </a>
+          </Link>
           <Link
             href="/auth"
             className={`text-sm font-medium transition-colors ${
@@ -125,14 +125,14 @@ export default function Navbar({
               <span>Find a Teacher</span>
               <span className="text-xs text-stone-400">Directory</span>
             </Link>
-            <a
+            <Link
               href="/#how-it-works"
               onClick={() => setMobileOpen(false)}
               className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 hover:bg-stone-100 transition"
             >
               <span>How It Works</span>
               <span className="text-xs text-stone-400">Method</span>
-            </a>
+            </Link>
             <Link
               href="/auth"
               onClick={() => setMobileOpen(false)}

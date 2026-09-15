@@ -37,8 +37,15 @@ export async function POST(req: Request) {
       body = {};
     }
 
-    // 1. Simulation action for local testing / demo mode
+    // 1. Simulation action for local testing / demo mode (strictly forbidden in production)
     if (body?.action === 'simulate' || body?.simulate === true) {
+      if (process.env.NODE_ENV === 'production' && process.env.ALLOW_STRIPE_SIMULATION !== 'true') {
+        return NextResponse.json(
+          { error: 'Simulated payout verification is disabled in production. Real Stripe Express onboarding is required.' },
+          { status: 403 }
+        );
+      }
+
       const mockAccountId = `acct_sim_${teacher.id.replace(/-/g, '').slice(0, 16)}`;
       const { error: updateErr } = await supabase
         .from('teacher_profiles')
