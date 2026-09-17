@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import AdminSidebar, { type AdminTab } from './admin-sidebar';
-import { ApplicationActions, SuspensionButton, ReviewModerationActions } from './admin-controls';
+import { ApplicationActions, SuspensionButton, ReviewModerationActions, RoleDropdown } from './admin-controls';
 import LogoutModal from '@/components/dashboard/logout-modal';
 
 type TeacherApplication = {
@@ -479,14 +479,14 @@ export default function AdminDashboardShell({
                         <p className="font-display font-bold text-sm text-stone-950 dark:text-white">
                           {account.full_name}
                         </p>
-                        <p className="text-xs capitalize text-stone-400 mt-0.5">
-                          {account.role}
+                        <div className="flex items-center mt-1">
+                          <RoleDropdown userId={account.user_id} currentRole={account.role} />
                           {account.suspended_at && (
-                            <span className="ml-2 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-400">
+                            <span className="ml-3 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-400">
                               Suspended
                             </span>
                           )}
-                        </p>
+                        </div>
                       </div>
 
                       <SuspensionButton

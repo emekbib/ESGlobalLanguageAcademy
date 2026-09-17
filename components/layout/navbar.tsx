@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GraduationCap, Menu, X } from 'lucide-react';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function Navbar({
   transparentOverHero = false,
@@ -11,6 +12,8 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -18,14 +21,46 @@ export default function Navbar({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setIsLoggedIn(true);
+        // Fetch role to determine which dashboard to link to
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        if (profile) setUserRole(profile.role);
+      }
+    };
+    
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+      if (session?.user) {
+        checkUser(); // Re-fetch role
+      } else {
+        setUserRole(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const isOverHeroTransparent = transparentOverHero && !scrolled;
+  const dashboardLink = userRole === 'admin' ? '/admin' : userRole === 'teacher' ? '/teacher-dashboard' : '/dashboard';
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isOverHeroTransparent
           ? 'bg-transparent text-white'
-          : 'border-b border-stone-200/80 bg-[#faf9f6]/95 backdrop-blur-md text-stone-900 shadow-sm'
+          : 'border-b border-stone-200/80 dark:border-stone-800 bg-[#faf9f6]/95 dark:bg-stone-950/95 backdrop-blur-md text-stone-900 dark:text-white shadow-sm'
       }`}
     >
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
@@ -33,7 +68,7 @@ export default function Navbar({
         <Link
           href="/"
           className={`flex items-center gap-2.5 transition-opacity hover:opacity-80 ${
-            isOverHeroTransparent ? 'text-white' : 'text-stone-900'
+            isOverHeroTransparent ? 'text-white' : 'text-stone-900 dark:text-white'
           }`}
         >
           <GraduationCap className="h-6 w-6 text-amber-500" />
@@ -49,46 +84,63 @@ export default function Navbar({
             className={`text-sm font-medium transition-colors ${
               isOverHeroTransparent
                 ? 'text-white/80 hover:text-white'
-                : 'text-stone-600 hover:text-stone-900'
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             Find a Teacher
           </Link>
 
-          <Link
-            href="/auth"
-            className={`text-sm font-medium transition-colors ${
-              isOverHeroTransparent
-                ? 'text-white/80 hover:text-white'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            Become a Teacher
-          </Link>
+          {!isLoggedIn && (
+            <Link
+              href="/auth"
+              className={`text-sm font-medium transition-colors ${
+                isOverHeroTransparent
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
+              }`}
+            >
+              Become a Teacher
+            </Link>
+          )}
         </nav>
 
         {/* Right action buttons */}
         <div className="hidden items-center gap-5 md:flex">
-          <Link
-            href="/auth"
-            className={`text-sm font-medium transition-colors ${
-              isOverHeroTransparent
-                ? 'text-white/80 hover:text-white'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/auth"
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-              isOverHeroTransparent
-                ? 'border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-stone-900'
-                : 'border border-stone-900 bg-stone-950 text-white hover:bg-stone-800 shadow-sm'
-            }`}
-          >
-            Sign up
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href={dashboardLink}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                isOverHeroTransparent
+                  ? 'border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-stone-900'
+                  : 'border border-stone-900 dark:border-stone-200 bg-stone-950 dark:bg-stone-100 text-white dark:text-stone-950 hover:bg-stone-800 dark:hover:bg-white shadow-sm'
+              }`}
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth"
+                className={`text-sm font-medium transition-colors ${
+                  isOverHeroTransparent
+                    ? 'text-white/80 hover:text-white'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/auth"
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                  isOverHeroTransparent
+                    ? 'border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-stone-900'
+                    : 'border border-stone-900 dark:border-stone-200 bg-stone-950 dark:bg-stone-100 text-white dark:text-stone-950 hover:bg-stone-800 dark:hover:bg-white shadow-sm'
+                }`}
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -96,7 +148,7 @@ export default function Navbar({
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
           className={`rounded-xl p-2 md:hidden ${
-            isOverHeroTransparent ? 'text-white hover:bg-white/10' : 'text-stone-700 hover:bg-stone-100'
+            isOverHeroTransparent ? 'text-white hover:bg-white/10' : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
           aria-label="Toggle navigation menu"
         >

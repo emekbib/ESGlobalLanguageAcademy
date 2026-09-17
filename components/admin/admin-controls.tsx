@@ -64,6 +64,54 @@ export function ApplicationActions({ teacherId }: { teacherId: string }) {
   );
 }
 
+export function RoleDropdown({
+  userId,
+  currentRole,
+}: {
+  userId: string;
+  currentRole: string;
+}) {
+  const [loading, setLoading] = useState(false);
+  const supabase = createSupabaseBrowserClient();
+
+  async function updateRole(newRole: string) {
+    if (newRole === currentRole) return;
+    
+    // Safety check - confirm before making someone an admin
+    if (newRole === 'admin') {
+      const confirmed = window.confirm('Are you sure you want to grant Admin privileges to this user?');
+      if (!confirmed) return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.rpc('admin_set_user_role', {
+      p_user_id: userId,
+      p_role: newRole,
+    });
+    
+    if (!error) {
+      window.location.reload();
+    } else {
+      console.error(error);
+      alert('Failed to update role. Make sure the database migration was run.');
+      setLoading(false);
+    }
+  }
+
+  return (
+    <select
+      value={currentRole}
+      onChange={(e) => void updateRole(e.target.value)}
+      disabled={loading}
+      className="ml-2 mt-1 block w-32 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 py-1 text-xs font-semibold text-stone-700 dark:text-stone-300 shadow-sm focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 disabled:opacity-50"
+    >
+      <option value="student">Student</option>
+      <option value="teacher">Teacher</option>
+      <option value="admin">Admin</option>
+    </select>
+  );
+}
+
 export function SuspensionButton({
   userId,
   suspended,
