@@ -20,7 +20,6 @@ export default async function DashboardPage() {
     return <ErrorDisplay message="We couldn’t load your profile. Please try again." />;
   }
   if (!profile) redirect('/onboarding');
-  if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'teacher') redirect('/teacher/dashboard');
 
   const { data: bookings, error: bookingsError } = await supabase
