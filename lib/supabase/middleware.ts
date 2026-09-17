@@ -36,11 +36,27 @@ export async function updateSession(request: NextRequest) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (requiresAuth && !user) {
+    // If trying to access admin routes (except login) without auth, redirect to admin login
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !user) {
+      return redirectWithCookies(request, response, '/admin/login');
+    }
+
+    // Standard auth requirement check
+    const isStandardRequiresAuth = pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/account') || pathname.startsWith('/onboarding');
+    
+    if (isStandardRequiresAuth && !user) {
       return redirectWithCookies(request, response, '/auth');
     }
 
-    if (user && (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/onboarding'))) {
+    // Redirect logged in users away from admin login if they are admin
+    if (user && pathname === '/admin/login') {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).maybeSingle();
+      if (profile?.role === 'admin') {
+        return redirectWithCookies(request, response, '/admin');
+      }
+    }
+
+    if (user && (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/onboarding') || pathname.startsWith('/admin'))) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, suspended_at')
@@ -52,7 +68,7 @@ export async function updateSession(request: NextRequest) {
       }
 
       if (profile) {
-        if (pathname.startsWith('/admin') && profile.role !== 'admin') {
+        if (pathname.startsWith('/admin') && pathname !== '/admin/login' && profile.role !== 'admin') {
           return redirectWithCookies(request, response, '/');
         }
         if (profile.suspended_at && !pathname.startsWith('/admin')) {
@@ -65,7 +81,9 @@ export async function updateSession(request: NextRequest) {
       }
     }
   } catch {
-    if (requiresAuth) {
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+      return redirectWithCookies(request, response, '/admin/login');
+    } else if (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/account') || pathname.startsWith('/onboarding')) {
       return redirectWithCookies(request, response, '/auth');
     }
   }
