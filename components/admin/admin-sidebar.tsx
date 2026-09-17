@@ -177,14 +177,14 @@ export default function AdminSidebar({
             </Link>
 
             <Link
-              href="/teachers"
+              href="/teacher/dashboard"
               className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/60 hover:text-stone-900 dark:hover:text-white transition"
             >
               <div className="flex items-center gap-2.5">
-                <Compass className="h-3.5 w-3.5 text-stone-400" />
-                <span>Faculty Directory</span>
+                <GraduationCap className="h-3.5 w-3.5 text-stone-400" />
+                <span>Educator Space</span>
               </div>
-              <ExternalLink className="h-3 w-3 opacity-60" />
+              <ArrowRight className="h-3 w-3 opacity-60" />
             </Link>
 
             <Link
