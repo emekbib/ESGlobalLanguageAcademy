@@ -29,8 +29,8 @@ Configure the following environment variables in your **Vercel Project Settings 
 
 | Variable Name | Required Service | Description | Example / Location |
 | :--- | :--- | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase | Project API URL | `https://ubshnuevmmmiajsqbnzx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase | Public Anon JWT Key | Found in Supabase Settings > API |
+| `NEXT_SUPABASE_URL` | Supabase | Project API URL | `https://ubshnuevmmmiajsqbnzx.supabase.co` |
+| `NEXT_SUPABASE_ANON_KEY` | Supabase | Public Anon JWT Key | Found in Supabase Settings > API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase (Server) | Service Role Secret | Found in Supabase Settings > API |
 | `STRIPE_SECRET_KEY` | Stripe | Secret / Restricted Key | Test: `rk_test_...` / Live: `rk_live_...` |
 | `DAILY_API_KEY` | Daily.co | Video WebRTC API Key | Found in Daily.co Dashboard > Developers |
