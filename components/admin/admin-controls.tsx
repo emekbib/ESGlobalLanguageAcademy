@@ -175,42 +175,119 @@ export function SuspensionButton({
   suspended: boolean;
 }) {
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [reason, setReason] = useState('');
   const supabase = createSupabaseBrowserClient();
 
-  async function toggle() {
+  async function performSuspension(finalReason: string | null) {
     setLoading(true);
-    const reason = suspended
-      ? null
-      : window.prompt('Reason for account suspension:') ?? 'Administrative suspension';
     const { error } = await supabase.rpc('admin_set_account_suspension', {
       p_user_id: userId,
       p_suspended: !suspended,
-      p_reason: reason,
+      p_reason: finalReason,
     });
     if (!error) window.location.reload();
     setLoading(false);
+    setShowModal(false);
+  }
+
+  function handleToggleClick() {
+    if (suspended) {
+      // Unsuspend doesn't need a reason
+      void performSuspension(null);
+    } else {
+      // Open modal to get reason for suspension
+      setReason('');
+      setShowModal(true);
+    }
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => void toggle()}
-      disabled={loading}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-60 ${
-        suspended
-          ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          : 'border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300'
-      }`}
-    >
-      {loading ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
-      ) : suspended ? (
-        <ShieldCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-      ) : (
-        <ShieldAlert className="h-3 w-3 text-stone-400 group-hover:text-red-500" />
+    <>
+      <button
+        type="button"
+        onClick={handleToggleClick}
+        disabled={loading}
+        className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-60 ${
+          suspended
+            ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+            : 'border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300'
+        }`}
+      >
+        {loading ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : suspended ? (
+          <CheckCircle2 className="h-3.5 w-3.5" />
+        ) : (
+          <ShieldAlert className="h-3.5 w-3.5" />
+        )}
+        <span>{suspended ? 'Unsuspend' : 'Suspend'}</span>
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl transition-all">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              disabled={loading}
+              className="absolute right-4 top-4 rounded-full p-1.5 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 ring-4 ring-red-50/50 dark:ring-red-950/30">
+                <ShieldAlert className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-bold text-stone-900 dark:text-white">
+                  Suspend Account
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">Administrative action</p>
+              </div>
+            </div>
+            
+            <div className="mt-5 space-y-3">
+              <p className="text-sm text-stone-600 dark:text-stone-300">
+                Please provide a reason for suspending this user account. This will be recorded for audit purposes.
+              </p>
+              
+              <input
+                type="text"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g., Violation of terms of service"
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-950/50 px-4 py-2.5 text-sm font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 dark:focus:border-red-600 dark:focus:ring-red-600"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void performSuspension(reason || 'Administrative suspension');
+                }}
+              />
+            </div>
+            
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                disabled={loading}
+                className="rounded-xl border border-stone-200 dark:border-stone-800 px-4 py-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300 transition hover:bg-stone-50 dark:hover:bg-stone-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void performSuspension(reason || 'Administrative suspension')}
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
+              >
+                {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                {loading ? 'Suspending…' : 'Suspend User'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-      <span>{suspended ? 'Restore Access' : 'Suspend Account'}</span>
-    </button>
+    </>
   );
 }
 
