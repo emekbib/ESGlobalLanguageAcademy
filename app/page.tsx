@@ -216,7 +216,7 @@ export default function Home() {
             {/* Step 3 / Feature 3 */}
             <div className="flex flex-col">
               <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
-                <Image src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" alt="Live classroom" fill className="object-cover" />
+                <Image src="/scripts-graphic.jpg" alt="Fidel, Qubee, and Somali Latin scripts" fill className="object-cover" />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">03. Learn</div>
               </div>
               <h3 className="font-display text-lg font-bold text-stone-900">

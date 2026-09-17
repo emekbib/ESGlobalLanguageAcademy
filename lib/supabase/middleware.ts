@@ -56,7 +56,7 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    if (user && (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/onboarding') || pathname.startsWith('/admin'))) {
+    if (user && (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/onboarding') || pathname.startsWith('/admin') || pathname === '/auth')) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, suspended_at')
@@ -75,7 +75,7 @@ export async function updateSession(request: NextRequest) {
           return redirectWithCookies(request, response, '/');
         }
         const destination = profile.role === 'teacher' ? '/teacher/dashboard' : '/dashboard';
-        if (pathname === '/onboarding' || (profile.role === 'teacher' && pathname === '/dashboard') || (profile.role === 'student' && pathname.startsWith('/teacher/dashboard'))) {
+        if (pathname === '/onboarding' || pathname === '/auth' || (profile.role === 'teacher' && pathname === '/dashboard') || (profile.role === 'student' && pathname.startsWith('/teacher/dashboard'))) {
           return redirectWithCookies(request, response, destination);
         }
       }
