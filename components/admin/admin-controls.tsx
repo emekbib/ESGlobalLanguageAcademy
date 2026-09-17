@@ -72,17 +72,10 @@ export function RoleDropdown({
   currentRole: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const [pendingRole, setPendingRole] = useState<string | null>(null);
   const supabase = createSupabaseBrowserClient();
 
-  async function updateRole(newRole: string) {
-    if (newRole === currentRole) return;
-    
-    // Safety check - confirm before making someone an admin
-    if (newRole === 'admin') {
-      const confirmed = window.confirm('Are you sure you want to grant Admin privileges to this user?');
-      if (!confirmed) return;
-    }
-
+  async function performUpdate(newRole: string) {
     setLoading(true);
     const { error } = await supabase.rpc('admin_set_user_role', {
       p_user_id: userId,
@@ -95,20 +88,82 @@ export function RoleDropdown({
       console.error(error);
       alert('Failed to update role. Make sure the database migration was run.');
       setLoading(false);
+      setPendingRole(null);
     }
   }
 
+  async function handleChange(newRole: string) {
+    if (newRole === currentRole) return;
+    
+    if (newRole === 'admin') {
+      setPendingRole('admin');
+      return;
+    }
+
+    await performUpdate(newRole);
+  }
+
   return (
-    <select
-      value={currentRole}
-      onChange={(e) => void updateRole(e.target.value)}
-      disabled={loading}
-      className="ml-2 mt-1 block w-32 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 py-1 text-xs font-semibold text-stone-700 dark:text-stone-300 shadow-sm focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 disabled:opacity-50"
-    >
-      <option value="student">Student</option>
-      <option value="teacher">Teacher</option>
-      <option value="admin">Admin</option>
-    </select>
+    <>
+      <select
+        value={currentRole}
+        onChange={(e) => void handleChange(e.target.value)}
+        disabled={loading}
+        className="ml-2 mt-1 block w-32 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 py-1 text-xs font-semibold text-stone-700 dark:text-stone-300 shadow-sm focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 disabled:opacity-50"
+      >
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      {pendingRole === 'admin' && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl transition-all">
+            <button
+              type="button"
+              onClick={() => setPendingRole(null)}
+              disabled={loading}
+              className="absolute right-4 top-4 rounded-full p-1.5 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 ring-4 ring-amber-50/50 dark:ring-amber-950/30">
+                <ShieldAlert className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-bold text-stone-900 dark:text-white">
+                  Grant Admin Privileges?
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">Security confirmation</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+              Are you sure you want to grant full Administrator privileges to this user? They will have complete access to the Operations Console.
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingRole(null)}
+                disabled={loading}
+                className="rounded-xl border border-stone-200 dark:border-stone-800 px-4 py-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300 transition hover:bg-stone-50 dark:hover:bg-stone-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void performUpdate('admin')}
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-amber-700 disabled:opacity-50"
+              >
+                {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                {loading ? 'Granting Access…' : 'Yes, Grant Admin'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
