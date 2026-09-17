@@ -21,7 +21,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
   return (
     <Link
       href={`/teachers/${teacher.id}`}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-xl"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-xl"
     >
       {/* Intro.co Natural Portrait Photo */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-stone-100 dark:bg-stone-800">
@@ -68,7 +68,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
         </p>
 
         {/* Headline / bio */}
-        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-stone-500 dark:text-stone-400 font-medium">
+        <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-stone-500 dark:text-stone-400 font-medium">
           {teacher.headline || `${teacher.languages.join(' & ')} Specialist`}
         </p>
 

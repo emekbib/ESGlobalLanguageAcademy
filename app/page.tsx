@@ -15,6 +15,7 @@ import {
   Building2,
 } from 'lucide-react';
 import FeaturedTeachers from '@/components/home/featured-teachers';
+import ContactSection from '@/components/home/contact-section';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 
@@ -60,8 +61,8 @@ export default function Home() {
       <section className="relative flex min-h-[100dvh] flex-col justify-between overflow-hidden bg-stone-950">
         {/* Background image — sunlit luxury study & villa */}
         <Image
-          src="/hero.jpg"
-          alt="Sunlit modern luxury villa with floor to ceiling glass overlooking green trees"
+          src="/images/hero-bg.png"
+          alt="Student learning a language online with a native tutor via video call, with a global map and cityscape in the background"
           fill
           priority
           className="object-cover object-center"
@@ -100,8 +101,8 @@ export default function Home() {
             </span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-medium leading-[1.14] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
-            Master Amharic, Tigrigna, Afaan Oromo, Somali &amp; Swahili
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
+            Master Conversations in Amharic, Tigrigna, Afaan Oromo, Somali &amp; Swahili
           </h1>
 
           <p className="mx-auto mt-5 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg text-white drop-shadow-[0_2px_16px_rgba(0,0,0,1)] leading-relaxed" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7)' }}>
@@ -113,14 +114,12 @@ export default function Home() {
           <div className="mt-8 sm:mt-10">
             <Link
               href="/teachers"
-              className="group relative inline-flex items-center gap-3.5 rounded-full border border-white/90 bg-white py-2.5 pl-7 sm:pl-8 pr-2.5 sm:pr-3 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.03] hover:ring-white/60 active:scale-100"
+              className="group relative inline-flex items-center gap-2.5 rounded-full border border-white/90 bg-white px-8 py-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_35px_rgba(255,255,255,0.4)] ring-4 ring-white/30 transition-all duration-300 hover:scale-[1.03] hover:ring-white/60 hover:bg-stone-50 active:scale-100"
             >
-              <span className="font-display text-sm sm:text-base font-bold tracking-tight text-stone-950">
+              <span className="font-display text-base font-bold tracking-tight text-stone-950">
                 Find Your Educator
               </span>
-              <span className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-stone-950 text-white shadow-md transition-all duration-300 group-hover:translate-x-1 group-hover:bg-amber-400 group-hover:text-stone-950">
-                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-              </span>
+              <ArrowRight className="h-5 w-5 text-stone-950 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -164,6 +163,67 @@ export default function Home() {
               </p>
               <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">
                 DC · Mpls · Seattle · London
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── UNIFIED HOW IT WORKS & ESGLOBAL STANDARD ── */}
+      <section id="how-it-works" className="border-b border-stone-200/80 bg-[#faf9f6] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-amber-600">
+              The ESGlobal Standard
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+              Authentic language mastery, made simple.
+            </h2>
+            <p className="mt-4 text-sm text-stone-500 font-medium">
+              We've combined rigorous native curriculum with seamless booking technology so you can focus entirely on fluency.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
+            {/* Step 1 / Feature 1 */}
+            <div className="flex flex-col">
+              <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
+                <Image src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=600&auto=format&fit=crop" alt="Discover educators" fill className="object-cover" />
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">01. Discover</div>
+              </div>
+              <h3 className="font-display text-lg font-bold text-stone-900">
+                Vetted University-Trained Faculty
+              </h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
+                Explore certified native educators filtered by language, dialect, and verified degrees. Many are alumni of premier East African institutions.
+              </p>
+            </div>
+
+            {/* Step 2 / Feature 2 */}
+            <div className="flex flex-col">
+              <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
+                <Image src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=600&auto=format&fit=crop" alt="Escrow protection" fill className="object-cover" />
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">02. Book & Secure</div>
+              </div>
+              <h3 className="font-display text-lg font-bold text-stone-900">
+                100% Escrow Payment Protection
+              </h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
+                Book a 1-on-1 slot in 60 seconds. Your fee is held securely in Stripe escrow and released only after you complete your live session.
+              </p>
+            </div>
+
+            {/* Step 3 / Feature 3 */}
+            <div className="flex flex-col">
+              <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
+                <Image src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" alt="Live classroom" fill className="object-cover" />
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">03. Learn</div>
+              </div>
+              <h3 className="font-display text-lg font-bold text-stone-900">
+                Fidel & Qubee Script Training
+              </h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
+                Connect in our private HD classroom and learn the authentic writing systems (Fidel/Qubee) without relying on generic Latin transliterations.
               </p>
             </div>
           </div>
@@ -267,121 +327,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── VALUE PROPS (The ESGlobal Standard) ── */}
-      <section className="bg-[#faf9f6] py-20 sm:py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="border-b border-stone-200/80 pb-8">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
-              The ESGlobal Standard
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
-              Authentic language mastery built around you, not an algorithm.
-            </h2>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-16">
-            <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">
-                01
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
-                Fidel, Ge’ez &amp; Qubee Script Training
-              </h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
-                Don’t settle for generic Latin transliterations. Learn the authentic writing
-                systems of the Horn of Africa — from the Fidel abugida of Amharic &amp; Tigrigna to
-                standardized Qubee for Afaan Oromo — with certified linguistics scholars.
-              </p>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">
-                02
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
-                100% Escrow Payment Protection
-              </h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
-                Your lesson fee is held securely in Stripe escrow and released to the educator only
-                after you complete your live session. Zero monthly subscription traps or expiring
-                credits — book and pay per lesson with complete peace of mind.
-              </p>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider text-stone-400">
-                03
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
-                Vetted University-Trained Faculty
-              </h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
-                Every teacher is individually vetted for pedagogical experience and dialect
-                authenticity. Many are alumni of Addis Ababa University, University of Asmara, and
-                premier East African institutions with years of diaspora teaching success.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── FEATURED TEACHERS ── */}
       <section className="border-t border-stone-200/60 bg-white py-4">
         <FeaturedTeachers />
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="border-t border-stone-200/60 bg-[#faf9f6] py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
-              Seamless Experience
-            </p>
-            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-              How it works.{' '}
-              <span className="font-normal text-stone-400">
-                Language mastery made simple
-              </span>
-            </h2>
-          </div>
-
-          <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="border-t border-stone-300/80 pt-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">
-                Step 01
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
-                Discover top native experts
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600 font-medium">
-                Explore certified educators filtered by language, dialect, hourly rate, verified
-                degrees, and video introductions.
-              </p>
-            </div>
-            <div className="border-t border-stone-300/80 pt-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">
-                Step 02
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
-                Book a 1-on-1 slot in 60 seconds
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600 font-medium">
-                Select your preferred lesson duration from the teacher&apos;s interactive weekly
-                calendar with transparent pricing and escrow hold.
-              </p>
-            </div>
-            <div className="border-t border-stone-300/80 pt-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-stone-400">
-                Step 03
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold text-stone-900">
-                Meet in your private classroom
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600 font-medium">
-                Connect in our encrypted, private HD video classroom right in your browser. No
-                downloads or third-party apps needed — just one click to start learning.
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* ── TESTIMONIALS (Authentic Diaspora Voices) ── */}
@@ -476,6 +424,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── CONTACT US ── */}
+      <ContactSection />
 
       {/* ── FOOTER ── */}
       <Footer />

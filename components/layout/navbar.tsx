@@ -54,16 +54,7 @@ export default function Navbar({
           >
             Find a Teacher
           </Link>
-          <Link
-            href="/#how-it-works"
-            className={`text-sm font-medium transition-colors ${
-              isOverHeroTransparent
-                ? 'text-white/80 hover:text-white'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            How it Works
-          </Link>
+
           <Link
             href="/auth"
             className={`text-sm font-medium transition-colors ${
