@@ -36,6 +36,18 @@ export default async function TeacherDashboardPage() {
     return <ErrorDisplay message="We couldn’t load your teacher profile. Please try again." />;
   }
 
+  // Provide a fallback profile so admins can preview the dashboard without crashing
+  const safeTeacherProfile = teacherProfile || {
+    id: 'admin-preview-id',
+    bio: 'Preview Mode',
+    languages_taught: ['English'],
+    hourly_rate: 30,
+    years_experience: 5,
+    is_published: false,
+    stripe_account_id: null,
+    stripe_onboarding_complete: false,
+  };
+
   let enrichedBookings: Array<{
     id: string;
     teacher_id: string;
@@ -97,7 +109,7 @@ export default async function TeacherDashboardPage() {
         full_name: profile.full_name || 'Educator',
         avatar_url: profile.avatar_url,
       }}
-      teacherProfile={teacherProfile}
+      teacherProfile={safeTeacherProfile}
       upcomingBookings={upcomingBookings}
       pastBookings={pastBookings}
     />
