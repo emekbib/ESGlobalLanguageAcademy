@@ -27,7 +27,6 @@ export default async function AdminPage() {
     supabase
       .from('profiles')
       .select('user_id, full_name, role, suspended_at, suspension_reason')
-      .in('role', ['student', 'teacher'])
       .order('full_name'),
   ]);
 
