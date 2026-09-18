@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   SlidersHorizontal,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import AdminSidebar, { type AdminTab } from './admin-sidebar';
 import { ApplicationActions, SuspensionButton, ReviewModerationActions, RoleDropdown } from './admin-controls';
@@ -161,6 +162,7 @@ export default function AdminDashboardShell({
                 {[
                   { id: 'overview', label: 'Operations Overview', icon: SlidersHorizontal },
                   { id: 'applications', label: `Applications (${pendingCount})`, icon: GraduationCap },
+                  { id: 'educators', label: 'Faculty Directory', icon: GraduationCap },
                   { id: 'reviews', label: `Flagged Reviews (${flaggedCount})`, icon: AlertTriangle },
                   { id: 'accounts', label: `User Accounts (${totalAccounts})`, icon: Users },
                 ].map((item) => {
@@ -226,6 +228,7 @@ export default function AdminDashboardShell({
               {[
                 { id: 'overview', label: 'All Operations' },
                 { id: 'applications', label: `Applications (${pendingCount})` },
+                { id: 'educators', label: 'Faculty' },
                 { id: 'reviews', label: `Flags (${flaggedCount})` },
                 { id: 'accounts', label: `Users (${totalAccounts})` },
               ].map((tab) => (
@@ -371,6 +374,47 @@ export default function AdminDashboardShell({
                     </p>
                   </div>
                 )}
+              </div>
+            </section>
+          )}
+
+          {/* Tab Content: Educators or Overview */}
+          {(activeTab === 'overview' || activeTab === 'educators') && (
+            <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
+              <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
+                <div>
+                  <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
+                    Faculty Directory
+                  </h2>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    View published and approved educators
+                  </p>
+                </div>
+                {activeTab === 'overview' && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('educators')}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline"
+                  >
+                    <span>View directory</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <div className="rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 p-5">
+                  <p className="text-sm font-medium text-stone-600 dark:text-stone-300">
+                    You can view the full list of published educators in the public directory. 
+                  </p>
+                  <Link
+                    href="/teachers"
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-stone-950 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-stone-800 dark:bg-white dark:text-stone-950 dark:hover:bg-stone-100"
+                  >
+                    Go to Faculty Directory
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
             </section>
           )}

@@ -101,28 +101,16 @@ export default function FeaturedTeachers() {
 
       {/* Teacher Cards Container */}
       <div className="relative mt-8 overflow-hidden">
-        {isMarquee ? (
-          <div className="overflow-hidden">
-            <div className="animate-marquee flex gap-6">
-              {marqueeList.map((teacher, index) => (
-                <div key={`${teacher.id}-${index}`} className="w-[270px] shrink-0">
-                  <TeacherCard teacher={teacher} />
-                </div>
-              ))}
+        <div
+          ref={scrollContainerRef}
+          className="no-scrollbar flex gap-6 overflow-x-auto pb-4 scroll-smooth"
+        >
+          {filteredTeachers.map((teacher, index) => (
+            <div key={`${teacher.id}-${index}`} className="w-[270px] shrink-0">
+              <TeacherCard teacher={teacher} />
             </div>
-          </div>
-        ) : (
-          <div
-            ref={scrollContainerRef}
-            className="no-scrollbar flex gap-6 overflow-x-auto pb-4 scroll-smooth"
-          >
-            {filteredTeachers.map((teacher) => (
-              <div key={teacher.id} className="w-[270px] shrink-0">
-                <TeacherCard teacher={teacher} />
-              </div>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </section>
   );

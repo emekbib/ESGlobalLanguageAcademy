@@ -18,7 +18,7 @@ import {
   Calendar,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'applications' | 'reviews' | 'accounts';
+export type AdminTab = 'overview' | 'applications' | 'reviews' | 'accounts' | 'educators';
 
 type AdminSidebarProps = {
   fullName: string;
@@ -70,10 +70,15 @@ export default function AdminSidebar({
     },
     {
       id: 'applications',
-      label: 'Teacher Applications',
+      label: 'Pending Educators',
       icon: GraduationCap,
       badge: pendingCount,
-      badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+      badgeColor: 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400',
+    },
+    {
+      id: 'educators',
+      label: 'Faculty Directory',
+      icon: GraduationCap,
     },
     {
       id: 'reviews',
