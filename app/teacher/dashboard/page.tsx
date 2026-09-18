@@ -112,6 +112,7 @@ export default async function TeacherDashboardPage() {
       teacherProfile={safeTeacherProfile}
       upcomingBookings={upcomingBookings}
       pastBookings={pastBookings}
+      readOnly={safeTeacherProfile.id === 'admin-preview-id'}
     />
   );
 }

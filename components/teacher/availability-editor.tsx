@@ -44,6 +44,10 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
 
   async function addWindow() {
     setError('');
+    if (teacherId === 'admin-preview-id') {
+      setError('Cannot edit availability in admin preview mode.');
+      return;
+    }
     if (draft.end_time <= draft.start_time) { setError('End time must be after start time.'); return; }
     setSaving(true);
     const { data, error: insertError } = await supabase.from('teacher_availability').insert({
@@ -61,6 +65,10 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
 
   async function deleteWindow(id: string) {
     setError('');
+    if (teacherId === 'admin-preview-id') {
+      setError('Cannot edit availability in admin preview mode.');
+      return;
+    }
     setSaving(true);
     const { error: deleteError } = await supabase.from('teacher_availability').delete().eq('id', id);
     setSaving(false);
@@ -71,6 +79,10 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
 
   async function updateTimezone(newTz: string) {
     setTimezone(newTz);
+    if (teacherId === 'admin-preview-id') {
+      setError('Cannot edit timezone in admin preview mode.');
+      return;
+    }
     if (windows.length === 0) return;
     setSaving(true);
     const { error: updateError } = await supabase.from('teacher_availability').update({ timezone: newTz }).eq('teacher_id', teacherId);

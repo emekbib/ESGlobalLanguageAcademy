@@ -25,10 +25,10 @@ export default function ContactSection() {
         <div className="text-center mb-12 sm:mb-16">
           <p className="text-[10px] sm:text-xs font-bold tracking-widest text-amber-500/80 uppercase mb-3">Get In Touch</p>
           <h2 className="font-display text-3xl sm:text-5xl font-medium tracking-tight text-white mb-6">
-            Let's start your language <br className="hidden sm:block"/> journey together.
+            Let&apos;s start your language <br className="hidden sm:block"/> journey together.
           </h2>
           <p className="text-stone-400 text-sm sm:text-lg max-w-2xl mx-auto">
-            Whether you're looking to reconnect with your heritage, prepare for a trip, or train as a professional interpreter, we'd love to hear what you're working on.
+            Whether you&apos;re looking to reconnect with your heritage, prepare for a trip, or train as a professional interpreter, we&apos;d love to hear what you&apos;re working on.
           </p>
         </div>
 

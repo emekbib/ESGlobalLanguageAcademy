@@ -94,6 +94,21 @@ export default function Home() {
                 src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=120&auto=format&fit=crop"
                 alt="Tutor Dawit"
               />
+              <img
+                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Mebrahtu"
+              />
+              <img
+                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
+                src="https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Fatuma"
+              />
+              <img
+                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Chaltu"
+              />
             </div>
             <span className="text-xs font-semibold text-white/90">
               <Star className="inline h-3.5 w-3.5 fill-amber-400 text-amber-400 mr-1" />
@@ -126,7 +141,7 @@ export default function Home() {
           {/* Subtle trust line */}
           <p className="mt-4 text-xs text-white/90 font-medium" style={{ textShadow: '0 1px 12px rgba(0,0,0,0.9)' }}>
             <Sparkles className="inline h-3 w-3 text-amber-400 mr-1" />
-            First 15 min free · Escrow-protected · No subscriptions
+            First 15 min free · $25-30/lesson · Escrow-protected · No subscriptions
           </p>
         </div>
 
@@ -180,7 +195,7 @@ export default function Home() {
               Authentic language mastery, made simple.
             </h2>
             <p className="mt-4 text-sm text-stone-500 font-medium">
-              We've combined rigorous native curriculum with seamless booking technology so you can focus entirely on fluency.
+              We&apos;ve combined rigorous native curriculum with seamless booking technology so you can focus entirely on fluency.
             </p>
           </div>
 

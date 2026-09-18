@@ -95,6 +95,13 @@ export function RoleDropdown({
   async function handleChange(newRole: string) {
     if (newRole === currentRole) return;
     
+    // Prevent self-demotion
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && user.id === userId && newRole !== 'admin') {
+      alert("You cannot remove your own admin privileges.");
+      return;
+    }
+    
     if (newRole === 'admin') {
       setPendingRole('admin');
       return;

@@ -97,6 +97,10 @@ export default function TeacherAccountTab({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (teacherProfile?.id === 'admin-preview-id') {
+      setErrorMessage('Cannot save profile details in admin preview mode.');
+      return;
+    }
     setSaving(true);
     setSaveSuccess(false);
     setErrorMessage('');

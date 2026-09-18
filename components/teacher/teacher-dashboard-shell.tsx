@@ -62,6 +62,7 @@ type TeacherDashboardShellProps = {
   } | null;
   upcomingBookings: BookingItem[];
   pastBookings: BookingItem[];
+  readOnly?: boolean;
 };
 
 export default function TeacherDashboardShell({
@@ -474,6 +475,20 @@ export default function TeacherDashboardShell({
 
         {/* Main Body */}
         <main className="mx-auto w-full max-w-5xl px-6 py-6 sm:px-10 space-y-6">
+          {readOnly && (
+            <div className="mb-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-4">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-bold text-amber-900 dark:text-amber-300">Admin Preview Mode</h3>
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                    You are viewing the educator dashboard in read-only preview mode. You cannot save changes or accept bookings.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'profile' ? (
             <TeacherAccountTab
               profile={profile}

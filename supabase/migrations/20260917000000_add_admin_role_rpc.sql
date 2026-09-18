@@ -36,7 +36,12 @@ BEGIN
     RAISE EXCEPTION 'Unauthorized: Only admins can change user roles';
   END IF;
 
-  -- 4. Update the target user's role
+  -- 4. Validate the requested role
+  IF p_role NOT IN ('student', 'teacher', 'admin') THEN
+    RAISE EXCEPTION 'Invalid role: %', p_role;
+  END IF;
+
+  -- 5. Update the target user's role
   UPDATE profiles
   SET role = p_role,
       user_type = CASE 
