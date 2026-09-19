@@ -4,16 +4,21 @@ import { useState } from 'react';
 import { Send } from 'lucide-react';
 
 export default function ContactSection() {
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
 
-  const services = [
-    'Amharic Lessons',
-    'Tigrigna Lessons',
-    'Somali Lessons',
-    'Afaan Oromo Lessons',
-    'Swahili Lessons',
-    'Interpreter Training',
-    'Other'
+  const languages = [
+    'Amharic',
+    'Tigrigna',
+    'Somali',
+    'Afaan Oromo',
+    'Swahili'
+  ];
+
+  const tracks = [
+    'Heritage & Family',
+    'Professional & Interpreter Prep',
+    'Just exploring'
   ];
 
   return (
@@ -58,23 +63,45 @@ export default function ContactSection() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-xs sm:text-sm font-medium text-stone-400">Service</label>
-              <div className="flex flex-wrap gap-2">
-                {services.map((service) => (
-                  <button
-                    key={service}
-                    type="button"
-                    onClick={() => setSelectedService(service)}
-                    className={`px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium border transition-all ${
-                      selectedService === service
-                        ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
-                        : 'bg-[#0c0a09] border-stone-800/80 text-stone-400 hover:border-stone-600 hover:text-stone-200'
-                    }`}
-                  >
-                    {service}
-                  </button>
-                ))}
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="text-xs sm:text-sm font-medium text-stone-400">Language</label>
+                <div className="flex flex-wrap gap-2">
+                  {languages.map((language) => (
+                    <button
+                      key={language}
+                      type="button"
+                      onClick={() => setSelectedLanguage(language)}
+                      className={`px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium border transition-all ${
+                        selectedLanguage === language
+                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
+                          : 'bg-[#0c0a09] border-stone-800/80 text-stone-400 hover:border-stone-600 hover:text-stone-200'
+                      }`}
+                    >
+                      {language}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-xs sm:text-sm font-medium text-stone-400">What are you looking for?</label>
+                <div className="flex flex-wrap gap-2">
+                  {tracks.map((track) => (
+                    <button
+                      key={track}
+                      type="button"
+                      onClick={() => setSelectedTrack(track)}
+                      className={`px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium border transition-all ${
+                        selectedTrack === track
+                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-400'
+                          : 'bg-[#0c0a09] border-stone-800/80 text-stone-400 hover:border-stone-600 hover:text-stone-200'
+                      }`}
+                    >
+                      {track}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
