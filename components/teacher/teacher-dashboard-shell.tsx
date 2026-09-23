@@ -70,6 +70,7 @@ export default function TeacherDashboardShell({
   teacherProfile,
   upcomingBookings,
   pastBookings,
+  readOnly = false,
 }: TeacherDashboardShellProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts' | 'profile'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
