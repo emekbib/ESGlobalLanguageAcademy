@@ -38,20 +38,57 @@ export default function DashboardMessagesTab({
     // Load contacts based on bookings
     async function loadContacts() {
       try {
-        const { data: bookings, error } = await supabase
-          .from('bookings')
-          .select('student_id, teacher_id, teacher_profiles(user_id)')
-          .or(`student_id.eq.${currentUser.id},teacher_profiles.user_id.eq.${currentUser.id}`);
-
-        if (error) throw error;
-
         const uniqueUserIds = new Set<string>();
-        (bookings || []).forEach(b => {
-          if (b.student_id !== currentUser.id) uniqueUserIds.add(b.student_id);
-          const tp = b.teacher_profiles as any;
-          const teacherUserId = Array.isArray(tp) ? tp[0]?.user_id : tp?.user_id;
-          if (teacherUserId && teacherUserId !== currentUser.id) uniqueUserIds.add(teacherUserId);
-        });
+
+        // 1. Check if currentUser has a teacher profile
+        const { data: teacherProfile } = await supabase
+          .from('teacher_profiles')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+        const teacherProfileId = teacherProfile?.id;
+
+        // 2. Query bookings using direct columns on the bookings table
+        let bookingsQuery = supabase
+          .from('bookings')
+          .select('student_id, teacher_id, teacher_profiles(user_id)');
+
+        if (teacherProfileId) {
+          bookingsQuery = bookingsQuery.or(`student_id.eq.${currentUser.id},teacher_id.eq.${teacherProfileId}`);
+        } else {
+          bookingsQuery = bookingsQuery.eq('student_id', currentUser.id);
+        }
+
+        const { data: bookings, error: bookingsError } = await bookingsQuery;
+
+        if (bookingsError) {
+          console.warn('Notice loading booking contacts:', bookingsError.message);
+        } else if (bookings) {
+          bookings.forEach((b) => {
+            if (b.student_id && b.student_id !== currentUser.id) {
+              uniqueUserIds.add(b.student_id);
+            }
+            const tp = b.teacher_profiles as any;
+            const teacherUserId = Array.isArray(tp) ? tp[0]?.user_id : tp?.user_id;
+            if (teacherUserId && teacherUserId !== currentUser.id) {
+              uniqueUserIds.add(teacherUserId);
+            }
+          });
+        }
+
+        // 3. Also check direct messages for past conversations
+        const { data: directMessages, error: msgError } = await supabase
+          .from('messages')
+          .select('sender_id, receiver_id')
+          .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+
+        if (!msgError && directMessages) {
+          directMessages.forEach((m) => {
+            if (m.sender_id && m.sender_id !== currentUser.id) uniqueUserIds.add(m.sender_id);
+            if (m.receiver_id && m.receiver_id !== currentUser.id) uniqueUserIds.add(m.receiver_id);
+          });
+        }
 
         if (uniqueUserIds.size === 0) {
           setContacts([]);
@@ -61,14 +98,21 @@ export default function DashboardMessagesTab({
 
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id:user_id, full_name, avatar_url, role')
+          .select('user_id, full_name, avatar_url, role')
           .in('user_id', Array.from(uniqueUserIds));
 
         if (!profilesError && profiles) {
-          setContacts(profiles);
+          setContacts(
+            profiles.map((p) => ({
+              id: p.user_id,
+              full_name: p.full_name || 'Academy Member',
+              avatar_url: p.avatar_url,
+              role: p.role || 'student',
+            })),
+          );
         }
-      } catch (err) {
-        console.error('Error loading contacts:', err);
+      } catch (err: any) {
+        console.error('Error loading contacts:', err?.message || err);
       } finally {
         setLoadingContacts(false);
       }
