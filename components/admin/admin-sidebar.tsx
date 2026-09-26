@@ -18,7 +18,7 @@ import {
   Calendar,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'applications' | 'reviews' | 'accounts' | 'educators';
+export type AdminTab = 'overview' | 'reviews' | 'accounts' | 'educators';
 
 type AdminSidebarProps = {
   fullName: string;
@@ -26,7 +26,6 @@ type AdminSidebarProps = {
   activeTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
   onOpenLogout: () => void;
-  pendingCount: number;
   flaggedCount: number;
   totalAccounts: number;
 };
@@ -37,7 +36,6 @@ export default function AdminSidebar({
   activeTab,
   onTabChange,
   onOpenLogout,
-  pendingCount,
   flaggedCount,
   totalAccounts,
 }: AdminSidebarProps) {
@@ -67,13 +65,6 @@ export default function AdminSidebar({
       id: 'overview',
       label: 'Operations Overview',
       icon: LayoutDashboard,
-    },
-    {
-      id: 'applications',
-      label: 'Pending Educators',
-      icon: GraduationCap,
-      badge: pendingCount,
-      badgeColor: 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400',
     },
     {
       id: 'educators',

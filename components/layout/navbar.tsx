@@ -166,7 +166,7 @@ export default function Navbar({
                   {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </button>
                 {userProfile && (
-                  <ProfileMenu fullName={userProfile.full_name} avatarUrl={userProfile.avatar_url} />
+                  <ProfileMenu fullName={userProfile.full_name} avatarUrl={userProfile.avatar_url} role={userRole} />
                 )}
               </div>
             </div>

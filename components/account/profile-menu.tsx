@@ -16,9 +16,10 @@ import {
 type ProfileMenuProps = {
   fullName: string;
   avatarUrl: string | null;
+  role?: string | null;
 };
 
-export default function ProfileMenu({ fullName, avatarUrl }: ProfileMenuProps) {
+export default function ProfileMenu({ fullName, avatarUrl, role }: ProfileMenuProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const [signingOut, setSigningOut] = useState(false);
@@ -54,7 +55,7 @@ export default function ProfileMenu({ fullName, avatarUrl }: ProfileMenuProps) {
           <Settings className="mr-2 h-4 w-4" />
           Profile and settings
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => router.push('/dashboard')}>
+        <DropdownMenuItem onSelect={() => router.push(role === 'teacher' ? '/teacher/dashboard' : role === 'admin' ? '/admin' : '/dashboard')}>
           <UserRound className="mr-2 h-4 w-4" />
           My dashboard
         </DropdownMenuItem>

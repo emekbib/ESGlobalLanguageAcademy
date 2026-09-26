@@ -161,7 +161,6 @@ export default function AdminDashboardShell({
               <div className="mt-6 space-y-1.5">
                 {[
                   { id: 'overview', label: 'Operations Overview', icon: SlidersHorizontal },
-                  { id: 'applications', label: `Applications (${pendingCount})`, icon: GraduationCap },
                   { id: 'educators', label: 'Faculty Directory', icon: GraduationCap },
                   { id: 'reviews', label: `Flagged Reviews (${flaggedCount})`, icon: AlertTriangle },
                   { id: 'accounts', label: `User Accounts (${totalAccounts})`, icon: Users },
@@ -227,7 +226,6 @@ export default function AdminDashboardShell({
             <div className="inline-flex max-w-full overflow-x-auto rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 p-1 shadow-sm no-scrollbar">
               {[
                 { id: 'overview', label: 'All Operations' },
-                { id: 'applications', label: `Applications (${pendingCount})` },
                 { id: 'educators', label: 'Faculty' },
                 { id: 'reviews', label: `Flags (${flaggedCount})` },
                 { id: 'accounts', label: `Users (${totalAccounts})` },
@@ -248,29 +246,8 @@ export default function AdminDashboardShell({
             </div>
           </div>
 
-          {/* 3-Card Operational Metrics Strip */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div
-              onClick={() => setActiveTab('applications')}
-              role="button"
-              tabIndex={0}
-              className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                  Pending Educators
-                </span>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
-                    {pendingCount}
-                  </span>
-                  <span className="text-xs text-stone-400">Applications</span>
-                </div>
-              </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300 ring-1 ring-amber-500/20 group-hover:scale-105 transition-transform">
-                <Clock className="h-5 w-5" />
-              </div>
-            </div>
+          {/* 2-Card Operational Metrics Strip */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
             <div
               onClick={() => setActiveTab('reviews')}
@@ -317,66 +294,6 @@ export default function AdminDashboardShell({
             </div>
           </div>
 
-          {/* Tab Content: Applications or Overview */}
-          {(activeTab === 'overview' || activeTab === 'applications') && (
-            <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
-              <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
-                <div>
-                  <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
-                    Teacher Applications
-                  </h2>
-                  <p className="text-xs text-stone-400 mt-0.5">
-                    {pendingCount} candidate{pendingCount !== 1 ? 's' : ''} awaiting accreditation
-                  </p>
-                </div>
-                {activeTab === 'overview' && pendingCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('applications')}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline"
-                  >
-                    <span>View all</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {applications.length ? (
-                  applications.map((app) => (
-                    <article
-                      key={app.id}
-                      className="rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 p-5 transition hover:border-stone-300 dark:hover:border-stone-700"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div>
-                          <h3 className="font-display font-bold text-stone-950 dark:text-white text-base">
-                            {names[app.user_id] ?? 'Educator Applicant'}
-                          </h3>
-                          <p className="mt-1 text-xs font-semibold text-stone-500 dark:text-stone-400">
-                            {app.languages_taught?.join(', ') || 'Languages not specified'} · ${app.hourly_rate}/50 min · {app.years_experience} yrs exp
-                          </p>
-                        </div>
-                        <ApplicationActions teacherId={app.id} />
-                      </div>
-                      {app.bio && (
-                        <p className="mt-3 line-clamp-3 text-xs sm:text-sm leading-relaxed text-stone-600 dark:text-stone-300">
-                          {app.bio}
-                        </p>
-                      )}
-                    </article>
-                  ))
-                ) : (
-                  <div className="py-12 text-center">
-                    <UserCheck className="mx-auto h-8 w-8 text-stone-300 dark:text-stone-600" />
-                    <p className="mt-2 text-xs font-semibold text-stone-400">
-                      No pending educator applications.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
 
           {/* Tab Content: Educators or Overview */}
           {(activeTab === 'overview' || activeTab === 'educators') && (
