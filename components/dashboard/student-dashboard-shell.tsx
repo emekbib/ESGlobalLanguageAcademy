@@ -43,12 +43,14 @@ type StudentDashboardShellProps = {
   };
   upcoming: BookingItem[];
   past: BookingItem[];
+  tutors: any[];
 };
 
 export default function StudentDashboardShell({
   profile,
   upcoming,
   past,
+  tutors,
 }: StudentDashboardShellProps) {
   const [activeTab, setActiveTab] = useState<'lessons' | 'teachers' | 'tutors' | 'settings'>('lessons');
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -245,7 +247,7 @@ export default function StudentDashboardShell({
 
           {/* TAB 3: MY TUTORS */}
           {activeTab === 'tutors' && (
-            <DashboardTutorsTab onFindMore={() => setActiveTab('teachers')} />
+            <DashboardTutorsTab tutors={tutors} onFindMore={() => setActiveTab('teachers')} />
           )}
 
           {/* TAB 4: PROFILE & SETTINGS */}

@@ -12,14 +12,16 @@ import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 import BookingCard from '@/components/teacher/booking-card';
 
 export default function DashboardTutorsTab({
+  tutors,
   onFindMore,
 }: {
+  tutors: any[];
   onFindMore: () => void;
 }) {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
-  const myTutors = SAMPLE_TEACHERS.slice(0, 2); // Sample connected tutors
+  const myTutors = tutors.length > 0 ? tutors : SAMPLE_TEACHERS.slice(0, 2);
 
-  const selectedTeacher = SAMPLE_TEACHERS.find((t) => t.id === selectedTeacherId);
+  const selectedTeacher = myTutors.find((t) => t.id === selectedTeacherId);
 
   return (
     <div className="space-y-6 animate-fade-in">

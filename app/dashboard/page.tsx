@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
   const teacherIds = Array.from(new Set((bookings ?? []).map((b) => b.teacher_id)));
   const { data: teacherProfiles, error: teacherError } = teacherIds.length
-    ? await supabase.from('teacher_profiles').select('id, user_id').in('id', teacherIds)
+    ? await supabase.from('teacher_profiles').select('id, user_id, languages_taught, hourly_rate').in('id', teacherIds)
     : { data: [], error: null };
 
   if (teacherError) {
@@ -67,11 +67,25 @@ export default async function DashboardPage() {
   const upcoming = enriched.filter((b) => new Date(b.start_time_utc) >= now && b.status !== 'cancelled');
   const past = enriched.filter((b) => new Date(b.start_time_utc) < now || b.status === 'cancelled');
 
+  const myTutors = (teacherProfiles ?? []).map((t) => {
+    const up = userProfileMap.get(t.user_id);
+    return {
+      id: t.id,
+      name: up?.full_name ?? 'Teacher',
+      avatarUrl: up?.avatar_url ?? null,
+      languages: t.languages_taught ?? [],
+      hourlyRate: t.hourly_rate ?? 25,
+      rating: 5.0, // Mocked for now
+      lessonsTaught: 0, // Mocked for now
+    };
+  });
+
   return (
     <StudentDashboardShell
       profile={profile}
       upcoming={upcoming as any}
       past={past as any}
+      tutors={myTutors as any}
     />
   );
 }
