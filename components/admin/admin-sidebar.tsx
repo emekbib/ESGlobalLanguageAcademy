@@ -117,25 +117,25 @@ export default function AdminSidebar({
   ];
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col justify-between border-r border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 px-4 py-4 md:flex transition-colors duration-200 overflow-hidden select-none">
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col justify-between border-r border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 px-5 py-6 md:flex transition-colors duration-200 select-none">
       <div className="flex flex-col">
         {/* Brand Logo: Clean Monogram + Editorial Wordmark */}
         <div className="flex items-center justify-between px-2 py-1">
-          <Link href="/" className="flex items-center gap-2.5 transition hover:opacity-90 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm transition group-hover:scale-105">
-              <GraduationCap className="h-4 w-4" />
+          <Link href="/" className="flex items-center gap-3 transition hover:opacity-90 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm transition group-hover:scale-105">
+              <GraduationCap className="h-5 w-5" />
             </div>
             <div className="leading-tight">
-              <div className="flex items-center gap-1.5">
-                <span className="font-display text-base font-bold tracking-tight text-stone-950 dark:text-white">
+              <div className="flex items-center gap-2">
+                <span className="font-display text-lg font-bold tracking-tight text-stone-950 dark:text-white">
                   ESGlobal
                 </span>
-                <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-1 py-0.2 text-[8px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
                   Admin
                 </span>
               </div>
-              <span className="block text-[9px] font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                Operations
+              <span className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                Operations Console
               </span>
             </div>
           </Link>
@@ -143,18 +143,18 @@ export default function AdminSidebar({
           <Link
             href="/"
             title="View Public Academy"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-white transition"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-white transition"
           >
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="h-4 w-4" />
           </Link>
         </div>
 
         {/* Primary Admin Navigation */}
-        <div className="mt-5">
-          <p className="px-2 text-[9px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-1.5">
+        <div className="mt-6">
+          <p className="px-3.5 text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-2.5">
             Operations Menu
           </p>
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -163,23 +163,23 @@ export default function AdminSidebar({
                   key={item.id}
                   type="button"
                   onClick={() => onTabChange(item.id)}
-                  className={`group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  className={`group flex w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-[15px] font-semibold transition-all duration-150 cursor-pointer ${
                     isActive
                       ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950 shadow-sm'
-                      : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white'
+                      : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white'
                   }`}
                 >
                   <Icon
-                    className={`h-4 w-4 shrink-0 transition-transform ${
+                    className={`h-5 w-5 shrink-0 transition-transform ${
                       isActive
                         ? 'text-amber-300 dark:text-stone-950'
-                        : 'text-stone-400 dark:text-stone-500 group-hover:text-stone-700 dark:group-hover:text-stone-300'
+                        : 'text-stone-400 dark:text-stone-400 group-hover:text-stone-700 dark:group-hover:text-stone-200'
                     }`}
                   />
                   <span className="truncate">{item.label}</span>
                   {typeof item.badge === 'number' && item.badge > 0 && (
                     <span
-                      className={`ml-auto rounded-full border px-1.5 py-0.2 text-[9px] font-bold ${
+                      className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-bold ${
                         isActive
                           ? 'border-white/20 bg-white/20 text-white dark:border-stone-950/20 dark:bg-stone-950/10 dark:text-stone-950'
                           : item.badgeColor
@@ -195,38 +195,38 @@ export default function AdminSidebar({
         </div>
 
         {/* Academy Portals Section */}
-        <div className="mt-3.5 pt-2.5 border-t border-stone-100 dark:border-stone-800">
-          <p className="px-2 text-[9px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-1">
+        <div className="mt-6 pt-5 border-t border-stone-100 dark:border-stone-800">
+          <p className="px-3.5 text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-2">
             Academy Portals
           </p>
-          <div className="space-y-0.5">
+          <div className="space-y-1.5">
             <Link
               href="/teacher/dashboard"
-              className="flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition group"
+              className="flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition group"
             >
-              <div className="flex items-center gap-2">
-                <GraduationCap className="h-3.5 w-3.5 text-stone-400 group-hover:text-amber-500 transition-colors" />
+              <div className="flex items-center gap-3">
+                <GraduationCap className="h-5 w-5 text-stone-400 group-hover:text-amber-500 transition-colors" />
                 <span>Educator Space</span>
               </div>
-              <ArrowRight className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <ArrowRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
             </Link>
 
             <Link
               href="/"
-              className="flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition group"
+              className="flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition group"
             >
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-stone-400 group-hover:text-amber-500 transition-colors" />
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-stone-400 group-hover:text-amber-500 transition-colors" />
                 <span>Academy Homepage</span>
               </div>
-              <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <ExternalLink className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Bottom Controls: Theme Switcher & Admin Capsule */}
-      <div className="space-y-2.5 pt-3 border-t border-stone-150 dark:border-stone-800">
+      <div className="space-y-3 pt-5 border-t border-stone-150 dark:border-stone-800">
         {/* Dark Mode Toggle */}
         <div
           onClick={toggleTheme}
@@ -238,14 +238,14 @@ export default function AdminSidebar({
               toggleTheme();
             }
           }}
-          className="flex items-center justify-between rounded-xl px-2.5 py-1.5 cursor-pointer transition hover:bg-stone-100 dark:hover:bg-stone-800/80"
+          className="flex items-center justify-between rounded-2xl px-3.5 py-2.5 cursor-pointer transition hover:bg-stone-100 dark:hover:bg-stone-800/80"
           aria-label="Toggle dark mode"
         >
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-700 dark:text-stone-300 select-none">
+          <div className="flex items-center gap-3 text-sm font-semibold text-stone-700 dark:text-stone-300 select-none">
             {isDark ? (
-              <Sun className="h-3.5 w-3.5 text-amber-400" />
+              <Sun className="h-4.5 w-4.5 text-amber-400" />
             ) : (
-              <Moon className="h-3.5 w-3.5 text-stone-500" />
+              <Moon className="h-4.5 w-4.5 text-stone-500" />
             )}
             <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
           </div>
@@ -258,22 +258,22 @@ export default function AdminSidebar({
               e.stopPropagation();
               toggleTheme();
             }}
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+            className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
               isDark ? 'bg-amber-400' : 'bg-stone-200 dark:bg-stone-700'
             }`}
           >
             <span
               className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-stone-950 shadow-sm transition duration-200 ease-in-out ${
-                isDark ? 'translate-x-4' : 'translate-x-0'
+                isDark ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </button>
         </div>
 
         {/* User Capsule */}
-        <div className="flex items-center justify-between rounded-xl p-2 border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/60 transition hover:bg-stone-50 dark:hover:bg-stone-800">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone-950 dark:bg-stone-800 border border-stone-800 dark:border-stone-700 text-xs font-bold text-amber-300 shadow-sm">
+        <div className="flex items-center justify-between rounded-2xl p-3 border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/60 transition hover:bg-stone-50 dark:hover:bg-stone-800">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone-950 dark:bg-stone-800 border border-stone-800 dark:border-stone-700 text-sm font-bold text-amber-300 shadow-sm">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={fullName} className="h-full w-full object-cover" />
               ) : (
@@ -281,8 +281,8 @@ export default function AdminSidebar({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-stone-900 dark:text-white">{fullName}</p>
-              <span className="inline-flex items-center rounded-md bg-amber-500/10 px-1 py-0.2 text-[8px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 border border-amber-500/20">
+              <p className="truncate text-sm font-bold text-stone-950 dark:text-white">{fullName}</p>
+              <span className="inline-flex items-center rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 border border-amber-500/20">
                 Administrator
               </span>
             </div>
@@ -291,11 +291,11 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={onOpenLogout}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-stone-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-stone-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition"
             title="Sign out"
             aria-label="Sign out"
           >
-            <LogOut className="h-3.5 w-3.5" />
+            <LogOut className="h-4 w-4" />
           </button>
         </div>
       </div>

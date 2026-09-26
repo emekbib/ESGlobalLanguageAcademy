@@ -301,7 +301,7 @@ export default function AdminDashboardShell({
       )}
 
       {/* Main Content Area */}
-      <main className="md:pl-64 transition-all">
+      <main className="md:pl-72 transition-all">
         <div className="mx-auto max-w-6xl px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
           {/* TAB 0: OPERATIONS OVERVIEW ONLY */}
           {activeTab === 'overview' && (
@@ -875,16 +875,6 @@ export default function AdminDashboardShell({
                     {flaggedCount} item{flaggedCount !== 1 ? 's' : ''} reported or rated below 3 stars
                   </p>
                 </div>
-                {activeTab === 'overview' && flaggedCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('reviews')}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline"
-                  >
-                    <span>View all</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                )}
               </div>
 
               <div className="mt-6 space-y-4">
