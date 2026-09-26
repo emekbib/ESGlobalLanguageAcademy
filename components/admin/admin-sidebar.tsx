@@ -193,6 +193,36 @@ export default function AdminSidebar({
             })}
           </nav>
         </div>
+
+        {/* Academy Portals Section */}
+        <div className="mt-3.5 pt-2.5 border-t border-stone-100 dark:border-stone-800">
+          <p className="px-2 text-[9px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-1">
+            Academy Portals
+          </p>
+          <div className="space-y-0.5">
+            <Link
+              href="/teacher/dashboard"
+              className="flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition group"
+            >
+              <div className="flex items-center gap-2">
+                <GraduationCap className="h-3.5 w-3.5 text-stone-400 group-hover:text-amber-500 transition-colors" />
+                <span>Educator Space</span>
+              </div>
+              <ArrowRight className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+            </Link>
+
+            <Link
+              href="/"
+              className="flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition group"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-3.5 w-3.5 text-stone-400 group-hover:text-amber-500 transition-colors" />
+                <span>Academy Homepage</span>
+              </div>
+              <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Bottom Controls: Theme Switcher & Admin Capsule */}
