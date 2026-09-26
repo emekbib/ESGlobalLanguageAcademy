@@ -4,8 +4,8 @@ import { createBrowserClient } from '@supabase/ssr';
 
 function getSupabaseConfig() {
   const isServer = typeof window === 'undefined';
-  const url = process.env.NEXT_SUPABASE_URL;
-  const anonKey = process.env.NEXT_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (isServer) {
     return {
@@ -15,7 +15,7 @@ function getSupabaseConfig() {
   }
 
   if (!url || !anonKey) {
-    throw new Error('Supabase configuration is missing. Add NEXT_SUPABASE_URL and NEXT_SUPABASE_ANON_KEY to the deployment environment.');
+    throw new Error('Supabase configuration is missing. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to the deployment environment.');
   }
 
   return { url, anonKey };

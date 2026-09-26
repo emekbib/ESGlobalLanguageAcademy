@@ -124,7 +124,7 @@ export default function StudentDashboardShell({
                   Welcome back, {profile.full_name}
                 </h1>
                 <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                  Manage your scheduled 1-on-1 video lessons and connect with verified native educators.
+                  Manage your scheduled 1-on-1 video lessons and connect with native educators.
                 </p>
               </div>
 

@@ -56,7 +56,7 @@ export default function DashboardTeachersTab() {
             Book 1-on-1 Lessons
           </h2>
           <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-medium">
-            Select verified native educators, compare hourly rates, and schedule private video sessions.
+            Select native educators, compare hourly rates, and schedule private video sessions.
           </p>
         </div>
 
@@ -159,10 +159,12 @@ export default function DashboardTeachersTab() {
                     <h3 className="font-display text-base font-bold text-stone-900 dark:text-white group-hover:text-stone-700 dark:group-hover:text-stone-300 transition">
                       {teacher.name}
                     </h3>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                      <BadgeCheck className="h-3.5 w-3.5" />
-                      Verified
-                    </span>
+                    {teacher.teacherType === 'professional' && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                        Verified Track 2
+                      </span>
+                    )}
                   </div>
 
                   <p className="mt-1 line-clamp-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium">

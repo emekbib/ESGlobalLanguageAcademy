@@ -603,9 +603,11 @@ export default function TeacherDashboardShell({
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400 shadow-sm ring-1 ring-indigo-500/20">
                           <GraduationCap className="h-4 w-4" />
                         </div>
-                        <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
-                          Verified
-                        </span>
+                        {teacherProfile.teacher_type === 'professional' && (
+                          <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                            Verified Track 2
+                          </span>
+                        )}
                       </div>
                       <div className="mt-4">
                         <div className="flex items-baseline gap-1.5">

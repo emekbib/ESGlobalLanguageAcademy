@@ -56,7 +56,6 @@ export default function NotFound() {
                 { name: 'Tigrigna', q: 'tigrigna' },
                 { name: 'Afaan Oromo', q: 'afaan oromo' },
                 { name: 'Somali', q: 'somali' },
-                { name: 'Swahili', q: 'swahili' },
               ].map((lang) => (
                 <Link
                   key={lang.name}

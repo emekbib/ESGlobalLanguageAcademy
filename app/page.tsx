@@ -110,19 +110,14 @@ export default function Home() {
                 alt="Tutor Chaltu"
               />
             </div>
-            <span className="text-xs font-semibold text-white/90">
-              <Star className="inline h-3.5 w-3.5 fill-amber-400 text-amber-400 mr-1" />
-              4.98 · 15,000+ lessons completed
-            </span>
           </div>
-
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
-            Master Conversations in Amharic, Tigrigna, Afaan Oromo, Somali &amp; Swahili
+            Master Conversations in Amharic, Tigrigna, Afaan Oromo &amp; Somali
           </h1>
 
           <p className="mx-auto mt-5 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg text-white drop-shadow-[0_2px_16px_rgba(0,0,0,1)] leading-relaxed" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7)' }}>
-            1-on-1 private video lessons with accredited native educators. Tailored for heritage
-            learners reconnecting with family, diaspora youth, and professional interpreters.
+            1-on-1 private video lessons with native educators. Tailored for heritage
+            learners reconnecting with family, diaspora youth, professional interpreters, and the curious learner.
           </p>
 
           {/* CTA Button */}
@@ -150,7 +145,7 @@ export default function Home() {
           <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 text-center md:grid-cols-4 md:divide-x md:divide-white/10">
             <div className="px-2 sm:px-3">
               <p className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
-                5 Languages
+                4 Languages
               </p>
               <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">
                 Horn &amp; East Africa
@@ -174,10 +169,10 @@ export default function Home() {
             </div>
             <div className="px-2 sm:px-3">
               <p className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
-                Global Hubs
+                Self Paced
               </p>
               <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-stone-300/80">
-                DC · Mpls · Seattle · London
+                Learn Anywhere, Anytime
               </p>
             </div>
           </div>
@@ -195,7 +190,7 @@ export default function Home() {
               Authentic language mastery, made simple.
             </h2>
             <p className="mt-4 text-sm text-stone-500 font-medium">
-              We&apos;ve combined rigorous native curriculum with seamless booking technology so you can focus entirely on fluency.
+              We provide a seamless platform connecting you with native speakers so you can focus entirely on fluency.
             </p>
           </div>
 
@@ -203,14 +198,14 @@ export default function Home() {
             {/* Step 1 / Feature 1 */}
             <div className="flex flex-col">
               <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
-                <Image src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=600&auto=format&fit=crop" alt="Discover educators" fill className="object-cover" />
+                <Image src="https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=600&auto=format&fit=crop" alt="Discover educators" fill className="object-cover" />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">01. Discover</div>
               </div>
               <h3 className="font-display text-lg font-bold text-stone-900">
-                Vetted University-Trained Faculty
+                A Transparent Open Market
               </h3>
               <p className="mt-2.5 text-sm leading-relaxed text-stone-600 font-medium">
-                Explore certified native educators filtered by language, dialect, and verified degrees. Many are alumni of premier East African institutions.
+                Choose your perfect teacher based on authentic community reviews. Switch educators at any time with zero hassle to find the right match for you.
               </p>
             </div>
 
@@ -231,7 +226,7 @@ export default function Home() {
             {/* Step 3 / Feature 3 */}
             <div className="flex flex-col">
               <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
-                <Image src="/scripts-graphic.jpg" alt="Fidel, Qubee, and Somali Latin scripts" fill className="object-cover" />
+                <Image src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=600&auto=format&fit=crop" alt="Fidel, Qubee, and Somali Latin scripts" fill className="object-cover" />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">03. Learn</div>
               </div>
               <h3 className="font-display text-lg font-bold text-stone-900">
@@ -288,6 +283,10 @@ export default function Home() {
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
                   Tailored curriculum for diaspora children &amp; young adults
                 </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
+                  Taught by community native speakers instantly available on the platform
+                </li>
               </ul>
               <div className="mt-6 pt-5 border-t border-stone-200/80">
                 <Link
@@ -325,7 +324,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-stone-900 shrink-0" />
-                  Coaching from university alumni (Addis Ababa University, Asmara, Nairobi)
+                  Learn from rigorously reviewed educators with university degrees in advanced language and related fields
                 </li>
               </ul>
               <div className="mt-6 pt-5 border-t border-stone-200/80">
@@ -416,7 +415,7 @@ export default function Home() {
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base text-stone-300/80 leading-relaxed">
               Join diaspora learners across North America, Europe, and worldwide. Book your 1-on-1
-              session with an accredited native educator in under 2 minutes.
+              session with a native educator in under 2 minutes.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3.5 sm:flex-row">
               <Link

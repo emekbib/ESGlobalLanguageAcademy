@@ -315,18 +315,6 @@ export default function AuthPage() {
               <span>256-bit SSL encrypted · Verified platform</span>
             </div>
 
-            {/* Social proof strip inside card */}
-            <div className="mt-6 border-t border-stone-100 dark:border-stone-800 pt-5 text-center">
-              <div className="flex items-center justify-center gap-1 text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                ))}
-                <span className="ml-1.5 text-xs font-bold text-stone-800 dark:text-stone-200">4.98 / 5.0</span>
-              </div>
-              <p className="mt-1 text-[11px] text-stone-400 dark:text-stone-500">
-                Over 15,000 lessons taught by verified educators worldwide
-              </p>
-            </div>
           </>
         )}
       </div>

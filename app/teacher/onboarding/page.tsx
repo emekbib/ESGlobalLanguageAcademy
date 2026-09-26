@@ -14,7 +14,6 @@ const AVAILABLE_LANGUAGES = [
   'Tigrigna',
   'Afaan Oromo',
   'Somali',
-  'Swahili',
 ];
 
 const SPECIALTY_OPTIONS = [
@@ -204,7 +203,7 @@ export default function TeacherOnboardingPage() {
                   {teacherType === 'professional' && <Check className="h-4 w-4 text-stone-950" />}
                 </div>
                 <p className="mt-2 text-xs text-stone-500 leading-relaxed font-medium">
-                  Certified educator with university degree or accredited language certification (Goethe, CELTA, DELF, etc.).
+                  Educator with university degree in advanced language or related fields.
                 </p>
               </button>
 

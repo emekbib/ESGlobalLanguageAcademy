@@ -103,7 +103,7 @@ function TeachersPageContent() {
           </span>
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-          Browse verified educators across Amharic, Tigrigna, Afaan Oromo, Somali, and Swahili, tailored to your schedule and learning goals.
+          Browse educators across Amharic, Tigrigna, Afaan Oromo, and Somali, tailored to your schedule and learning goals.
         </p>
       </section>
 

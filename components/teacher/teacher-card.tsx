@@ -40,7 +40,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
         {/* Small "Top Teacher" badge at bottom-left inside the photo */}
         {teacher.teacherType === 'professional' && (
           <span className="absolute bottom-3 left-3 rounded-full border border-stone-200/40 dark:border-stone-700/60 bg-white/95 dark:bg-stone-900/95 px-3 py-1 text-[11px] font-bold text-stone-900 dark:text-stone-100 shadow-sm backdrop-blur-md">
-            Top Teacher
+            Verified Track 2
           </span>
         )}
       </div>
@@ -53,7 +53,6 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
             <h3 className="truncate font-display text-base font-bold tracking-tight text-stone-950 dark:text-white group-hover:text-stone-700 dark:group-hover:text-stone-200 transition">
               {teacher.name}
             </h3>
-            <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />

@@ -50,11 +50,11 @@ export default function FeaturedTeachers() {
           <h2 className="mt-1 font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-950">
             Top Educators.{' '}
             <span className="font-normal text-stone-400">
-              Verified 1-on-1 language masters
+              Native 1-on-1 language masters
             </span>
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-stone-500 font-medium">
-            Book private lessons with certified native speakers tailored to your fluency goals.
+            Book private lessons with native speakers tailored to your fluency goals.
           </p>
         </div>
 

@@ -108,7 +108,7 @@ export default function DashboardSpotlight({
           </div>
 
           <h2 className="mt-2.5 font-display text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-stone-950 dark:text-white leading-tight">
-            Connect directly with verified native teachers.
+            Connect directly with native teachers.
           </h2>
 
           <p className="mt-2 text-xs sm:text-sm leading-relaxed text-stone-600 dark:text-stone-300 max-w-xl font-medium">

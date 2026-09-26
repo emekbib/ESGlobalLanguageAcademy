@@ -22,7 +22,6 @@ const LEARNING_LANGUAGES = [
   'Tigrigna',
   'Afaan Oromo',
   'Somali',
-  'Swahili',
 ];
 
 const LEARNING_GOALS = [
@@ -236,7 +235,7 @@ export default function OnboardingPage() {
                         )}
                       </div>
                       <p className="mt-1 text-xs leading-relaxed text-stone-500 font-medium">
-                        Book private 1-on-1 video lessons with certified native speakers. Learn on your schedule with zero subscription commitments.
+                        Book private 1-on-1 video lessons with native speakers. Learn on your schedule with zero subscription commitments.
                       </p>
 
                       <div className="mt-3 flex flex-wrap gap-1.5">

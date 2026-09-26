@@ -229,7 +229,7 @@ export default function TeacherAccountTab({
               </label>
               <div className="flex items-center gap-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50 px-4 py-3 text-sm font-medium text-stone-600 dark:text-stone-300">
                 <GraduationCap className="h-4 w-4 text-amber-500" />
-                <span>Verified Native Educator</span>
+                <span>Native Educator</span>
               </div>
             </div>
           </div>
