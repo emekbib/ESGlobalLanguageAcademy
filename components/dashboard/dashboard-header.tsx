@@ -9,13 +9,15 @@ import {
   X,
   Compass,
   Users,
-  Calendar,
   SlidersHorizontal,
   LogOut,
   CheckCircle2,
   GraduationCap,
   Moon,
   Sun,
+  MessageSquare,
+  Calendar,
+  CreditCard,
 } from 'lucide-react';
 
 export default function DashboardHeader({
@@ -69,6 +71,8 @@ export default function DashboardHeader({
     lessons: 'My Lessons',
     teachers: 'Find a Native Teacher',
     tutors: 'My Tutors',
+    messages: 'Messages',
+    payments: 'Billing & Payments',
     settings: 'Profile & Settings',
   };
 
@@ -257,6 +261,8 @@ export default function DashboardHeader({
                 { id: 'lessons', label: 'My Lessons', icon: Calendar },
                 { id: 'teachers', label: 'Find Teachers', icon: Compass },
                 { id: 'tutors', label: 'My Tutors', icon: Users },
+                { id: 'messages', label: 'Messages', icon: MessageSquare },
+                { id: 'payments', label: 'Billing & Payments', icon: CreditCard },
                 { id: 'settings', label: 'Profile', icon: SlidersHorizontal },
               ].map((item) => {
                 const Icon = item.icon;

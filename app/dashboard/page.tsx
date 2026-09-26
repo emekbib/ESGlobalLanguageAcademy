@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, full_name, avatar_url')
+    .select('user_id, role, full_name, avatar_url')
     .eq('user_id', user.id)
     .maybeSingle();
 

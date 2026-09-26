@@ -14,7 +14,7 @@ export default async function TeacherDashboardPage() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, full_name, avatar_url')
+    .select('user_id, role, full_name, avatar_url')
     .eq('user_id', user.id)
     .maybeSingle();
 
@@ -105,6 +105,7 @@ export default async function TeacherDashboardPage() {
   return (
     <TeacherDashboardShell
       profile={{
+        user_id: profile.user_id,
         role: profile.role || 'teacher',
         full_name: profile.full_name || 'Educator',
         avatar_url: profile.avatar_url,

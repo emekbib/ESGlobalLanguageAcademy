@@ -21,6 +21,7 @@ import {
   SlidersHorizontal,
   Moon,
   Sun,
+  MessageSquare,
   LogOut,
   ArrowRight,
   CalendarDays,
@@ -30,6 +31,7 @@ import BookingsList from '@/components/student/bookings-list';
 import ConnectPayoutButton from './connect-payout-button';
 import LogoutModal from '@/components/dashboard/logout-modal';
 import TeacherAccountTab from './teacher-account-tab';
+import DashboardMessagesTab from '@/components/dashboard/dashboard-messages-tab';
 
 type BookingItem = {
   id: string;
@@ -45,6 +47,7 @@ type BookingItem = {
 
 type TeacherDashboardShellProps = {
   profile: {
+    user_id: string;
     role: string;
     full_name: string;
     avatar_url: string | null;
@@ -59,6 +62,7 @@ type TeacherDashboardShellProps = {
     is_published: boolean;
     stripe_account_id?: string | null;
     stripe_onboarding_complete?: boolean | null;
+    teacher_type?: string | null;
   } | null;
   upcomingBookings: BookingItem[];
   pastBookings: BookingItem[];
@@ -72,7 +76,7 @@ export default function TeacherDashboardShell({
   pastBookings,
   readOnly = false,
 }: TeacherDashboardShellProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts' | 'profile'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts' | 'messages' | 'profile'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -112,6 +116,11 @@ export default function TeacherDashboardShell({
       icon: CreditCard,
     },
     {
+      id: 'messages',
+      label: 'Messages',
+      icon: MessageSquare,
+    },
+    {
       id: 'profile',
       label: 'Account Details',
       icon: SlidersHorizontal,
@@ -123,6 +132,7 @@ export default function TeacherDashboardShell({
     schedule: 'Weekly Availability Schedule',
     bookings: 'Student Lesson Roster',
     payouts: 'Direct Bank Payouts',
+    messages: 'Student Messages',
     profile: 'Educator Profile & Account Details',
   };
 
@@ -778,6 +788,11 @@ export default function TeacherDashboardShell({
                     )}
                   />
                 </div>
+              )}
+              
+              {/* TAB 5: MESSAGES */}
+              {activeTab === 'messages' && (
+                <DashboardMessagesTab currentUser={{ id: profile.user_id, role: 'teacher' }} />
               )}
             </>
           )}

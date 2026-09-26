@@ -18,6 +18,8 @@ import DashboardSpotlight from './dashboard-spotlight';
 import DashboardTeachersTab from './dashboard-teachers-tab';
 import DashboardTutorsTab from './dashboard-tutors-tab';
 import DashboardSettingsTab from './dashboard-settings-tab';
+import DashboardMessagesTab from './dashboard-messages-tab';
+import DashboardPaymentsTab from './dashboard-payments-tab';
 import LogoutModal from './logout-modal';
 import BookingsList from '@/components/student/bookings-list';
 import BookingCard from '@/components/teacher/booking-card';
@@ -37,6 +39,7 @@ type BookingItem = {
 
 type StudentDashboardShellProps = {
   profile: {
+    user_id: string;
     role: string;
     full_name: string;
     avatar_url: string | null;
@@ -52,7 +55,7 @@ export default function StudentDashboardShell({
   past,
   tutors,
 }: StudentDashboardShellProps) {
-  const [activeTab, setActiveTab] = useState<'lessons' | 'teachers' | 'tutors' | 'settings'>('lessons');
+  const [activeTab, setActiveTab] = useState<'lessons' | 'teachers' | 'tutors' | 'settings' | 'messages' | 'payments'>('lessons');
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [selectedTeacherForBooking, setSelectedTeacherForBooking] = useState<SampleTeacherDetail | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
@@ -256,6 +259,25 @@ export default function StudentDashboardShell({
               fullName={profile.full_name}
               avatarUrl={profile.avatar_url}
               role={profile.role}
+            />
+          )}
+
+          {/* TAB 5: MESSAGES */}
+          {activeTab === 'messages' && (
+            <DashboardMessagesTab currentUser={{ id: profile.user_id, role: 'student' }} />
+          )}
+
+          {/* TAB 6: PAYMENTS */}
+          {activeTab === 'payments' && (
+            <DashboardPaymentsTab
+              role="student"
+              payments={past.map(b => ({
+                id: b.id,
+                date: b.created_at,
+                amount: (b as any).amount_cents ? (b as any).amount_cents / 100 : 25,
+                status: b.status === 'cancelled' ? 'refunded' : 'paid',
+                description: `Lesson with ${b.teacher_name}`
+              }))}
             />
           )}
         </main>

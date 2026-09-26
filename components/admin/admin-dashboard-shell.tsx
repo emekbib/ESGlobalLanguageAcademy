@@ -98,7 +98,6 @@ export default function AdminDashboardShell({
           setMobileMenuOpen(false);
         }}
         onOpenLogout={() => setLogoutModalOpen(true)}
-        pendingCount={pendingCount}
         flaggedCount={flaggedCount}
         totalAccounts={totalAccounts}
       />

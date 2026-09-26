@@ -14,6 +14,8 @@ import {
   GraduationCap,
   ShieldCheck,
   ArrowRight,
+  MessageSquare,
+  CreditCard,
 } from 'lucide-react';
 
 type DashboardSidebarProps = {
@@ -61,6 +63,16 @@ export default function DashboardSidebar({
       id: 'tutors',
       label: 'My Tutors',
       icon: Users,
+    },
+    {
+      id: 'messages',
+      label: 'Messages',
+      icon: MessageSquare,
+    },
+    {
+      id: 'payments',
+      label: 'Billing & Payments',
+      icon: CreditCard,
     },
     {
       id: 'settings',
