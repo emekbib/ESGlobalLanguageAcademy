@@ -301,143 +301,171 @@ export default function AdminDashboardShell({
       )}
 
       {/* Main Content Area */}
-      <main className="md:pl-72 transition-all">
+      <main className="md:pl-64 transition-all">
         <div className="mx-auto max-w-6xl px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
-          {/* Header Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                Academy Management
-              </span>
-              <h1 className="mt-1 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
-                Operations &amp; Moderation
-              </h1>
-              <p className="mt-1 text-xs sm:text-sm text-stone-500 dark:text-stone-400 font-medium">
-                Track 2 vetting, faculty directory, learners, payouts, and community safety.
-              </p>
-            </div>
+          {/* TAB 0: OPERATIONS OVERVIEW ONLY */}
+          {activeTab === 'overview' && (
+            <div className="space-y-8 animate-fade-in">
+              {/* Header Banner */}
+              <div className="border-b border-stone-200/80 dark:border-stone-800 pb-5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                  Academy Management
+                </span>
+                <h1 className="mt-1 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
+                  Operations Overview
+                </h1>
+                <p className="mt-1 text-xs sm:text-sm text-stone-500 dark:text-stone-400 font-medium">
+                  High-level summary of Track 2 vetting, faculty directory, learners, payouts, and community safety.
+                </p>
+              </div>
 
-            {/* Quick Segmented View Tabs */}
-            <div className="inline-flex max-w-full overflow-x-auto rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 p-1 shadow-sm no-scrollbar">
-              {[
-                { id: 'overview', label: 'Overview' },
-                { id: 'pending_track2', label: `Pending (${pendingCount})` },
-                { id: 'educators', label: 'Faculty' },
-                { id: 'learners', label: 'Learners' },
-                { id: 'payments', label: 'Payments' },
-                { id: 'reviews', label: `Flags (${flaggedCount})` },
-                { id: 'accounts', label: `Accounts (${totalAccounts})` },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id as AdminTab)}
-                  className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                    activeTab === tab.id
-                      ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950 shadow-sm'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white'
-                  }`}
+              {/* 4 Metric Cards Strip (Clickable shortcuts) */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div
+                  onClick={() => setActiveTab('pending_track2')}
+                  role="button"
+                  tabIndex={0}
+                  className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                      Pending Track 2
+                    </span>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
+                        {pendingCount}
+                      </span>
+                      <span className="text-xs text-stone-400">Applications</span>
+                    </div>
+                  </div>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400 ring-1 ring-amber-500/20 group-hover:scale-105 transition-transform">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                </div>
 
-          {/* Metric Cards Strip */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div
-              onClick={() => setActiveTab('pending_track2')}
-              role="button"
-              tabIndex={0}
-              className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                  Pending Track 2
-                </span>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
-                    {pendingCount}
-                  </span>
-                  <span className="text-xs text-stone-400">Applications</span>
+                <div
+                  onClick={() => setActiveTab('educators')}
+                  role="button"
+                  tabIndex={0}
+                  className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                      Total Faculty
+                    </span>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
+                        {faculty.length}
+                      </span>
+                      <span className="text-xs text-stone-400">Educators</span>
+                    </div>
+                  </div>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400 ring-1 ring-blue-500/20 group-hover:scale-105 transition-transform">
+                    <GraduationCap className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab('learners')}
+                  role="button"
+                  tabIndex={0}
+                  className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                      Enrolled Learners
+                    </span>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
+                        {learners.length}
+                      </span>
+                      <span className="text-xs text-stone-400">Students</span>
+                    </div>
+                  </div>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 ring-1 ring-emerald-500/20 group-hover:scale-105 transition-transform">
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab('payments')}
+                  role="button"
+                  tabIndex={0}
+                  className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                      Owed This Month
+                    </span>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
+                        ${(totalPayoutOwedCents / 100).toFixed(0)}
+                      </span>
+                      <span className="text-xs text-stone-400">Teacher share</span>
+                    </div>
+                  </div>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400 ring-1 ring-amber-500/20 group-hover:scale-105 transition-transform">
+                    <DollarSign className="h-5 w-5" />
+                  </div>
                 </div>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400 ring-1 ring-amber-500/20 group-hover:scale-105 transition-transform">
-                <Clock className="h-5 w-5" />
-              </div>
-            </div>
 
-            <div
-              onClick={() => setActiveTab('educators')}
-              role="button"
-              tabIndex={0}
-              className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                  Total Faculty
-                </span>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
-                    {faculty.length}
-                  </span>
-                  <span className="text-xs text-stone-400">Educators</span>
+              {/* High-Level Overview Action Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-base text-stone-950 dark:text-white">
+                      Track 2 Vetting Queue
+                    </h3>
+                    <span className="rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold">
+                      {pendingCount} Pending
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
+                    {pendingCount > 0
+                      ? `${pendingCount} professional educator(s) have submitted credentials requiring university degree audit.`
+                      : 'All educator credentials have been verified. Community tutors are auto-published without delay.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('pending_track2')}
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-stone-950 dark:bg-stone-100 px-4 py-2 text-xs font-bold text-white dark:text-stone-950 hover:bg-stone-800 dark:hover:bg-white transition cursor-pointer"
+                  >
+                    <span>Inspect Vetting Queue</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-base text-stone-950 dark:text-white">
+                      Community Safety &amp; Reviews
+                    </h3>
+                    <span className="rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 px-2.5 py-0.5 text-[10px] font-bold">
+                      {flaggedCount} Flags
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
+                    {flaggedCount > 0
+                      ? `${flaggedCount} review(s) have been flagged or rated under 3 stars by students or tutors.`
+                      : 'All reviews meet community guidelines. No low-rating or flagged feedback pending.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('reviews')}
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-4 py-2 text-xs font-bold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 transition cursor-pointer"
+                  >
+                    <span>Review Moderation</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400 ring-1 ring-blue-500/20 group-hover:scale-105 transition-transform">
-                <GraduationCap className="h-5 w-5" />
-              </div>
             </div>
-
-            <div
-              onClick={() => setActiveTab('learners')}
-              role="button"
-              tabIndex={0}
-              className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                  Enrolled Learners
-                </span>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
-                    {learners.length}
-                  </span>
-                  <span className="text-xs text-stone-400">Students</span>
-                </div>
-              </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 ring-1 ring-emerald-500/20 group-hover:scale-105 transition-transform">
-                <BookOpen className="h-5 w-5" />
-              </div>
-            </div>
-
-            <div
-              onClick={() => setActiveTab('payments')}
-              role="button"
-              tabIndex={0}
-              className="group cursor-pointer rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-[0_2px_14px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] flex items-center justify-between transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                  Owed This Month
-                </span>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-2xl sm:text-3xl font-black text-stone-950 dark:text-white">
-                    ${(totalPayoutOwedCents / 100).toFixed(0)}
-                  </span>
-                  <span className="text-xs text-stone-400">Teacher share</span>
-                </div>
-              </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400 ring-1 ring-amber-500/20 group-hover:scale-105 transition-transform">
-                <DollarSign className="h-5 w-5" />
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* TAB 1: PENDING TRACK 2 EDUCATORS */}
-          {(activeTab === 'overview' || activeTab === 'pending_track2') && (
-            <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
+          {activeTab === 'pending_track2' && (
+            <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)] animate-fade-in">
               <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div>
                   <div className="flex items-center gap-2">
@@ -452,16 +480,6 @@ export default function AdminDashboardShell({
                     Professional teachers handling high-stakes language (legal, medical, Qene/ቅኔ, advanced registers) requiring credential audit.
                   </p>
                 </div>
-                {activeTab === 'overview' && pendingCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('pending_track2')}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline"
-                  >
-                    <span>View all</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                )}
               </div>
 
               <div className="mt-6 space-y-4">
@@ -570,7 +588,7 @@ export default function AdminDashboardShell({
           )}
 
           {/* TAB 2: FACULTY DIRECTORY */}
-          {(activeTab === 'overview' || activeTab === 'educators') && (
+          {activeTab === 'educators' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div>
@@ -680,7 +698,7 @@ export default function AdminDashboardShell({
           )}
 
           {/* TAB 3: LEARNERS DIRECTORY */}
-          {(activeTab === 'overview' || activeTab === 'learners') && (
+          {activeTab === 'learners' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div>
@@ -769,7 +787,7 @@ export default function AdminDashboardShell({
           )}
 
           {/* TAB 4: TEACHER PAYMENTS */}
-          {(activeTab === 'overview' || activeTab === 'payments') && (
+          {activeTab === 'payments' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div>
@@ -846,7 +864,7 @@ export default function AdminDashboardShell({
           )}
 
           {/* TAB 5: FLAGGED REVIEWS */}
-          {(activeTab === 'overview' || activeTab === 'reviews') && (
+          {activeTab === 'reviews' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
               <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div>
@@ -924,7 +942,7 @@ export default function AdminDashboardShell({
           )}
 
           {/* TAB 6: USER ACCOUNTS (Role dropdown removed, replaced with static role badge) */}
-          {(activeTab === 'overview' || activeTab === 'accounts') && (
+          {activeTab === 'accounts' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div>
