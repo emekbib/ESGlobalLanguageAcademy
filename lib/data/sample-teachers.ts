@@ -30,7 +30,7 @@ export const SAMPLE_TEACHERS: SampleTeacherDetail[] = [
 My teaching method focuses on rapid conversational fluency through immersion, cultural storytelling, and practical dialogue. Whether you want to master the Ge'ez / Fidel script, practice speaking with your relatives, or prepare for business in Ethiopia, our lessons will be structured, patient, and thoroughly engaging.`,
     languages_spoken: ['Amharic (Native)', 'English (Fluent)'],
     specialties: ['Fidel Script', 'Conversational Amharic', 'Grammar & Culture', 'Diaspora Children'],
-    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-online-learning-teacher-with-tablet-41221-large.mp4',
+    video_intro_url: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
     education: [
       'BA in Linguistics — Addis Ababa University',
       'Certificate in Teaching Amharic as a Second Language (TASL)',
@@ -74,7 +74,7 @@ My teaching method focuses on rapid conversational fluency through immersion, cu
 From mastering the Ge’ez alphabet to holding lively everyday conversations with family, I create an encouraging and patient environment tailored to your pace and goals.`,
     languages_spoken: ['Tigrigna (Native)', 'English (Fluent)', 'Amharic (Conversational)'],
     specialties: ['Tigrigna Alphabet & Reading', 'Conversational Tigrigna', 'Heritage Learners', 'Cultural Storytelling'],
-    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-talking-on-a-video-call-with-her-laptop-42998-large.mp4',
+    video_intro_url: 'https://www.youtube.com/watch?v=0k2ZzkwWzV8',
     education: [
       'BA in Literature & Languages — University of Asmara',
       'Certified Horn of Africa Heritage Language Educator',
@@ -111,7 +111,7 @@ From mastering the Ge’ez alphabet to holding lively everyday conversations wit
 I work with complete beginners learning everyday greetings and vocabulary, as well as intermediate students looking to master Qubee phonetics, grammar, proverbs, and formal conversation.`,
     languages_spoken: ['Afaan Oromo (Native)', 'Amharic (Native)', 'English (Fluent)'],
     specialties: ['Conversational Afaan Oromo', 'Qubee Alphabet', 'Cultural Context', 'Practical Vocabulary'],
-    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-man-having-a-remote-meeting-on-a-laptop-42999-large.mp4',
+    video_intro_url: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
     education: [
       'BA in Oromo Folklore and Literature — Jimma University',
       'Certificate in Horn of Africa Bilingual Education',

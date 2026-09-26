@@ -15,6 +15,7 @@ import Footer from '@/components/layout/footer';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import BookingCard from '@/components/teacher/booking-card';
 import ReviewsSection, { type Review } from '@/components/teacher/reviews-section';
+import TeacherVideoPlayer from '@/components/teacher/teacher-video-player';
 import type { TeacherType } from '@/lib/types/database';
 import { getSampleTeacherById } from '@/lib/data/sample-teachers';
 
@@ -226,17 +227,11 @@ export default async function TeacherProfilePage({
                 <h2 className="mt-1 mb-4 font-display text-lg font-bold text-stone-950 dark:text-white">
                   Video Introduction
                 </h2>
-                <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-stone-950 shadow-md">
-                  <video
-                    src={videoIntroUrl}
-                    controls
-                    poster={avatarUrl || undefined}
-                    className="h-full w-full object-cover"
-                    playsInline
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
+                <TeacherVideoPlayer
+                  url={videoIntroUrl}
+                  poster={avatarUrl || undefined}
+                  teacherName={fullName}
+                />
               </div>
             )}
 
