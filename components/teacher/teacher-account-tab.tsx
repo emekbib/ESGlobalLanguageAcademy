@@ -25,7 +25,6 @@ const FOCUS_LANGUAGES = [
   'Tigrigna',
   'Afaan Oromo',
   'Somali',
-  'Swahili',
 ];
 
 type TeacherAccountTabProps = {

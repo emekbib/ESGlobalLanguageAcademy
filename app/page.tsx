@@ -198,7 +198,7 @@ export default function Home() {
             {/* Step 1 / Feature 1 */}
             <div className="flex flex-col">
               <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
-                <Image src="https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=600&auto=format&fit=crop" alt="Discover educators" fill className="object-cover" />
+                <Image src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?q=80&w=600&auto=format&fit=crop" alt="Habesha and African language learners" fill className="object-cover" />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">01. Discover</div>
               </div>
               <h3 className="font-display text-lg font-bold text-stone-900">
@@ -226,7 +226,7 @@ export default function Home() {
             {/* Step 3 / Feature 3 */}
             <div className="flex flex-col">
               <div className="mb-6 h-48 w-full rounded-2xl overflow-hidden relative shadow-sm border border-stone-200/60">
-                <Image src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=600&auto=format&fit=crop" alt="Fidel, Qubee, and Somali Latin scripts" fill className="object-cover" />
+                <Image src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=600&auto=format&fit=crop" alt="Fidel and Qubee native script learning" fill className="object-cover" />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">03. Learn</div>
               </div>
               <h3 className="font-display text-lg font-bold text-stone-900">
@@ -251,7 +251,7 @@ export default function Home() {
               Tailored specifically to your language goals
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-stone-500 font-medium">
-              Whether you are reconnecting with family or preparing for certified translation, our educators design custom syllabi around you.
+              Whether you are reconnecting with family or mastering advanced high-stakes registers, our educators tailor every session around you.
             </p>
           </div>
 
@@ -281,11 +281,11 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
-                  Tailored curriculum for diaspora children &amp; young adults
+                  Personalized 1-on-1 pacing for diaspora children &amp; adult learners
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
-                  Taught by community native speakers instantly available on the platform
+                  Community tutors sign up directly and become active immediately with community review vetting
                 </li>
               </ul>
               <div className="mt-6 pt-5 border-t border-stone-200/80">
@@ -308,23 +308,23 @@ export default function Home() {
                 Track 02
               </span>
               <h3 className="mt-1 font-display text-xl font-bold text-stone-950">
-                Professional &amp; Interpreter Preparation
+                Professional &amp; Advanced Language
               </h3>
               <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-stone-600 font-medium">
-                Structured for medical interpreters, legal caseworkers, NGO professionals, and researchers. Master formal registers, technical terminology, dialect variations, and translation accuracy.
+                Structured for high-stakes domains: medical interpreters, legal caseworkers, NGO professionals, and advanced speakers. Master formal registers, Qene (ቅኔ), elevated expression, and translation accuracy.
               </p>
               <ul className="mt-5 space-y-2 text-xs font-semibold text-stone-700">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-stone-900 shrink-0" />
-                  Medical, legal, and humanitarian sector terminology
+                  Advanced language mastery: Qene (ቅኔ), elevated prose for regular speakers, and high registers
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-stone-900 shrink-0" />
-                  Formal grammar, regional dialect nuances, and document review
+                  High-stakes vocabulary: medical terminology, legal advocacy, and diplomatic translation
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-stone-900 shrink-0" />
-                  Learn from rigorously reviewed educators with university degrees in advanced language and related fields
+                  Strictly verified educators holding university degrees in language, linguistics, or related disciplines
                 </li>
               </ul>
               <div className="mt-6 pt-5 border-t border-stone-200/80">

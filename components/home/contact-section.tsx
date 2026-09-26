@@ -11,8 +11,7 @@ export default function ContactSection() {
     'Amharic',
     'Tigrigna',
     'Somali',
-    'Afaan Oromo',
-    'Swahili'
+    'Afaan Oromo'
   ];
 
   const tracks = [

@@ -45,6 +45,61 @@ export async function POST(req: Request) {
       const teacherName = sampleTeacher ? sampleTeacher.name : 'Native Educator';
       const hourlyRate = sampleTeacher ? sampleTeacher.hourlyRate : 28;
       const amountCents = Math.round(((hourlyRate * durationMinutes) / 60) * 100);
+      const platformFeeCents = Math.round(amountCents * 0.2);
+      const teacherPayoutCents = amountCents - platformFeeCents;
+
+      // Find an existing teacher_profile in Supabase to satisfy the foreign key constraint
+      let targetTeacherProfileId: string | null = null;
+      if (sampleTeacher) {
+        const firstName = sampleTeacher.name.split(' ')[0];
+        const { data: matchedProfile } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .ilike('full_name', `%${firstName}%`)
+          .limit(1)
+          .maybeSingle();
+
+        if (matchedProfile) {
+          const { data: tp } = await supabase
+            .from('teacher_profiles')
+            .select('id')
+            .eq('user_id', matchedProfile.user_id)
+            .maybeSingle();
+          if (tp) targetTeacherProfileId = tp.id;
+        }
+      }
+
+      // If no name match, pick any existing teacher profile
+      if (!targetTeacherProfileId) {
+        const { data: anyTp } = await supabase
+          .from('teacher_profiles')
+          .select('id')
+          .limit(1)
+          .maybeSingle();
+        if (anyTp) targetTeacherProfileId = anyTp.id;
+      }
+
+      // Insert confirmed booking record so it appears immediately in the student's dashboard
+      let bookingId: string | null = null;
+      if (targetTeacherProfileId) {
+        const { data: bookingRecord } = await supabase
+          .from('bookings')
+          .insert({
+            student_id: user.id,
+            teacher_id: targetTeacherProfileId,
+            start_time_utc: start.toISOString(),
+            end_time_utc: end.toISOString(),
+            status: 'confirmed',
+            amount_cents: amountCents,
+            platform_fee_cents: platformFeeCents,
+            teacher_payout_cents: teacherPayoutCents,
+          })
+          .select('id')
+          .maybeSingle();
+        if (bookingRecord) {
+          bookingId = bookingRecord.id;
+        }
+      }
 
       const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
       if (stripeSecretKey && !stripeSecretKey.includes('placeholder')) {
@@ -69,15 +124,16 @@ export async function POST(req: Request) {
               },
             ],
             metadata: {
-              teacher_id: teacherId,
+              teacher_id: targetTeacherProfileId || teacherId,
               student_id: user.id,
+              booking_id: bookingId || '',
               start_time_utc: start.toISOString(),
               end_time_utc: end.toISOString(),
               is_sample: 'true',
             },
             success_url: `${origin}/dashboard?payment=success&teacher=${encodeURIComponent(
               teacherName
-            )}`,
+            )}${bookingId ? `&booking_id=${bookingId}` : ''}`,
             cancel_url: `${origin}/dashboard?payment=cancelled`,
           });
 
@@ -93,7 +149,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         checkoutUrl: `${origin}/dashboard?booking=confirmed&teacher=${encodeURIComponent(
           teacherName
-        )}`,
+        )}${bookingId ? `&booking_id=${bookingId}` : ''}`,
       });
     }
 
@@ -182,7 +238,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // Fallback confirmation
+    // Fallback confirmation - mark booking as confirmed so it shows up in dashboard
+    await supabase
+      .from('bookings')
+      .update({ status: 'confirmed' })
+      .eq('id', booking.id);
+
     return NextResponse.json({
       checkoutUrl: `${origin}/dashboard?booking=confirmed&booking_id=${booking.id}`,
     });

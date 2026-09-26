@@ -18,7 +18,6 @@ const LANGUAGES = [
   'Tigrigna',
   'Afaan Oromo',
   'Somali',
-  'Swahili',
 ];
 
 export default function DashboardTeachersTab() {
@@ -50,7 +49,7 @@ export default function DashboardTeachersTab() {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between border-b border-stone-200/80 dark:border-stone-800 pb-6">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-            Vetted Native Faculty
+            Native Faculty Directory
           </span>
           <h2 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
             Book 1-on-1 Lessons

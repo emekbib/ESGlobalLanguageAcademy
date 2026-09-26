@@ -168,13 +168,16 @@ export default async function TeacherProfilePage({
 
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-1 text-xs font-bold text-stone-800 dark:text-stone-200">
-                      <BadgeCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      {BADGE_LABEL[teacherType]}
-                    </span>
-                    <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                      Verified Native
-                    </span>
+                    {teacherType === 'professional' ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                        <BadgeCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        Verified for Track 2
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-1 text-xs font-bold text-stone-800 dark:text-stone-200">
+                        Community Tutor
+                      </span>
+                    )}
                   </div>
 
                   <h1 className="mt-3 font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
@@ -223,18 +226,17 @@ export default async function TeacherProfilePage({
                 <h2 className="mt-1 mb-4 font-display text-lg font-bold text-stone-950 dark:text-white">
                   Video Introduction
                 </h2>
-                <a
-                  href={videoIntroUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group relative block aspect-video w-full overflow-hidden rounded-2xl bg-stone-950 shadow-md"
-                >
-                  <div className="flex h-full w-full items-center justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-stone-950 shadow-xl transition-transform duration-300 group-hover:scale-110">
-                      <PlayCircle className="h-8 w-8" />
-                    </div>
-                  </div>
-                </a>
+                <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-stone-950 shadow-md">
+                  <video
+                    src={videoIntroUrl}
+                    controls
+                    poster={avatarUrl || undefined}
+                    className="h-full w-full object-cover"
+                    playsInline
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
               </div>
             )}
 
@@ -311,7 +313,7 @@ export default async function TeacherProfilePage({
           {/* Right Column: Sticky Booking Card */}
           <aside id="booking-section" className="lg:w-[380px] lg:shrink-0 scroll-mt-24">
             <div className="lg:sticky lg:top-28">
-              <BookingCard teacherId={id} hourlyRate={hourlyRate} />
+              <BookingCard teacherId={id} hourlyRate={hourlyRate} teacherType={teacherType} />
             </div>
           </aside>
         </div>

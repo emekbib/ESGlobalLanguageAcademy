@@ -12,7 +12,6 @@ const CATEGORIES = [
   { id: 'tigrigna', label: 'Tigrigna' },
   { id: 'oromo', label: 'Afaan Oromo' },
   { id: 'somali', label: 'Somali' },
-  { id: 'swahili', label: 'Swahili' },
 ];
 
 export default function FeaturedTeachers() {

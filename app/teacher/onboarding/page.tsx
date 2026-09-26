@@ -41,6 +41,8 @@ export default function TeacherOnboardingPage() {
   const [bio, setBio] = useState<string>('');
   const [specialties, setSpecialties] = useState<string[]>(['Conversational Fluency']);
   const [videoIntroUrl, setVideoIntroUrl] = useState<string>('');
+  const [degreeTitle, setDegreeTitle] = useState<string>('');
+  const [institution, setInstitution] = useState<string>('');
 
   useEffect(() => {
     let active = true;
@@ -107,6 +109,11 @@ export default function TeacherOnboardingPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const isProfessional = teacherType === 'professional';
+    const credentialsList = isProfessional && degreeTitle.trim()
+      ? [`${degreeTitle.trim()} — ${institution.trim() || 'Accredited University'}`]
+      : [];
+
     const payload = {
       user_id: user.id,
       teacher_type: teacherType,
@@ -117,7 +124,9 @@ export default function TeacherOnboardingPage() {
       bio: bio.trim(),
       specialties: specialties,
       video_intro_url: videoIntroUrl.trim() || null,
-      is_published: true,
+      credentials: credentialsList,
+      application_status: isProfessional ? 'pending' : 'approved',
+      is_published: !isProfessional,
     };
 
     const { data: existing } = await supabase
@@ -144,7 +153,7 @@ export default function TeacherOnboardingPage() {
       return;
     }
 
-    router.replace('/teacher/dashboard');
+    router.replace(isProfessional ? '/teacher/dashboard?status=pending_review' : '/teacher/dashboard');
   }
 
   if (loading) {
@@ -225,6 +234,57 @@ export default function TeacherOnboardingPage() {
                 </p>
               </button>
             </div>
+
+            {/* Workflow Notice Banner */}
+            <div className="mt-4 rounded-2xl border p-4 text-xs font-medium leading-relaxed transition">
+              {teacherType === 'community_tutor' ? (
+                <div className="flex items-start gap-3 text-emerald-800 bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3">
+                  <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Track 1 Instant Auto-Publish:</span> As a Community Tutor, your account is activated immediately upon submission. Students will review and vet lessons as time goes by—no administrative approval delay required.
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3 text-amber-900 bg-amber-50/60 border border-amber-200/80 rounded-xl p-3">
+                  <GraduationCap className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Track 2 Awaiting Review:</span> Professional Educators handle high-stakes language (legal, medical, Qene/ቅኔ, advanced registers). Submitting places your application in &apos;Awaiting Review&apos; for academy administration verification.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Track 2 Credentials Upload Section */}
+            {teacherType === 'professional' && (
+              <div className="mt-6 border-t border-stone-200/80 pt-6 space-y-4 animate-fade-in">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-2">
+                    Degree Title (Required for Track 2)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={degreeTitle}
+                    onChange={(e) => setDegreeTitle(e.target.value)}
+                    placeholder="e.g. BA in Linguistics, Ethiopian Languages &amp; Literature, Translation"
+                    className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-2">
+                    University or Institution
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={institution}
+                    onChange={(e) => setInstitution(e.target.value)}
+                    placeholder="e.g. Addis Ababa University, Mekelle University, Jimma University"
+                    className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm font-medium text-stone-900 outline-none transition focus:border-stone-950 focus:bg-white"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 2. Languages You Teach */}
@@ -393,7 +453,13 @@ export default function TeacherOnboardingPage() {
               disabled={saving}
               className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-stone-950 py-4 text-sm font-bold text-white shadow-xl transition hover:bg-stone-800 active:scale-[0.99] disabled:opacity-60"
             >
-              <span>{saving ? 'Publishing Profile…' : 'Publish Teacher Profile & Enter Workspace'}</span>
+              <span>
+                {saving
+                  ? 'Processing Profile…'
+                  : teacherType === 'professional'
+                  ? 'Submit Track 2 Application for Review'
+                  : 'Publish Community Profile & Enter Workspace'}
+              </span>
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-amber-300 transition-transform group-hover:translate-x-0.5">
                 <ArrowRight className="h-3.5 w-3.5" />
               </span>

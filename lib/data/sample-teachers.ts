@@ -30,6 +30,7 @@ export const SAMPLE_TEACHERS: SampleTeacherDetail[] = [
 My teaching method focuses on rapid conversational fluency through immersion, cultural storytelling, and practical dialogue. Whether you want to master the Ge'ez / Fidel script, practice speaking with your relatives, or prepare for business in Ethiopia, our lessons will be structured, patient, and thoroughly engaging.`,
     languages_spoken: ['Amharic (Native)', 'English (Fluent)'],
     specialties: ['Fidel Script', 'Conversational Amharic', 'Grammar & Culture', 'Diaspora Children'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-online-learning-teacher-with-tablet-41221-large.mp4',
     education: [
       'BA in Linguistics — Addis Ababa University',
       'Certificate in Teaching Amharic as a Second Language (TASL)',
@@ -73,6 +74,7 @@ My teaching method focuses on rapid conversational fluency through immersion, cu
 From mastering the Ge’ez alphabet to holding lively everyday conversations with family, I create an encouraging and patient environment tailored to your pace and goals.`,
     languages_spoken: ['Tigrigna (Native)', 'English (Fluent)', 'Amharic (Conversational)'],
     specialties: ['Tigrigna Alphabet & Reading', 'Conversational Tigrigna', 'Heritage Learners', 'Cultural Storytelling'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-talking-on-a-video-call-with-her-laptop-42998-large.mp4',
     education: [
       'BA in Literature & Languages — University of Asmara',
       'Certified Horn of Africa Heritage Language Educator',
@@ -109,6 +111,7 @@ From mastering the Ge’ez alphabet to holding lively everyday conversations wit
 I work with complete beginners learning everyday greetings and vocabulary, as well as intermediate students looking to master Qubee phonetics, grammar, proverbs, and formal conversation.`,
     languages_spoken: ['Afaan Oromo (Native)', 'Amharic (Native)', 'English (Fluent)'],
     specialties: ['Conversational Afaan Oromo', 'Qubee Alphabet', 'Cultural Context', 'Practical Vocabulary'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-man-having-a-remote-meeting-on-a-laptop-42999-large.mp4',
     education: [
       'BA in Oromo Folklore and Literature — Jimma University',
       'Certificate in Horn of Africa Bilingual Education',
@@ -138,6 +141,7 @@ I work with complete beginners learning everyday greetings and vocabulary, as we
 Whether you are connecting with family, preparing for humanitarian work, or exploring the rich poetic traditions of Somalia, our 1-on-1 sessions will get you speaking naturally from day one.`,
     languages_spoken: ['Somali (Native)', 'English (Fluent)', 'Arabic (Conversational)'],
     specialties: ['Conversational Somali', 'Somali Grammar & Syntax', 'Diaspora Youth', 'Cultural Idioms'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-online-learning-teacher-with-tablet-41221-large.mp4',
     education: [
       'BA in Education & Linguistics — Somali National University',
       'Certified Somali Second Language Instructor',
@@ -161,28 +165,29 @@ Whether you are connecting with family, preparing for humanitarian work, or expl
   },
   {
     id: 'sample-5',
-    name: 'Juma Bakari',
+    name: 'Jemal Abdi',
     avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop',
-    languages: ['Swahili'],
+    languages: ['Afaan Oromo', 'Amharic'],
     rating: 4.99,
     lessonsTaught: 1680,
     hourlyRate: 27,
     teacherType: 'professional',
-    headline: 'Dar es Salaam Alum · Kiswahili Sanifu, Business & Travel Immersion',
-    bio: `Habari za leo! I am Juma, a native Swahili teacher born on the East African coast. I teach standard Kiswahili (Kiswahili Sanifu) for business travelers, researchers, students, and culture lovers.
+    headline: 'Addis Ababa University Alum · Afaan Oromo Qubee & Conversational Amharic',
+    bio: `Akkam jirtu! Selam! I am Jemal, an experienced Horn of Africa language educator fluent in both Afaan Oromo and Amharic. I specialize in teaching diaspora youth and professionals rapid conversational confidence and script literacy.
 
-My method blends conversational immersion with clear grammar breakdowns, noun class mastery, and real-life East African etiquette.`,
-    languages_spoken: ['Swahili (Native)', 'English (Fluent)'],
-    specialties: ['Kiswahili Sanifu', 'Noun Classes & Grammar', 'East African Travel', 'Business Swahili'],
+My lessons emphasize speaking comfort, cultural etiquette, and root semantics shared across Ethiopian languages.`,
+    languages_spoken: ['Afaan Oromo (Native)', 'Amharic (Native)', 'English (Fluent)'],
+    specialties: ['Qubee Script', 'Conversational Afaan Oromo', 'Amharic Dialects', 'Heritage Reconnection'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-online-learning-teacher-with-tablet-41221-large.mp4',
     education: [
-      'BA in Kiswahili and Education — University of Dar es Salaam',
-      'Certificate in Teaching Swahili as a Foreign Language (BAKITA)',
+      'BA in Ethiopian Languages and Literature — Addis Ababa University',
+      'Certificate in Horn of Africa Linguistics',
     ],
     reviews: [
       {
         id: 'rev-501',
         rating: 5,
-        comment: 'Juma is an exceptional Swahili educator. He simplified the noun class system which always confused me before!',
+        comment: 'Jemal is an exceptional bilingual educator. He made learning Qubee script intuitive and fun!',
         createdAt: '2026-07-22T10:30:00Z',
         studentName: 'Alexander Hayes',
       },
@@ -197,10 +202,11 @@ My method blends conversational immersion with clear grammar breakdowns, noun cl
     lessonsTaught: 890,
     hourlyRate: 27,
     teacherType: 'professional',
-    headline: 'Bilingual Horn of Africa Tutor · Tigrigna & Amharic Pronunciation Specialist',
+    headline: 'Bilingual Horn of Africa Faculty · Tigrigna & Amharic Pronunciation Specialist',
     bio: `Selam! I am Mebrahtu, specializing in both Tigrigna and Amharic. With 4+ years of tutoring experience, I guide learners through phonetics, Ge'ez root structures, and conversational practice.`,
     languages_spoken: ['Tigrigna (Native)', 'Amharic (Native)', 'English (Fluent)'],
     specialties: ['Comparative Semitic Roots', 'Conversational Tigrigna', 'Amharic Grammar', 'Pronunciation Drills'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-man-having-a-remote-meeting-on-a-laptop-42999-large.mp4',
     education: [
       'BA in Linguistics — Mekelle University',
     ],
@@ -218,17 +224,18 @@ My method blends conversational immersion with clear grammar breakdowns, noun cl
     id: 'sample-7',
     name: 'Fatuma Hassan',
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop',
-    languages: ['Somali', 'Swahili'],
+    languages: ['Somali'],
     rating: 4.96,
     lessonsTaught: 1100,
     hourlyRate: 28,
     teacherType: 'professional',
-    headline: 'Regional East African Faculty · Somali & Swahili for Beginners & Diaspora',
-    bio: `Soo dhowow na Karibu! I am Fatuma, fluent in both Somali and Swahili. I work with diaspora students, diplomats, and NGO workers across Kenya, Somalia, and Tanzania to build authentic speaking skills rapidly.`,
-    languages_spoken: ['Somali (Native)', 'Swahili (Native)', 'English (Fluent)'],
-    specialties: ['Somali for Beginners', 'Everyday Kiswahili', 'Cross-Border Culture', 'Grammar Basics'],
+    headline: 'Somali Language & Culture Faculty · Somali for Beginners & Healthcare Interpreters',
+    bio: `Soo dhowow! I am Fatuma, a native Somali language coach. I work with diaspora students, healthcare professionals, and humanitarian caseworkers to build authentic Somali speaking skills rapidly.`,
+    languages_spoken: ['Somali (Native)', 'English (Fluent)'],
+    specialties: ['Somali for Beginners', 'Medical Somali Vocabulary', 'Diaspora Reconnection', 'Grammar Basics'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-talking-on-a-video-call-with-her-laptop-42998-large.mp4',
     education: [
-      'BA in Intercultural Communication — Kenyatta University',
+      'BA in Social Sciences & Translation Studies — Mogadishu University',
     ],
     reviews: [
       {
@@ -253,6 +260,7 @@ My method blends conversational immersion with clear grammar breakdowns, noun cl
     bio: `Akkam! I am Chaltu. I specialize in teaching Afaan Oromo to children, teens, and adults living abroad. My sessions use games, stories, and daily scenarios so learning feels natural and fun.`,
     languages_spoken: ['Afaan Oromo (Native)', 'English (Fluent)'],
     specialties: ['Children & Youth', 'Qubee Basics', 'Family Conversation', 'Oromo Traditions'],
+    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-talking-on-a-video-call-with-her-laptop-42998-large.mp4',
     education: [
       'BEd in Language Teaching — Adama Science and Technology University',
     ],

@@ -129,7 +129,7 @@ export default function DashboardSpotlight({
 
             <div className="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
-              <span>100% Certified Educators</span>
+              <span>Community Tutors & Verified Educators</span>
             </div>
           </div>
         </div>
@@ -169,13 +169,12 @@ export default function DashboardSpotlight({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onNavigateTeachers}
+            <Link
+              href={`/teachers/${spotlightTeacher.id}`}
               className="mt-3.5 block w-full rounded-xl bg-stone-950 dark:bg-stone-100 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white cursor-pointer"
             >
               View Available Slots
-            </button>
+            </Link>
           </div>
         </div>
       </div>

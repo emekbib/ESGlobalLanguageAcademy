@@ -99,11 +99,35 @@ export default function DashboardHeader({
           </div>
         </div>
 
-        {/* Left on Desktop: Intro.co Style Clean Bold Page Title */}
-        <div className="hidden md:block">
-          <h1 className="font-display text-xl font-black tracking-tight text-stone-900 dark:text-white">
-            {currentTitle}
-          </h1>
+        {/* Left on Desktop: Synchronized Nav & Page Title */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm transition group-hover:scale-105">
+              <GraduationCap className="h-3.5 w-3.5" />
+            </div>
+            <span className="font-display text-sm font-black text-stone-950 dark:text-white">ESGlobal</span>
+          </Link>
+          <div className="h-4 w-px bg-stone-200 dark:bg-stone-800" />
+          <nav className="flex items-center gap-5 text-xs font-semibold">
+            <Link
+              href="/"
+              className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white transition"
+            >
+              Home
+            </Link>
+            <Link
+              href="/teachers"
+              className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white transition"
+            >
+              Find a Teacher
+            </Link>
+            <Link
+              href="/teacher/onboarding"
+              className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white transition"
+            >
+              Become an Educator
+            </Link>
+          </nav>
         </div>
 
         {/* Right Action Items: Clean Notifications & Profile */}
@@ -286,6 +310,28 @@ export default function DashboardHeader({
                 );
               })}
             </nav>
+
+            <div className="mt-4 pt-3 border-t border-stone-150 dark:border-stone-800 space-y-1">
+              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-stone-400">Navigation</span>
+              <Link
+                href="/"
+                className="flex items-center gap-3 rounded-2xl px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+              >
+                Home
+              </Link>
+              <Link
+                href="/teachers"
+                className="flex items-center gap-3 rounded-2xl px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+              >
+                Find a Teacher
+              </Link>
+              <Link
+                href="/teacher/onboarding"
+                className="flex items-center gap-3 rounded-2xl px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+              >
+                Become an Educator
+              </Link>
+            </div>
 
             <div className="mt-auto border-t border-stone-150 dark:border-stone-800 pt-4 space-y-3">
               {/* Mobile Dark Mode Switch */}

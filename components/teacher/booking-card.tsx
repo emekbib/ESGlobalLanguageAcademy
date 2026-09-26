@@ -25,17 +25,19 @@ const DAYS_PER_PAGE = 5;
 type BookingCardProps = {
   teacherId: string;
   hourlyRate: number;
+  teacherType?: 'professional' | 'community_tutor';
 };
 
 type Slot = ReturnType<typeof generateSlots>[number];
 
-export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps) {
+export default function BookingCard({ teacherId, hourlyRate, teacherType = 'professional' }: BookingCardProps) {
   const supabase = createSupabaseBrowserClient();
   const [availability, setAvailability] = useState<TeacherAvailability[]>([]);
   const [existingBookings, setExistingBookings] = useState<SlotBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [lessonMinutes, setLessonMinutes] = useState(60);
+  const [selectedTrack, setSelectedTrack] = useState<'track_1' | 'track_2'>('track_1');
   const [viewerTz, setViewerTz] = useState('UTC');
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [dayOffset, setDayOffset] = useState(0);
@@ -174,6 +176,7 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
           teacherId,
           startUtc: slotToBook.startUtc,
           endUtc: slotToBook.endUtc,
+          track: selectedTrack,
         }),
       });
 
@@ -230,6 +233,55 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
       </div>
 
       <div className="flex flex-col gap-6 p-6 sm:p-7">
+        {/* Learning Track Selector */}
+        <div>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+            Select Track
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setSelectedTrack('track_1')}
+              className={`rounded-2xl border p-3 text-left transition ${
+                selectedTrack === 'track_1'
+                  ? 'border-stone-950 bg-stone-50 dark:bg-stone-800 text-stone-950 dark:text-white ring-1 ring-stone-950 dark:ring-stone-100 shadow-sm'
+                  : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:border-stone-300'
+              }`}
+            >
+              <span className="block text-xs font-bold text-stone-950 dark:text-white">
+                Track 1: Heritage
+              </span>
+              <span className="block mt-0.5 text-[10px] text-stone-500 dark:text-stone-400">
+                Conversational &amp; Family
+              </span>
+            </button>
+
+            {teacherType === 'professional' ? (
+              <button
+                type="button"
+                onClick={() => setSelectedTrack('track_2')}
+                className={`rounded-2xl border p-3 text-left transition ${
+                  selectedTrack === 'track_2'
+                    ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/40 text-stone-950 dark:text-white ring-1 ring-emerald-600 shadow-sm'
+                    : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:border-stone-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="block text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                    Track 2: Professional
+                  </span>
+                  <span className="rounded bg-emerald-100 dark:bg-emerald-900/60 px-1.5 py-0.2 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
+                    Verified
+                  </span>
+                </div>
+                <span className="block mt-0.5 text-[10px] text-stone-500 dark:text-stone-400">
+                  Advanced Language &amp; Qene
+                </span>
+              </button>
+            ) : null}
+          </div>
+        </div>
+
         {/* Lesson duration selector */}
         <div>
           <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
@@ -351,7 +403,7 @@ export default function BookingCard({ teacherId, hourlyRate }: BookingCardProps)
           </button>
 
           <Link
-            href="/auth"
+            href="/dashboard?tab=messages"
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 py-3 text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-200 transition hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700"
           >
             <MessageCircle className="h-3.5 w-3.5 text-stone-400" />

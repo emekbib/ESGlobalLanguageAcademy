@@ -133,7 +133,6 @@ export default function DashboardSettingsTab({
               <option value="Tigrigna">Tigrigna (Ge&apos;ez Script &amp; Conversational)</option>
               <option value="Afaan Oromo">Afaan Oromo (Qubee &amp; Conversational)</option>
               <option value="Somali">Somali (Conversational &amp; Grammar)</option>
-              <option value="Swahili">Swahili (Kiswahili Sanifu &amp; Immersion)</option>
             </select>
           </div>
 

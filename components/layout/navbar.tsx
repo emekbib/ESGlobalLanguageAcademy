@@ -41,8 +41,8 @@ export default function Navbar({
         const { data: profile } = await supabase
           .from('profiles')
           .select('role, full_name, avatar_url')
-          .eq('id', session.user.id)
-          .single();
+          .or(`user_id.eq.${session.user.id},id.eq.${session.user.id}`)
+          .maybeSingle();
         if (profile) {
           setUserRole(profile.role);
           setUserProfile({ full_name: profile.full_name, avatar_url: profile.avatar_url });
@@ -249,7 +249,6 @@ export default function Navbar({
                   { name: 'Tigrigna', q: 'tigrigna' },
                   { name: 'Afaan Oromo', q: 'afaan oromo' },
                   { name: 'Somali', q: 'somali' },
-                  { name: 'Swahili', q: 'swahili' },
                 ].map((l) => (
                   <Link
                     key={l.name}

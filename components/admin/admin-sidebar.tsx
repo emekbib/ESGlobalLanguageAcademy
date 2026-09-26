@@ -16,9 +16,19 @@ import {
   ShieldCheck,
   Compass,
   Calendar,
+  Clock,
+  CreditCard,
+  BookOpen,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'reviews' | 'accounts' | 'educators';
+export type AdminTab =
+  | 'overview'
+  | 'pending_track2'
+  | 'educators'
+  | 'learners'
+  | 'payments'
+  | 'reviews'
+  | 'accounts';
 
 type AdminSidebarProps = {
   fullName: string;
@@ -26,6 +36,7 @@ type AdminSidebarProps = {
   activeTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
   onOpenLogout: () => void;
+  pendingTrack2Count?: number;
   flaggedCount: number;
   totalAccounts: number;
 };
@@ -36,6 +47,7 @@ export default function AdminSidebar({
   activeTab,
   onTabChange,
   onOpenLogout,
+  pendingTrack2Count = 0,
   flaggedCount,
   totalAccounts,
 }: AdminSidebarProps) {
@@ -67,15 +79,32 @@ export default function AdminSidebar({
       icon: LayoutDashboard,
     },
     {
+      id: 'pending_track2',
+      label: 'Pending Track 2',
+      icon: Clock,
+      badge: pendingTrack2Count > 0 ? pendingTrack2Count : undefined,
+      badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    },
+    {
       id: 'educators',
       label: 'Faculty Directory',
       icon: GraduationCap,
     },
     {
+      id: 'learners',
+      label: 'Learners Directory',
+      icon: BookOpen,
+    },
+    {
+      id: 'payments',
+      label: 'Teacher Payments',
+      icon: CreditCard,
+    },
+    {
       id: 'reviews',
       label: 'Flagged Reviews',
       icon: AlertTriangle,
-      badge: flaggedCount,
+      badge: flaggedCount > 0 ? flaggedCount : undefined,
       badgeColor: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20',
     },
     {
@@ -161,16 +190,17 @@ export default function AdminSidebar({
             Academy Portals
           </p>
           <div className="mt-3 space-y-1">
-            <Link
-              href="/dashboard"
-              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/60 hover:text-stone-900 dark:hover:text-white transition"
+            <button
+              type="button"
+              onClick={() => onTabChange('learners')}
+              className="w-full flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800/60 hover:text-stone-900 dark:hover:text-white transition text-left cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 <Calendar className="h-3.5 w-3.5 text-stone-400" />
-                <span>Learner Space</span>
+                <span>Learners Directory</span>
               </div>
               <ArrowRight className="h-3 w-3 opacity-60" />
-            </Link>
+            </button>
 
             <Link
               href="/teacher/dashboard"
