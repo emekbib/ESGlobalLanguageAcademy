@@ -34,7 +34,7 @@ export default async function AdminPage() {
       .order('created_at', { ascending: false }),
   ]);
 
-  if (teacherError || reviewError || accountsError) {
+  if (teacherError || reviewError || accountsError || bookingsError) {
     return (
       <ErrorDisplay message="We couldn’t load the academy admin console. Please try again." />
     );

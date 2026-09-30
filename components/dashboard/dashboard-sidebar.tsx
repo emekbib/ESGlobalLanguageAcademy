@@ -23,6 +23,7 @@ type DashboardSidebarProps = {
   avatarUrl: string | null;
   role?: string;
   activeTab: string;
+  unreadMessagesCount?: number;
   onTabChange: (tab: string) => void;
   onOpenLogout: () => void;
 };
@@ -32,6 +33,7 @@ export default function DashboardSidebar({
   avatarUrl,
   role = 'student',
   activeTab,
+  unreadMessagesCount = 0,
   onTabChange,
   onOpenLogout,
 }: DashboardSidebarProps) {
@@ -129,9 +131,13 @@ export default function DashboardSidebar({
                     }`}
                   />
                   <span className="truncate">{item.label}</span>
-                  {isActive && (
+                  {item.id === 'messages' && unreadMessagesCount > 0 ? (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-black text-stone-950 shadow-xs">
+                      {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                    </span>
+                  ) : isActive ? (
                     <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300 dark:bg-stone-950" />
-                  )}
+                  ) : null}
                 </button>
               );
             })}

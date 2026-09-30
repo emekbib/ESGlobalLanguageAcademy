@@ -125,8 +125,8 @@ export default function TeacherOnboardingPage() {
       specialties: specialties,
       video_intro_url: videoIntroUrl.trim() || null,
       credentials: credentialsList,
-      application_status: isProfessional ? 'pending' : 'approved',
-      is_published: !isProfessional,
+      application_status: 'approved',
+      is_published: true,
     };
 
     const { data: existing } = await supabase

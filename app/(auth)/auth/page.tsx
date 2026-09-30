@@ -49,12 +49,52 @@ export default function AuthPage() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        // If account already exists or rate limited, attempt direct sign in
+        const { data: signInData, error: fallbackSignInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (!fallbackSignInError && signInData.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('user_id', signInData.user.id)
+            .maybeSingle();
+
+          if (!profile) {
+            router.push('/onboarding');
+          } else if (profile.role === 'admin') {
+            router.push('/admin');
+          } else if (profile.role === 'teacher') {
+            router.push('/teacher/dashboard');
+          } else {
+            router.push('/dashboard');
+          }
+          return;
+        }
+
+        if (signUpError.message.toLowerCase().includes('rate limit')) {
+          setError('Email rate limit reached by Supabase mailer. If this account is already registered, click "Sign In" above to log in directly, or confirm the user in your Supabase Users tab.');
+        } else {
+          setError(signUpError.message);
+        }
         setStatus('idle');
         return;
       }
 
       if (data.session) {
+        router.push('/onboarding');
+        return;
+      }
+
+      // If data.session is not returned yet, try signing in immediately
+      const { data: directSignIn, error: directSignInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (!directSignInError && directSignIn.session) {
         router.push('/onboarding');
         return;
       }

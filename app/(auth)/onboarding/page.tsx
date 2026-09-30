@@ -83,6 +83,7 @@ export default function OnboardingPage() {
 
     // Insert or update profile
     const { error: profileError } = await supabase.from('profiles').upsert({
+      id: user.id,
       user_id: user.id,
       role,
       user_type: role,
@@ -94,6 +95,23 @@ export default function OnboardingPage() {
       setError(profileError.message);
       setSaving(false);
       return;
+    }
+
+    if (role === 'teacher') {
+      await supabase.from('teacher_profiles').upsert(
+        {
+          user_id: user.id,
+          languages_taught: [targetLanguage || 'Amharic'],
+          languages_spoken: [targetLanguage || 'Amharic', 'English'],
+          hourly_rate: 35,
+          years_experience: 3,
+          teacher_type: 'community_tutor',
+          specialties: [learningGoal || 'Conversational Fluency'],
+          application_status: 'approved',
+          is_published: true,
+        },
+        { onConflict: 'user_id' }
+      );
     }
 
     router.replace(role === 'teacher' ? '/teacher/onboarding' : '/dashboard');

@@ -211,12 +211,12 @@ export default function Navbar({
 
       {/* Mobile dropdown */}
       {mobileOpen && (
-        <div className="border-t border-stone-200/80 bg-[#faf9f6]/98 px-6 py-6 text-stone-900 md:hidden shadow-2xl backdrop-blur-xl animate-fade-in max-h-[calc(100dvh-5rem)] overflow-y-auto">
+        <div className="border-t border-stone-200/80 dark:border-stone-800 bg-[#faf9f6]/98 dark:bg-stone-900/98 px-6 py-6 text-stone-900 dark:text-white md:hidden shadow-2xl backdrop-blur-xl animate-fade-in max-h-[calc(100dvh-5rem)] overflow-y-auto">
           <div className="flex flex-col gap-3">
             <Link
               href="/teachers"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 hover:bg-stone-100 transition"
+              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
               <span>Find a Teacher</span>
               <span className="text-xs text-stone-400">Directory</span>
@@ -224,7 +224,7 @@ export default function Navbar({
             <Link
               href="/#how-it-works"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 hover:bg-stone-100 transition"
+              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
               <span>How It Works</span>
               <span className="text-xs text-stone-400">Method</span>
@@ -232,15 +232,15 @@ export default function Navbar({
             <Link
               href="/auth"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 hover:bg-stone-100 transition"
+              className="flex items-center justify-between rounded-2xl p-3 text-sm font-bold text-stone-800 dark:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
             >
               <span>Become a Teacher</span>
-              <span className="text-xs text-amber-600 font-semibold">Join Faculty</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">Join Faculty</span>
             </Link>
 
             {/* Quick Language Shortcuts on Mobile */}
             <div className="pt-2">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
                 Explore Languages
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5 px-2">
@@ -254,7 +254,7 @@ export default function Navbar({
                     key={l.name}
                     href={`/teachers?lang=${l.q}`}
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-semibold text-stone-700 hover:border-amber-400 transition"
+                    className="rounded-full border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-3 py-1 text-xs font-semibold text-stone-700 dark:text-stone-200 hover:border-amber-400 dark:hover:border-amber-400 transition"
                   >
                     {l.name}
                   </Link>
@@ -262,12 +262,25 @@ export default function Navbar({
               </div>
             </div>
 
-            <div className="mt-3 flex flex-col gap-2.5 border-t border-stone-200/80 pt-5">
+            {/* Mobile Theme Switcher */}
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800/60 mt-1">
+              <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">Appearance</span>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 rounded-xl border border-stone-200 dark:border-stone-700 px-3 py-1 text-xs font-bold text-stone-700 dark:text-stone-200"
+              >
+                {isDark ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-stone-500" />}
+                <span>{isDark ? 'Light' : 'Dark'}</span>
+              </button>
+            </div>
+
+            <div className="mt-2 flex flex-col gap-2.5 border-t border-stone-200/80 dark:border-stone-800 pt-4">
               {isLoggedIn ? (
                 <Link
                   href={dashboardLink}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-2xl bg-stone-950 py-3 text-center text-xs font-bold text-white shadow-md transition hover:bg-stone-800"
+                  className="rounded-2xl bg-stone-950 dark:bg-stone-100 py-3 text-center text-xs font-bold text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white"
                 >
                   Go to Dashboard
                 </Link>
@@ -276,14 +289,14 @@ export default function Navbar({
                   <Link
                     href="/auth"
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-2xl border border-stone-200 bg-white py-3 text-center text-xs font-bold text-stone-900 shadow-sm hover:bg-stone-50 transition"
+                    className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 py-3 text-center text-xs font-bold text-stone-900 dark:text-white shadow-sm hover:bg-stone-50 dark:hover:bg-stone-700 transition"
                   >
                     Sign In to Account
                   </Link>
                   <Link
                     href="/auth"
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-2xl bg-stone-950 py-3 text-center text-xs font-bold text-white shadow-md transition hover:bg-stone-800"
+                    className="rounded-2xl bg-stone-950 dark:bg-stone-100 py-3 text-center text-xs font-bold text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white"
                   >
                     Get Started Free
                   </Link>

@@ -9,6 +9,7 @@ import {
   BadgeCheck,
   Award,
   ShieldCheck,
+  MessageSquare,
 } from 'lucide-react';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
@@ -64,6 +65,7 @@ export default async function TeacherProfilePage({
   let yearsExperience = 3;
   let videoIntroUrl: string | null = null;
   let reviews: Review[] = [];
+  const educatorUserId = teacher ? teacher.user_id : null;
 
   if (teacher) {
     const { data: profile } = await supabase
@@ -214,6 +216,17 @@ export default async function TeacherProfilePage({
                       Also speaks: <span className="text-stone-800 dark:text-stone-200 font-semibold">{languagesSpoken.join(', ')}</span>
                     </p>
                   )}
+
+                  {/* Message Educator Button */}
+                  <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center gap-3">
+                    <Link
+                      href={educatorUserId ? `/dashboard?tab=messages&contactId=${educatorUserId}` : '/dashboard?tab=messages'}
+                      className="inline-flex items-center gap-2 rounded-full border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 px-4 py-2 text-xs font-bold text-stone-900 dark:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-700 transition shadow-sm"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" />
+                      Message {firstName}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

@@ -32,6 +32,8 @@ import ConnectPayoutButton from './connect-payout-button';
 import LogoutModal from '@/components/dashboard/logout-modal';
 import TeacherAccountTab from './teacher-account-tab';
 import DashboardMessagesTab from '@/components/dashboard/dashboard-messages-tab';
+import NotificationBell from '@/components/notifications/notification-bell';
+import { useMessageNotifications } from '@/hooks/use-message-notifications';
 
 type BookingItem = {
   id: string;
@@ -81,6 +83,18 @@ export default function TeacherDashboardShell({
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  const { unreadCount, clearUnread } = useMessageNotifications({
+    userId: profile.user_id,
+    activeTab,
+    onOpenMessages: () => setActiveTab('messages'),
+  });
+
+  useEffect(() => {
+    if (activeTab === 'messages') {
+      clearUnread();
+    }
+  }, [activeTab, clearUnread]);
 
   useEffect(() => {
     setMounted(true);
@@ -137,7 +151,11 @@ export default function TeacherDashboardShell({
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors duration-200">
+    <div
+      className={`bg-[#faf9f6] dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors duration-200 ${
+        activeTab === 'messages' ? 'h-screen overflow-hidden' : 'min-h-screen'
+      }`}
+    >
       {/* ========================================================================= */}
       {/* DESKTOP TEACHER SIDEBAR (Intro.co luxury w-72 layout) */}
       {/* ========================================================================= */}
@@ -186,9 +204,13 @@ export default function TeacherDashboardShell({
                       }`}
                     />
                     <span>{item.label}</span>
-                    {isActive && (
+                    {item.id === 'messages' && unreadCount > 0 ? (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-black text-stone-950 shadow-xs">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    ) : isActive ? (
                       <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400 dark:bg-stone-950" />
-                    )}
+                    ) : null}
                   </button>
                 );
               })}
@@ -339,6 +361,11 @@ export default function TeacherDashboardShell({
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
+                    {item.id === 'messages' && unreadCount > 0 && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-black text-stone-950 shadow-xs">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -414,7 +441,11 @@ export default function TeacherDashboardShell({
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA */}
       {/* ========================================================================= */}
-      <div className="flex flex-col min-h-screen md:pl-72">
+      <div
+        className={`flex flex-col md:pl-72 w-full ${
+          activeTab === 'messages' ? 'h-screen overflow-hidden' : 'min-h-screen'
+        }`}
+      >
         {/* Top Header Bar */}
         <header className="sticky top-0 z-20 flex h-16 sm:h-18 w-full items-center justify-between border-b border-stone-200/80 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 px-6 sm:px-10 backdrop-blur-md">
           {/* Mobile hamburger */}
@@ -441,7 +472,8 @@ export default function TeacherDashboardShell({
             {teacherProfile?.id && (
               <Link
                 href={`/teachers/${teacherProfile.id}`}
-                className="inline-flex items-center gap-2 rounded-full border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-2 text-xs font-bold text-stone-800 dark:text-stone-200 shadow-sm transition hover:bg-stone-50 dark:hover:bg-stone-700"
+                className="inline-flex items-center gap-2 rounded-full border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-2.5 sm:px-4 py-2 text-xs font-bold text-stone-800 dark:text-stone-200 shadow-sm transition hover:bg-stone-50 dark:hover:bg-stone-700"
+                title="View Public Profile"
               >
                 <Eye className="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" />
                 <span className="hidden sm:inline">View Public Profile</span>
@@ -451,11 +483,18 @@ export default function TeacherDashboardShell({
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
-              className="inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-4 py-2 text-xs font-bold text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-2.5 sm:px-4 py-2 text-xs font-bold text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white cursor-pointer"
+              title="Edit Profile Details"
             >
               <Pencil className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
-              <span>Edit Details</span>
+              <span className="hidden sm:inline">Edit Details</span>
             </button>
+
+            {/* Live Realtime Notification Bell */}
+            <NotificationBell
+              onNavigateMessages={() => setActiveTab('messages')}
+              externalUnreadCount={unreadCount}
+            />
 
             {/* Quick Theme Toggle */}
             <button
@@ -485,9 +524,16 @@ export default function TeacherDashboardShell({
         </header>
 
         {/* Main Body */}
-        <main className="mx-auto w-full max-w-5xl px-6 py-6 sm:px-10 space-y-6">
+        <main
+          className={
+            activeTab === 'messages'
+              ? 'flex-1 overflow-hidden w-full flex flex-col p-0'
+              : 'mx-auto w-full max-w-5xl px-6 py-6 sm:px-10 space-y-6'
+          }
+          style={activeTab === 'messages' ? { height: 'calc(100vh - 4.5rem)' } : undefined}
+        >
           {readOnly && (
-            <div className="mb-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-4">
+            <div className="m-4 mb-0 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-4 shrink-0">
               <div className="flex items-start gap-3">
                 <ShieldCheck className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                 <div>
@@ -500,7 +546,9 @@ export default function TeacherDashboardShell({
             </div>
           )}
 
-          {activeTab === 'profile' ? (
+          {activeTab === 'messages' ? (
+            <DashboardMessagesTab currentUser={{ id: profile.user_id, role: 'teacher' }} />
+          ) : activeTab === 'profile' ? (
             <TeacherAccountTab
               profile={profile}
               teacherProfile={teacherProfile}
@@ -788,11 +836,6 @@ export default function TeacherDashboardShell({
                     )}
                   />
                 </div>
-              )}
-              
-              {/* TAB 5: MESSAGES */}
-              {activeTab === 'messages' && (
-                <DashboardMessagesTab currentUser={{ id: profile.user_id, role: 'teacher' }} />
               )}
             </>
           )}

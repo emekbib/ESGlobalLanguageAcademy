@@ -1,12 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import {
   Star,
   Calendar,
   Search,
-  X,
   BadgeCheck,
+  MessageSquare,
 } from 'lucide-react';
 import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 import BookingCard from '@/components/teacher/booking-card';
@@ -19,7 +20,7 @@ export default function DashboardTutorsTab({
   onFindMore: () => void;
 }) {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
-  const myTutors = tutors.length > 0 ? tutors : SAMPLE_TEACHERS.slice(0, 2);
+  const myTutors = tutors && tutors.length > 0 ? tutors : SAMPLE_TEACHERS.slice(0, 3);
 
   const selectedTeacher = myTutors.find((t) => t.id === selectedTeacherId);
 
@@ -74,19 +75,34 @@ export default function DashboardTutorsTab({
                 <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
                   {tutor.languages.join(' & ')} Instructor · ${tutor.hourlyRate} / 50 min
                 </p>
-                <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  <span>{tutor.rating}</span>
-                  <span className="text-stone-400 dark:text-stone-500">({tutor.lessonsTaught} sessions taught)</span>
+                <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold">
+                  {tutor.rating !== null && tutor.rating !== undefined ? (
+                    <>
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span className="text-amber-600 dark:text-amber-400">{tutor.rating}</span>
+                      <span className="text-stone-400 dark:text-stone-500">({tutor.lessonsTaught} sessions)</span>
+                    </>
+                  ) : (
+                    <span className="rounded-full bg-stone-100 dark:bg-stone-800 px-2 py-0.5 text-[10px] font-bold text-stone-500 dark:text-stone-400">
+                      {tutor.lessonsTaught > 0 ? `${tutor.lessonsTaught} sessions` : 'New Educator'}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Link
+                href={`/dashboard?tab=messages&contactId=${tutor.userId || tutor.id}`}
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-xs font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 transition"
+              >
+                <MessageSquare className="h-3.5 w-3.5 text-stone-500" />
+                Message
+              </Link>
               <button
                 type="button"
                 onClick={() => setSelectedTeacherId(tutor.id)}
-                className="inline-flex items-center gap-2 rounded-2xl bg-stone-950 dark:bg-stone-100 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white active:scale-95"
+                className="inline-flex items-center gap-2 rounded-2xl bg-stone-950 dark:bg-stone-100 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white active:scale-95 cursor-pointer"
               >
                 <Calendar className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
                 Book Next Lesson

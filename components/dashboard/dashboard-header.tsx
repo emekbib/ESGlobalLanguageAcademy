@@ -19,6 +19,7 @@ import {
   Calendar,
   CreditCard,
 } from 'lucide-react';
+import NotificationBell from '@/components/notifications/notification-bell';
 
 export default function DashboardHeader({
   fullName,
@@ -26,12 +27,14 @@ export default function DashboardHeader({
   activeTab,
   onTabChange,
   onOpenLogout,
+  unreadMessagesCount,
 }: {
   fullName: string;
   avatarUrl: string | null;
   activeTab: string;
   onTabChange: (tab: string) => void;
   onOpenLogout: () => void;
+  unreadMessagesCount?: number;
 }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -132,45 +135,11 @@ export default function DashboardHeader({
 
         {/* Right Action Items: Clean Notifications & Profile */}
         <div className="flex items-center gap-3">
-          {/* Notifications */}
-          <div className="relative" ref={notifRef}>
-            <button
-              type="button"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 transition hover:bg-stone-50 dark:hover:bg-stone-700 shadow-sm"
-              aria-label="Notifications"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-stone-900" />
-            </button>
-
-            {notificationsOpen && (
-              <div className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-2xl animate-fade-in">
-                <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 px-4 py-3 bg-stone-50 dark:bg-stone-800/80">
-                  <span className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200">
-                    Notifications
-                  </span>
-                  <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-                    1 New
-                  </span>
-                </div>
-                <div className="divide-y divide-stone-100 dark:divide-stone-800 max-h-72 overflow-y-auto">
-                  <div className="p-4 transition hover:bg-stone-50 dark:hover:bg-stone-800/50 flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 mt-0.5">
-                      <CheckCircle2 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-stone-900 dark:text-white">Welcome to ESGlobal Academy</p>
-                      <p className="mt-0.5 text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
-                        Browse top-rated native teachers and schedule your first 1-on-1 speaking lesson.
-                      </p>
-                      <span className="mt-1 block text-[10px] text-stone-400 dark:text-stone-500">Just now</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Live Realtime Notifications */}
+          <NotificationBell
+            onNavigateMessages={() => onTabChange('messages')}
+            externalUnreadCount={unreadMessagesCount}
+          />
 
           {/* Theme Quick Toggle (Desktop & Mobile) */}
           <button

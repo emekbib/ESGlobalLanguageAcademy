@@ -35,7 +35,7 @@ export function useTeachers() {
       const { data: teacherProfiles, error: teacherError } = await supabase
         .from('teacher_profiles')
         .select('*')
-        .eq('is_published', true)
+        .neq('application_status', 'rejected')
         .order('created_at', { ascending: false });
 
       if (!active) return;
@@ -84,20 +84,27 @@ export function useTeachers() {
         const stats = reviewStats.get(t.id);
         return {
           id: t.id,
-          name: profile?.full_name ?? 'Language teacher',
+          name: profile?.full_name ?? 'Language Teacher',
           avatarUrl: profile?.avatar_url ?? null,
-          languages: t.languages_taught,
-          rating: stats ? stats.total / stats.count : 0,
+          languages: t.languages_taught ?? ['Amharic'],
+          rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 5.0,
           lessonsTaught: lessonCounts.get(t.id) ?? 0,
-          hourlyRate: Number(t.hourly_rate),
-          teacherType: t.teacher_type,
+          hourlyRate: Number(t.hourly_rate) || 35,
+          teacherType: t.teacher_type ?? 'community_tutor',
           specialties: t.specialties ?? [],
         };
       });
 
-      setTeachers(enriched);
+      // Show real registered teachers at the top, followed by sample educators
+      const allTeachers: TeacherCardData[] = [...enriched, ...SAMPLE_TEACHERS];
+      setTeachers(allTeachers);
       setAllLanguages(
-        Array.from(new Set(teacherProfiles.flatMap((t) => t.languages_taught))).sort(),
+        Array.from(
+          new Set([
+            ...teacherProfiles.flatMap((t) => t.languages_taught ?? []),
+            ...SAMPLE_TEACHERS.flatMap((t) => t.languages),
+          ])
+        ).sort(),
       );
       setLoading(false);
     }
