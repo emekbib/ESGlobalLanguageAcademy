@@ -72,6 +72,21 @@ export default function StudentDashboardShell({
   const [livePast, setLivePast] = useState<BookingItem[]>(past);
   const [liveTutors, setLiveTutors] = useState<any[]>(tutors);
   const [activeMessageContactId, setActiveMessageContactId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (
+      tabParam &&
+      ['lessons', 'teachers', 'tutors', 'settings', 'messages', 'payments'].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as any);
+    }
+    const contactParam = searchParams?.get('contactId') || searchParams?.get('teacherId');
+    if (contactParam) {
+      setActiveMessageContactId(contactParam);
+    }
+  }, [searchParams]);
+
   const { unreadCount, refreshUnread } = useMessageNotifications({
     userId: profile.user_id,
     activeTab,

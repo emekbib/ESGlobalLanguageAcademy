@@ -94,6 +94,10 @@ export default function TeacherDashboardShell({
     ) {
       setActiveTab(tabParam as any);
     }
+    const contactParam = searchParams?.get('contactId') || searchParams?.get('teacherId');
+    if (contactParam) {
+      setActiveMessageContactId(contactParam);
+    }
   }, [searchParams]);
 
   const [activeMessageContactId, setActiveMessageContactId] = useState<string | undefined>(undefined);

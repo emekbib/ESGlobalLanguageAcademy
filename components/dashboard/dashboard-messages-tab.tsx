@@ -81,6 +81,28 @@ function formatLastMessageTime(dateStr?: string | null): string {
   }
 }
 
+function renderMessageContent(content: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = content.split(urlRegex);
+
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-amber-400 font-semibold hover:opacity-80 break-all"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 export default function DashboardMessagesTab({
   currentUser,
   initialContactId,
@@ -752,7 +774,7 @@ export default function DashboardMessagesTab({
         ];
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-white dark:bg-[#101012] select-none">
+    <div className="flex h-full w-full overflow-hidden bg-white dark:bg-[#101012]">
       {/* ========================================================================= */}
       {/* CONTACTS SIDEBAR */}
       {/* ========================================================================= */}
@@ -1149,7 +1171,7 @@ export default function DashboardMessagesTab({
                                   : 'bg-white dark:bg-stone-800/90 text-stone-900 dark:text-stone-100 border border-stone-200/80 dark:border-stone-700/80 rounded-bl-xs shadow-xs'
                               }`}
                             >
-                              <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                              <p className="whitespace-pre-wrap break-words">{renderMessageContent(msg.content)}</p>
                             </div>
 
                             <div
