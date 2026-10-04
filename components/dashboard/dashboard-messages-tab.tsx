@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -19,7 +19,9 @@ import {
   User,
 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 import { isToday, isYesterday, format } from 'date-fns';
+import { playNotificationChime } from '@/lib/audio';
 
 type Message = {
   id: string;
@@ -27,6 +29,7 @@ type Message = {
   receiver_id: string;
   content: string;
   created_at: string;
+  read_at?: string | null;
 };
 
 type Contact = {
@@ -34,6 +37,9 @@ type Contact = {
   full_name: string;
   avatar_url: string | null;
   role: string;
+  lastMessage?: string;
+  lastMessageSenderId?: string;
+  lastMessageTime?: string;
 };
 
 function deduplicateMessages(msgs: Message[]): Message[] {
@@ -47,34 +53,121 @@ function deduplicateMessages(msgs: Message[]): Message[] {
 }
 
 function formatMessageDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isToday(d)) return 'Today';
-  if (isYesterday(d)) return 'Yesterday';
-  return format(d, 'MMMM d, yyyy');
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    if (isToday(d)) return 'Today';
+    if (isYesterday(d)) return 'Yesterday';
+    return format(d, 'MMMM d, yyyy');
+  } catch {
+    return '';
+  }
+}
+
+function formatLastMessageTime(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    if (isToday(d)) {
+      return format(d, 'h:mm a');
+    }
+    if (isYesterday(d)) {
+      return 'Yesterday';
+    }
+    return format(d, 'MMM d');
+  } catch {
+    return '';
+  }
 }
 
 export default function DashboardMessagesTab({
   currentUser,
+  initialContactId,
+  onMessagesRead,
 }: {
   currentUser: { id: string; role: string };
+  initialContactId?: string;
+  onMessagesRead?: () => void;
 }) {
   const searchParams = useSearchParams();
-  const targetContactId = searchParams?.get('contactId') || searchParams?.get('teacherId');
+  const targetContactId =
+    searchParams?.get('contactId') || searchParams?.get('teacherId') || initialContactId;
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loadingContacts, setLoadingContacts] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const supabase = createSupabaseBrowserClient();
 
+  // Instant or smooth scroll to bottom helper
+  const scrollToBottom = useCallback((instant = false) => {
+    if (chatScrollContainerRef.current) {
+      if (instant) {
+        chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
+      } else {
+        chatScrollContainerRef.current.scrollTo({
+          top: chatScrollContainerRef.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
+    }
+  }, []);
+
+  // Stable reference to the currently open contact to avoid stale closures in realtime handlers
+  const selectedContactRef = useRef<Contact | null>(selectedContact);
+  useEffect(() => {
+    selectedContactRef.current = selectedContact;
+  }, [selectedContact]);
+
+  // Instantly anchor to the bottom before browser paint when switching contacts or loading messages
+  useLayoutEffect(() => {
+    if (!loadingMessages && messages.length > 0 && selectedContact) {
+      if (chatScrollContainerRef.current) {
+        chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
+      }
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [selectedContact?.id, loadingMessages, messages.length]);
+
+  const markContactMessagesAsRead = useCallback(
+    async (contactId: string) => {
+      try {
+        const nowIso = new Date().toISOString();
+        setUnreadCounts((prev) => {
+          if (!prev[contactId]) return prev;
+          const next = { ...prev };
+          delete next[contactId];
+          return next;
+        });
+
+        await supabase
+          .from('messages')
+          .update({ read_at: nowIso })
+          .eq('sender_id', contactId)
+          .eq('receiver_id', currentUser.id)
+          .is('read_at', null);
+
+        onMessagesRead?.();
+      } catch (err) {
+        console.warn('Notice marking contact messages as read:', err);
+      }
+    },
+    [currentUser.id, supabase, onMessagesRead]
+  );
+
+  // 1. Initial Load of Contacts & Conversation History
   useEffect(() => {
     let active = true;
 
@@ -82,7 +175,21 @@ export default function DashboardMessagesTab({
       try {
         const uniqueUserIds = new Set<string>();
 
-        // 1. Check if currentUser has a teacher profile
+        // Check if targetContactId is a teacher_profiles.id and resolve to user_id
+        let effectiveTargetId = targetContactId;
+        if (targetContactId) {
+          const { data: tpTarget } = await supabase
+            .from('teacher_profiles')
+            .select('user_id')
+            .eq('id', targetContactId)
+            .maybeSingle();
+
+          if (tpTarget?.user_id) {
+            effectiveTargetId = tpTarget.user_id;
+          }
+        }
+
+        // Check if currentUser has a teacher profile
         const { data: teacherProfile } = await supabase
           .from('teacher_profiles')
           .select('id')
@@ -91,7 +198,7 @@ export default function DashboardMessagesTab({
 
         const teacherProfileId = teacherProfile?.id;
 
-        // 2. Query bookings using direct columns
+        // Query bookings
         let bookingTeacherProfileIds: string[] = [];
 
         if (teacherProfileId) {
@@ -123,7 +230,7 @@ export default function DashboardMessagesTab({
           }
         }
 
-        // 2b. Resolve teacher_profile IDs -> user_ids
+        // Resolve teacher_profile IDs -> user_ids
         if (bookingTeacherProfileIds.length > 0) {
           const uniqueTeacherProfileIds = Array.from(new Set(bookingTeacherProfileIds));
           const { data: teacherProfiles } = await supabase
@@ -140,24 +247,40 @@ export default function DashboardMessagesTab({
           }
         }
 
-        // 3. Also check direct messages for past conversations
+        // Query direct messages to discover all conversational partners and their latest message
+        const lastMsgMap: Record<
+          string,
+          { content: string; sender_id: string; created_at: string; read_at: string | null }
+        > = {};
+
         try {
           const { data: directMessages, error: msgError } = await supabase
             .from('messages')
-            .select('sender_id, receiver_id')
-            .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+            .select('id, sender_id, receiver_id, content, created_at, read_at')
+            .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+            .order('created_at', { ascending: false });
 
           if (!msgError && directMessages) {
             directMessages.forEach((m) => {
-              if (m.sender_id && m.sender_id !== currentUser.id) uniqueUserIds.add(m.sender_id);
-              if (m.receiver_id && m.receiver_id !== currentUser.id) uniqueUserIds.add(m.receiver_id);
+              const otherParty = m.sender_id === currentUser.id ? m.receiver_id : m.sender_id;
+              if (otherParty && otherParty !== currentUser.id) {
+                uniqueUserIds.add(otherParty);
+                if (!lastMsgMap[otherParty]) {
+                  lastMsgMap[otherParty] = {
+                    content: m.content,
+                    sender_id: m.sender_id,
+                    created_at: m.created_at,
+                    read_at: m.read_at,
+                  };
+                }
+              }
             });
           }
         } catch {
           // Table might not exist yet
         }
 
-        // 4. For students: Also fetch educators from profiles so student can message educators directly!
+        // For students: Fetch all educators from profiles & teacher_profiles
         if (currentUser.role === 'student') {
           const { data: educators } = await supabase
             .from('profiles')
@@ -168,9 +291,20 @@ export default function DashboardMessagesTab({
           if (educators) {
             educators.forEach((e) => uniqueUserIds.add(e.user_id));
           }
+
+          const { data: tpRows } = await supabase
+            .from('teacher_profiles')
+            .select('user_id')
+            .neq('user_id', currentUser.id);
+
+          if (tpRows) {
+            tpRows.forEach((tp) => {
+              if (tp.user_id) uniqueUserIds.add(tp.user_id);
+            });
+          }
         }
 
-        // 5. For teachers: Also fetch students from profiles
+        // For teachers: Fetch students from profiles
         if (currentUser.role === 'teacher') {
           const { data: students } = await supabase
             .from('profiles')
@@ -183,42 +317,116 @@ export default function DashboardMessagesTab({
           }
         }
 
-        // 6. Include target contact if provided in URL params
-        if (targetContactId && targetContactId !== currentUser.id) {
-          uniqueUserIds.add(targetContactId);
+        // Include target contact if provided
+        if (effectiveTargetId && effectiveTargetId !== currentUser.id) {
+          uniqueUserIds.add(effectiveTargetId);
         }
 
-        if (uniqueUserIds.size === 0) {
-          if (active) {
-            setContacts([]);
-            setLoadingContacts(false);
-          }
-          return;
+        // Query unread counts per sender
+        const countsMap: Record<string, number> = {};
+        try {
+          const { data: unreadRows } = await supabase
+            .from('messages')
+            .select('id, sender_id')
+            .eq('receiver_id', currentUser.id)
+            .is('read_at', null);
+
+          (unreadRows ?? []).forEach((row) => {
+            countsMap[row.sender_id] = (countsMap[row.sender_id] || 0) + 1;
+          });
+        } catch {
+          // Fallback if table uninitialized
         }
 
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, avatar_url, role')
-          .in('user_id', Array.from(uniqueUserIds));
+        if (active) {
+          setUnreadCounts(countsMap);
+        }
 
-        if (active && profiles) {
-          const loadedContacts: Contact[] = profiles.map((p) => ({
-            id: p.user_id,
-            full_name: p.full_name || 'Academy Member',
-            avatar_url: p.avatar_url,
-            role: p.role || (currentUser.role === 'student' ? 'teacher' : 'student'),
-          }));
+        // Fetch profiles for all unique user IDs
+        let loadedContacts: Contact[] = [];
 
-          setContacts(loadedContacts);
+        if (uniqueUserIds.size > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, full_name, avatar_url, role')
+            .in('user_id', Array.from(uniqueUserIds));
 
-          // Select contact from URL param, or first available contact
-          if (targetContactId) {
-            const found = loadedContacts.find((c) => c.id === targetContactId);
-            if (found) setSelectedContact(found);
-            else if (loadedContacts.length > 0) setSelectedContact(loadedContacts[0]);
-          } else if (loadedContacts.length > 0) {
-            setSelectedContact((prev) => prev || loadedContacts[0]);
+          if (profiles) {
+            loadedContacts = profiles.map((p) => {
+              const last = lastMsgMap[p.user_id];
+              return {
+                id: p.user_id,
+                full_name: p.full_name || 'Academy Member',
+                avatar_url: p.avatar_url,
+                role: p.role || (currentUser.role === 'student' ? 'teacher' : 'student'),
+                lastMessage: last?.content,
+                lastMessageSenderId: last?.sender_id,
+                lastMessageTime: last?.created_at,
+              };
+            });
           }
+        }
+
+        // Sample teacher fallback if needed
+        const targetSample = SAMPLE_TEACHERS.find(
+          (st) => st.id === targetContactId || st.id === effectiveTargetId
+        );
+        if (targetSample && !loadedContacts.some((c) => c.id === targetSample.id)) {
+          loadedContacts.unshift({
+            id: targetSample.id,
+            full_name: targetSample.name,
+            avatar_url: targetSample.avatarUrl,
+            role: 'teacher',
+          });
+        }
+
+        if (currentUser.role === 'student' && loadedContacts.length === 0) {
+          SAMPLE_TEACHERS.forEach((st) => {
+            loadedContacts.push({
+              id: st.id,
+              full_name: st.name,
+              avatar_url: st.avatarUrl,
+              role: 'teacher',
+            });
+          });
+        }
+
+        if (!active) return;
+
+        // Sort contacts: unread messages first, then by most recent message timestamp
+        loadedContacts.sort((a, b) => {
+          const unreadA = countsMap[a.id] || 0;
+          const unreadB = countsMap[b.id] || 0;
+          if (unreadB !== unreadA) return unreadB - unreadA;
+
+          const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+          const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+          if (timeB !== timeA) return timeB - timeA;
+
+          return a.full_name.localeCompare(b.full_name);
+        });
+
+        setContacts(loadedContacts);
+
+        // Contact selection:
+        // Only select a contact if explicitly targeted via URL param or prop.
+        // DO NOT auto-select the first contact when navigating to Messages tab!
+        const targetId = effectiveTargetId || targetContactId;
+        if (targetId) {
+          const found = loadedContacts.find((c) => c.id === targetId);
+          if (found) {
+            setSelectedContact(found);
+            void markContactMessagesAsRead(found.id);
+          } else {
+            setSelectedContact((prev) => prev || null);
+          }
+        } else {
+          // Keep current selection if active, otherwise remain null (shows list on mobile / placeholder on desktop)
+          setSelectedContact((prev) => {
+            if (!prev) return null;
+            const stillExists = loadedContacts.find((c) => c.id === prev.id);
+            return stillExists ? { ...stillExists, ...prev } : prev;
+          });
         }
       } catch (err: any) {
         console.error('Error loading contacts:', err?.message || err);
@@ -232,21 +440,158 @@ export default function DashboardMessagesTab({
     return () => {
       active = false;
     };
-  }, [currentUser.id, currentUser.role, targetContactId, supabase]);
+  }, [currentUser.id, currentUser.role, targetContactId, supabase, markContactMessagesAsRead]);
 
+  // 2. Global Realtime Channel: Listen to ALL incoming and outgoing messages
+  // This ensures that when a message is received or sent, the contact list updates in real-time,
+  // unread badges increment, audio plays, and the active conversation updates seamlessly.
   useEffect(() => {
-    if (!selectedContact) return;
+    if (!currentUser.id) return;
+
+    const channel = supabase
+      .channel(`inbox_realtime_${currentUser.id}_${Date.now()}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        async (payload) => {
+          const newMsg = payload.new as Message;
+          if (!newMsg) return;
+
+          // Only process messages involving current user
+          if (newMsg.receiver_id !== currentUser.id && newMsg.sender_id !== currentUser.id) {
+            return;
+          }
+
+          const otherPartyId =
+            newMsg.sender_id === currentUser.id ? newMsg.receiver_id : newMsg.sender_id;
+
+          const isCurrentChat = selectedContactRef.current?.id === otherPartyId;
+
+          // A. If the user currently has THIS contact open in the chat view:
+          if (isCurrentChat) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === newMsg.id)) return prev;
+              const withoutTemp = prev.filter(
+                (m) =>
+                  !(
+                    m.id.startsWith('temp-') &&
+                    m.sender_id === newMsg.sender_id &&
+                    m.content === newMsg.content
+                  )
+              );
+              return deduplicateMessages([...withoutTemp, newMsg]);
+            });
+            requestAnimationFrame(() => scrollToBottom(false));
+
+            if (newMsg.receiver_id === currentUser.id) {
+              void markContactMessagesAsRead(otherPartyId);
+            }
+          } else {
+            // B. If user is in another chat or has no chat open:
+            if (newMsg.receiver_id === currentUser.id) {
+              setUnreadCounts((prev) => ({
+                ...prev,
+                [otherPartyId]: (prev[otherPartyId] || 0) + 1,
+              }));
+              playNotificationChime();
+            }
+          }
+
+          // C. Update contact's last message snippet, timestamp, and bump to the top of the sidebar list
+          setContacts((prevContacts) => {
+            const existingIdx = prevContacts.findIndex((c) => c.id === otherPartyId);
+            if (existingIdx !== -1) {
+              const updatedContact: Contact = {
+                ...prevContacts[existingIdx],
+                lastMessage: newMsg.content,
+                lastMessageSenderId: newMsg.sender_id,
+                lastMessageTime: newMsg.created_at,
+              };
+              const remaining = prevContacts.filter((_, idx) => idx !== existingIdx);
+              return [updatedContact, ...remaining];
+            } else {
+              // Brand new sender not yet in contacts: dynamically fetch their profile and prepend
+              void (async () => {
+                try {
+                  const { data: prof } = await supabase
+                    .from('profiles')
+                    .select('user_id, full_name, avatar_url, role')
+                    .eq('user_id', otherPartyId)
+                    .maybeSingle();
+
+                  if (prof) {
+                    const newContact: Contact = {
+                      id: prof.user_id,
+                      full_name: prof.full_name || 'Academy Member',
+                      avatar_url: prof.avatar_url,
+                      role: prof.role || (currentUser.role === 'student' ? 'teacher' : 'student'),
+                      lastMessage: newMsg.content,
+                      lastMessageSenderId: newMsg.sender_id,
+                      lastMessageTime: newMsg.created_at,
+                    };
+                    setContacts((prev) => {
+                      if (prev.some((c) => c.id === otherPartyId)) return prev;
+                      return [newContact, ...prev];
+                    });
+                  }
+                } catch (err) {
+                  console.warn('Notice fetching new sender profile:', err);
+                }
+              })();
+              return prevContacts;
+            }
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          if (updated?.receiver_id === currentUser.id && updated?.read_at) {
+            setUnreadCounts((prev) => {
+              if (!prev[updated.sender_id]) return prev;
+              const next = { ...prev };
+              delete next[updated.sender_id];
+              return next;
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser.id, currentUser.role, supabase, markContactMessagesAsRead]);
+
+  // 3. Active Conversation Loader & Light Sync
+  useEffect(() => {
+    if (!selectedContact) {
+      setMessages([]);
+      setLoadingMessages(false);
+      return;
+    }
 
     setLoadingMessages(true);
     setSendError(null);
 
-    async function loadMessages() {
+    async function loadConversationMessages() {
+      if (!selectedContact) return;
       try {
         const { data, error } = await supabase
           .from('messages')
           .select('*')
           .or(
-            `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedContact?.id}),and(sender_id.eq.${selectedContact?.id},receiver_id.eq.${currentUser.id})`
+            `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedContact.id}),and(sender_id.eq.${selectedContact.id},receiver_id.eq.${currentUser.id})`
           )
           .order('created_at', { ascending: true });
 
@@ -255,82 +600,40 @@ export default function DashboardMessagesTab({
             const temps = prev.filter((m) => m.id.startsWith('temp-'));
             return deduplicateMessages([...data, ...temps]);
           });
-          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+          // Instantly jump to the bottom without animating through all messages
+          requestAnimationFrame(() => {
+            scrollToBottom(true);
+          });
 
-          // Mark incoming unread messages from this contact as read
-          if (selectedContact) {
-            void supabase
-              .from('messages')
-              .update({ read_at: new Date().toISOString() })
-              .eq('sender_id', selectedContact.id)
-              .eq('receiver_id', currentUser.id)
-              .is('read_at', null);
-          }
-        } else if (error) {
-          console.warn('Notice loading messages:', error.message);
+          void markContactMessagesAsRead(selectedContact.id);
         }
-      } catch (err: any) {
-        console.warn('Error loading messages:', err);
+      } catch (err) {
+        console.warn('Error loading conversation:', err);
       } finally {
         setLoadingMessages(false);
       }
     }
 
-    void loadMessages();
+    void loadConversationMessages();
 
-    // 1. Subscribe to new messages via Realtime channel
-    const channel = supabase
-      .channel(`chat_${currentUser.id}_${selectedContact.id}_${Date.now()}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          if (
-            (newMsg.sender_id === selectedContact.id && newMsg.receiver_id === currentUser.id) ||
-            (newMsg.sender_id === currentUser.id && newMsg.receiver_id === selectedContact.id)
-          ) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              const withoutMatchingTemp = prev.filter(
-                (m) =>
-                  !(
-                    m.id.startsWith('temp-') &&
-                    m.sender_id === newMsg.sender_id &&
-                    m.content === newMsg.content
-                  )
-              );
-              return deduplicateMessages([...withoutMatchingTemp, newMsg]);
-            });
-            setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-          }
-        }
-      )
-      .subscribe();
-
-    // 2. Periodic sync every 4 seconds to guarantee messages appear even if WebSocket is delayed
+    // 4-second sync interval while actively in this conversation for bulletproof reliability
     const interval = setInterval(() => {
-      void loadMessages();
+      void loadConversationMessages();
     }, 4000);
 
     return () => {
-      supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, [selectedContact, currentUser.id, supabase]);
+  }, [selectedContact?.id, currentUser.id, supabase, markContactMessagesAsRead]);
 
+  // 4. Send Message Handler
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newMessage.trim() || !selectedContact || sending) return;
+    if (!newMessage.trim() || !selectedContact) return;
 
     const msgContent = newMessage.trim();
     setNewMessage('');
     setSendError(null);
-    setSending(true);
 
     const tempId = `temp-${Date.now()}`;
     const optimisticMsg: Message = {
@@ -341,10 +644,33 @@ export default function DashboardMessagesTab({
       created_at: new Date().toISOString(),
     };
 
+    // 1. Immediately append to chat stream and scroll smoothly
     setMessages((prev) => [...prev, optimisticMsg]);
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    requestAnimationFrame(() => scrollToBottom(false));
 
+    // Keep textarea focused and ready for immediate subsequent message
+    textareaRef.current?.focus();
+
+    // 2. Immediately update sidebar contact preview and bump to top
+    const activeContactId = selectedContact.id;
+    setContacts((prevContacts) => {
+      const existingIdx = prevContacts.findIndex((c) => c.id === activeContactId);
+      if (existingIdx !== -1) {
+        const updatedContact: Contact = {
+          ...prevContacts[existingIdx],
+          lastMessage: msgContent,
+          lastMessageSenderId: currentUser.id,
+          lastMessageTime: new Date().toISOString(),
+        };
+        const remaining = prevContacts.filter((_, idx) => idx !== existingIdx);
+        return [updatedContact, ...remaining];
+      }
+      return prevContacts;
+    });
+
+    // 3. Fast background delivery
     try {
+      // Direct browser client insertion (fastest path: ~50-150ms roundtrip)
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -355,27 +681,56 @@ export default function DashboardMessagesTab({
         .select()
         .single();
 
-      if (error) {
-        setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        setNewMessage(msgContent);
-        setSendError(
-          error.code === 'PGRST205'
-            ? 'The messages database table has not been created yet in Supabase.'
-            : error.message || 'Failed to deliver message. Please try again.'
-        );
-      } else if (data) {
+      if (!error && data) {
         setMessages((prev) => {
           const filtered = prev.filter((m) => m.id !== tempId);
           return deduplicateMessages([...filtered, data as Message]);
         });
+        return;
+      }
+
+      // If client direct insert fails (e.g. sample educator or teacher profile resolution needed), use optimized server route
+      const res = await fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiver_id: selectedContact.id,
+          content: msgContent,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || result.error) {
+        throw new Error(result.error || 'Failed to deliver message.');
+      }
+
+      if (result.message) {
+        setMessages((prev) => {
+          const filtered = prev.filter((m) => m.id !== tempId);
+          return deduplicateMessages([...filtered, result.message as Message]);
+        });
+      }
+
+      // If sending to a simulated recipient, trigger auto-reply
+      if (result.simulated) {
+        setTimeout(() => {
+          const replyMsg: Message = {
+            id: `reply-${Date.now()}`,
+            sender_id: selectedContact.id,
+            receiver_id: currentUser.id,
+            content: `Hello! Thank you for reaching out. I'm excited to help you achieve your language learning goals! Please feel free to book a lesson slot or let me know what topics you'd like to practice.`,
+            created_at: new Date().toISOString(),
+          };
+          setMessages((prev) => deduplicateMessages([...prev, replyMsg]));
+          requestAnimationFrame(() => scrollToBottom(false));
+        }, 800);
       }
     } catch (err: any) {
+      console.error('Failed to send message:', err);
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setNewMessage(msgContent);
-      setSendError(err?.message || 'Could not connect to the messages service. Please try again.');
-    } finally {
-      setSending(false);
-      textareaRef.current?.focus();
+      setSendError(err?.message || 'Could not deliver message. Please try again.');
     }
   };
 
@@ -422,9 +777,17 @@ export default function DashboardMessagesTab({
                 </p>
               </div>
             </div>
-            <span className="rounded-full bg-stone-200/70 dark:bg-stone-800 px-2.5 py-0.5 text-[11px] font-bold text-stone-700 dark:text-stone-300">
-              {contacts.length}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {Object.values(unreadCounts).reduce((sum, c) => sum + c, 0) > 0 ? (
+                <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-[11px] font-black text-stone-950 shadow-xs animate-pulse">
+                  {Object.values(unreadCounts).reduce((sum, c) => sum + c, 0)} new
+                </span>
+              ) : (
+                <span className="rounded-full bg-stone-100 dark:bg-stone-800/80 px-2.5 py-0.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                  {contacts.length} {contacts.length === 1 ? 'conversation' : 'conversations'}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Contact Search Box */}
@@ -476,6 +839,7 @@ export default function DashboardMessagesTab({
             filteredContacts.map((contact) => {
               const isSelected = selectedContact?.id === contact.id;
               const isTeacher = contact.role === 'teacher';
+              const hasUnread = (unreadCounts[contact.id] || 0) > 0;
 
               return (
                 <button
@@ -483,6 +847,7 @@ export default function DashboardMessagesTab({
                   onClick={() => {
                     setSelectedContact(contact);
                     setSendError(null);
+                    void markContactMessagesAsRead(contact.id);
                   }}
                   className={`w-full text-left flex items-center gap-3.5 p-3.5 sm:p-4 transition-all cursor-pointer ${
                     isSelected
@@ -511,12 +876,56 @@ export default function DashboardMessagesTab({
 
                   {/* Name and Meta */}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-stone-900 dark:text-stone-100">
-                      {contact.full_name}
-                    </p>
-                    <div className="mt-1 flex items-center gap-1.5">
+                    <div className="flex items-center justify-between gap-1">
+                      <p
+                        className={`truncate text-sm ${
+                          hasUnread
+                            ? 'font-black text-stone-950 dark:text-white'
+                            : 'font-bold text-stone-900 dark:text-stone-100'
+                        }`}
+                      >
+                        {contact.full_name}
+                      </p>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {contact.lastMessageTime && (
+                          <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium">
+                            {formatLastMessageTime(contact.lastMessageTime)}
+                          </span>
+                        )}
+                        {hasUnread && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-black text-stone-950 shadow-xs animate-pulse">
+                            {unreadCounts[contact.id] > 9 ? '9+' : unreadCounts[contact.id]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Last message preview snippet */}
+                    <div className="mt-1 flex items-center justify-between gap-2">
+                      <p
+                        className={`truncate text-xs ${
+                          hasUnread
+                            ? 'font-bold text-stone-900 dark:text-stone-100'
+                            : 'text-stone-500 dark:text-stone-400'
+                        }`}
+                      >
+                        {contact.lastMessage ? (
+                          <>
+                            {contact.lastMessageSenderId === currentUser.id && (
+                              <span className="text-amber-600 dark:text-amber-400 font-semibold mr-1">
+                                You:
+                              </span>
+                            )}
+                            <span>{contact.lastMessage}</span>
+                          </>
+                        ) : (
+                          <span className="italic text-stone-400 dark:text-stone-500">
+                            No messages yet
+                          </span>
+                        )}
+                      </p>
                       <span
-                        className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
+                        className={`shrink-0 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
                           isTeacher
                             ? 'bg-amber-100/90 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300'
                             : 'bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300'
@@ -525,7 +934,7 @@ export default function DashboardMessagesTab({
                         {isTeacher ? (
                           <>
                             <GraduationCap className="h-2.5 w-2.5" />
-                            <span>Native Educator</span>
+                            <span>Teacher</span>
                           </>
                         ) : (
                           <>
@@ -554,13 +963,13 @@ export default function DashboardMessagesTab({
         {!selectedContact ? (
           <div className="text-center p-8 max-w-md mx-auto">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-stone-100 dark:bg-stone-800 text-stone-400 shadow-xs">
-              <MessageSquare className="h-8 w-8 text-amber-400" />
+              <MessageSquare className="h-8 w-8 text-amber-500" />
             </div>
             <h3 className="mt-4 font-display text-lg font-bold text-stone-900 dark:text-white">
               Select a conversation
             </h3>
             <p className="mt-1.5 text-xs sm:text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-              Choose a contact from the sidebar to start a real-time lesson consultation or question.
+              Choose a contact from the list on the left to start a real-time lesson consultation or question.
             </p>
           </div>
         ) : (
@@ -637,7 +1046,7 @@ export default function DashboardMessagesTab({
             </div>
 
             {/* Messages Scroll Area */}
-            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4">
+            <div ref={chatScrollContainerRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4">
               <div className="max-w-3xl mx-auto w-full space-y-4">
                 {loadingMessages ? (
                   <div className="flex flex-col items-center justify-center py-20 text-stone-400">
@@ -665,7 +1074,7 @@ export default function DashboardMessagesTab({
                       Start your conversation with {selectedContact.full_name}
                     </h4>
                     <p className="mt-1.5 text-xs sm:text-sm text-stone-500 dark:text-stone-400 leading-relaxed max-w-sm mx-auto">
-                      Direct, encrypted communication channel for lesson topics, schedule alignment, and language goals.
+                      Direct communication channel for lesson topics, schedule alignment, and language goals.
                     </p>
 
                     {/* Starter Chips */}
@@ -809,16 +1218,12 @@ export default function DashboardMessagesTab({
 
                   <button
                     type="submit"
-                    disabled={!newMessage.trim() || sending}
+                    disabled={!newMessage.trim()}
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-950 dark:bg-amber-400 text-white dark:text-stone-950 transition hover:bg-stone-800 dark:hover:bg-amber-300 disabled:opacity-40 cursor-pointer shadow-xs active:scale-95"
                     title="Send message (Enter)"
                     aria-label="Send message"
                   >
-                    {sending ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-white dark:text-stone-900" />
-                    ) : (
-                      <Send className="h-4 w-4 text-amber-300 dark:text-stone-950" />
-                    )}
+                    <Send className="h-4 w-4 text-amber-300 dark:text-stone-950" />
                   </button>
                 </div>
 

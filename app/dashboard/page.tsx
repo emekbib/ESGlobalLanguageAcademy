@@ -40,7 +40,14 @@ export default async function DashboardPage({
     return <ErrorDisplay message="We couldn’t load your profile. Please try again." />;
   }
   if (!profile) redirect('/onboarding');
-  if (profile.role === 'teacher') redirect('/teacher/dashboard');
+  if (profile.role === 'teacher') {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(resolvedParams)) {
+      if (typeof v === 'string') q.set(k, v);
+    }
+    const qs = q.toString();
+    redirect(`/teacher/dashboard${qs ? `?${qs}` : ''}`);
+  }
 
   const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
@@ -71,6 +78,24 @@ export default async function DashboardPage({
       .select('id, user_id, languages_taught, hourly_rate')
       .limit(10);
     teacherProfiles = allTeachers ?? [];
+
+    if (teacherProfiles.length === 0) {
+      const { data: teacherUsers } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .eq('role', 'teacher')
+        .limit(10);
+
+      if (teacherUsers && teacherUsers.length > 0) {
+        teacherProfiles = teacherUsers.map((tu) => ({
+          id: tu.user_id,
+          user_id: tu.user_id,
+          languages_taught: ['Amharic'],
+          hourly_rate: 35,
+        }));
+      }
+    }
+
     teacherIds = (teacherProfiles ?? []).map((t) => t.id);
   }
 

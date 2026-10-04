@@ -5,7 +5,12 @@ import { ErrorDisplay } from '@/components/ui/page-states';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TeacherDashboardPage() {
+export default async function TeacherDashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const resolvedParams = searchParams ? await searchParams : {};
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -22,7 +27,14 @@ export default async function TeacherDashboardPage() {
     return <ErrorDisplay message="We couldn’t load your profile. Please try again." />;
   }
   if (!profile) redirect('/onboarding');
-  if (profile.role === 'student') redirect('/dashboard');
+  if (profile.role === 'student') {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(resolvedParams)) {
+      if (typeof v === 'string') q.set(k, v);
+    }
+    const qs = q.toString();
+    redirect(`/dashboard${qs ? `?${qs}` : ''}`);
+  }
 
   const { data: teacherProfile, error: teacherProfileError } = await supabase
     .from('teacher_profiles')

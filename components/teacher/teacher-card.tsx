@@ -3,6 +3,7 @@ import { Star, BadgeCheck } from 'lucide-react';
 
 export type TeacherCardData = {
   id: string;
+  userId?: string;
   name: string;
   avatarUrl: string | null;
   languages: string[];

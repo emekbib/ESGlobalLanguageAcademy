@@ -159,9 +159,19 @@ export function useMessageNotifications({
     };
   }, [userId, supabase, toast, activeTab, onOpenMessages, loadUnreadCount]);
 
-  const clearUnread = useCallback(() => {
+  const clearUnread = useCallback(async () => {
     setUnreadCount(0);
-  }, []);
+    if (!userId) return;
+    try {
+      await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('receiver_id', userId)
+        .is('read_at', null);
+    } catch (err) {
+      console.warn('Notice clearing unread messages:', err);
+    }
+  }, [userId, supabase]);
 
   return { unreadCount, clearUnread, refreshUnread: loadUnreadCount };
 }

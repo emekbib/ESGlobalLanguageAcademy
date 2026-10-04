@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
   Calendar,
@@ -78,23 +79,33 @@ export default function TeacherDashboardShell({
   pastBookings,
   readOnly = false,
 }: TeacherDashboardShellProps) {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts' | 'messages' | 'profile'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  const { unreadCount, clearUnread } = useMessageNotifications({
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (
+      tabParam &&
+      ['overview', 'schedule', 'bookings', 'payouts', 'messages', 'profile'].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
+
+  const [activeMessageContactId, setActiveMessageContactId] = useState<string | undefined>(undefined);
+
+  const { unreadCount, refreshUnread } = useMessageNotifications({
     userId: profile.user_id,
     activeTab,
-    onOpenMessages: () => setActiveTab('messages'),
+    onOpenMessages: (senderId) => {
+      if (senderId) setActiveMessageContactId(senderId);
+      setActiveTab('messages');
+    },
   });
-
-  useEffect(() => {
-    if (activeTab === 'messages') {
-      clearUnread();
-    }
-  }, [activeTab, clearUnread]);
 
   useEffect(() => {
     setMounted(true);
@@ -547,7 +558,11 @@ export default function TeacherDashboardShell({
           )}
 
           {activeTab === 'messages' ? (
-            <DashboardMessagesTab currentUser={{ id: profile.user_id, role: 'teacher' }} />
+            <DashboardMessagesTab
+              currentUser={{ id: profile.user_id, role: 'teacher' }}
+              initialContactId={activeMessageContactId}
+              onMessagesRead={refreshUnread}
+            />
           ) : activeTab === 'profile' ? (
             <TeacherAccountTab
               profile={profile}

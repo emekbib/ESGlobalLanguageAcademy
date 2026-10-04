@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, MessageSquare } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/lib/types/database';
 import CompleteBookingButton from '@/components/teacher/complete-booking-button';
 
@@ -62,6 +62,11 @@ export default function BookingsList({
             const start = formatLocal(booking.start_time_utc);
             const end = formatLocal(booking.end_time_utc);
             const otherParty = viewerRole === 'student' ? booking.teacher_name : 'Student';
+            const messageUrl =
+              viewerRole === 'student'
+                ? `/dashboard?tab=messages&contactId=${booking.teacher_id}`
+                : `/teacher/dashboard?tab=messages&contactId=${booking.student_id}`;
+
             return (
               <div
                 key={booking.id}
@@ -87,12 +92,22 @@ export default function BookingsList({
                   </div>
                 </Link>
                 <div className="flex flex-col items-end gap-2">
-                  <Link
-                    href={`/booking/${booking.id}`}
-                    className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${STATUS_STYLES[booking.status]}`}
-                  >
-                    {booking.status}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={messageUrl}
+                      title={`Message ${otherParty}`}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-2.5 py-1 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 transition"
+                    >
+                      <MessageSquare className="h-3 w-3 text-stone-500" />
+                      <span className="hidden sm:inline">Message</span>
+                    </Link>
+                    <Link
+                      href={`/booking/${booking.id}`}
+                      className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${STATUS_STYLES[booking.status]}`}
+                    >
+                      {booking.status}
+                    </Link>
+                  </div>
                   {viewerRole === 'student' && booking.status === 'completed' && (
                     <Link
                       href={`/booking/${booking.id}#review`}

@@ -32,23 +32,22 @@ export function useTeachers() {
     let active = true;
 
     async function load() {
-      const { data: teacherProfiles, error: teacherError } = await supabase
+      // 1. Fetch all teacher profiles
+      const { data: rawTeacherProfiles } = await supabase
         .from('teacher_profiles')
         .select('*')
-        .neq('application_status', 'rejected')
+        .or('application_status.is.null,application_status.neq.rejected')
         .order('created_at', { ascending: false });
+
+      // 2. Also fetch all users with role 'teacher' from profiles
+      const { data: teacherProfilesFromUsers } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .eq('role', 'teacher');
 
       if (!active) return;
 
-      if (teacherError || !teacherProfiles || teacherProfiles.length === 0) {
-        setTeachers(SAMPLE_TEACHERS);
-        setAllLanguages(
-          Array.from(new Set(SAMPLE_TEACHERS.flatMap((t) => t.languages))).sort(),
-        );
-        setLoading(false);
-        return;
-      }
-
+      const teacherProfiles = rawTeacherProfiles ?? [];
       const userIds = teacherProfiles.map((t) => t.user_id);
       const teacherIds = teacherProfiles.map((t) => t.id);
 
@@ -84,6 +83,7 @@ export function useTeachers() {
         const stats = reviewStats.get(t.id);
         return {
           id: t.id,
+          userId: t.user_id,
           name: profile?.full_name ?? 'Language Teacher',
           avatarUrl: profile?.avatar_url ?? null,
           languages: t.languages_taught ?? ['Amharic'],
@@ -95,13 +95,34 @@ export function useTeachers() {
         };
       });
 
+      // Include any user who registered as a teacher but whose profile is not yet in teacherProfiles
+      const existingUserIds = new Set(teacherProfiles.map((t) => t.user_id));
+      const additionalTeachers: TeacherCardData[] = (teacherProfilesFromUsers ?? [])
+        .filter((p) => !existingUserIds.has(p.user_id))
+        .map((p) => ({
+          id: p.user_id,
+          userId: p.user_id,
+          name: p.full_name || 'Native Educator',
+          avatarUrl: p.avatar_url ?? null,
+          languages: ['Amharic'],
+          rating: 5.0,
+          lessonsTaught: 0,
+          hourlyRate: 35,
+          teacherType: 'community_tutor',
+          specialties: ['Conversational Fluency'],
+        }));
+
+      const allRealTeachers = [...enriched, ...additionalTeachers];
+
       // Show real registered teachers at the top, followed by sample educators
-      const allTeachers: TeacherCardData[] = [...enriched, ...SAMPLE_TEACHERS];
+      const allTeachers: TeacherCardData[] =
+        allRealTeachers.length > 0 ? [...allRealTeachers, ...SAMPLE_TEACHERS] : SAMPLE_TEACHERS;
+
       setTeachers(allTeachers);
       setAllLanguages(
         Array.from(
           new Set([
-            ...teacherProfiles.flatMap((t) => t.languages_taught ?? []),
+            ...allRealTeachers.flatMap((t) => t.languages ?? []),
             ...SAMPLE_TEACHERS.flatMap((t) => t.languages),
           ])
         ).sort(),

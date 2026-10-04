@@ -230,7 +230,7 @@ export default function DashboardTeachersTab() {
                 {/* Bottom Actions: Message & Book */}
                 <div className="p-5 pt-0 grid grid-cols-2 gap-2">
                   <Link
-                    href={`/dashboard?tab=messages`}
+                    href={`/dashboard?tab=messages&contactId=${teacher.userId || teacher.id}`}
                     className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 py-3 text-xs font-bold text-stone-800 dark:text-stone-200 shadow-sm transition hover:bg-stone-50 dark:hover:bg-stone-700"
                   >
                     <MessageSquare className="h-3.5 w-3.5 text-stone-500" />

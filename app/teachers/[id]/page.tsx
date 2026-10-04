@@ -35,18 +35,39 @@ export default async function TeacherProfilePage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  // Try fetching from database first
-  const { data: teacher, error: teacherError } = await supabase
+  // Try fetching from database first (by teacher_profile id or user_id)
+  let { data: teacher } = await supabase
     .from('teacher_profiles')
     .select('*')
     .eq('id', id)
-    .eq('is_published', true)
     .maybeSingle();
 
-  // Check sample teachers fallback if not found in database
-  const sample = !teacher ? getSampleTeacherById(id) : null;
+  if (!teacher) {
+    const { data: tByUserId } = await supabase
+      .from('teacher_profiles')
+      .select('*')
+      .eq('user_id', id)
+      .maybeSingle();
+    teacher = tByUserId;
+  }
 
-  if (!teacher && !sample) {
+  // Also check if id is a teacher's user_id in profiles
+  let fallbackUserProfile = null;
+  if (!teacher) {
+    const { data: p } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, avatar_url, role')
+      .eq('user_id', id)
+      .maybeSingle();
+    if (p && p.role === 'teacher') {
+      fallbackUserProfile = p;
+    }
+  }
+
+  // Check sample teachers fallback if not found in database
+  const sample = !teacher && !fallbackUserProfile ? getSampleTeacherById(id) : null;
+
+  if (!teacher && !fallbackUserProfile && !sample) {
     notFound();
   }
 
@@ -65,9 +86,18 @@ export default async function TeacherProfilePage({
   let yearsExperience = 3;
   let videoIntroUrl: string | null = null;
   let reviews: Review[] = [];
-  const educatorUserId = teacher ? teacher.user_id : null;
+  const educatorUserId = teacher ? teacher.user_id : fallbackUserProfile ? fallbackUserProfile.user_id : null;
 
-  if (teacher) {
+  if (fallbackUserProfile && !teacher) {
+    fullName = fallbackUserProfile.full_name || 'Native Educator';
+    avatarUrl = fallbackUserProfile.avatar_url;
+    languagesTaught = ['Amharic'];
+    languagesSpoken = ['Amharic', 'English'];
+    teacherType = 'community_tutor';
+    hourlyRate = 35;
+    bio = 'Certified native speaker offering 1-on-1 personalized conversational practice and language lessons.';
+    specialties = ['Conversational Fluency', 'Pronunciation'];
+  } else if (teacher) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, avatar_url')
@@ -220,7 +250,7 @@ export default async function TeacherProfilePage({
                   {/* Message Educator Button */}
                   <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center gap-3">
                     <Link
-                      href={educatorUserId ? `/dashboard?tab=messages&contactId=${educatorUserId}` : '/dashboard?tab=messages'}
+                      href={educatorUserId ? `/dashboard?tab=messages&contactId=${educatorUserId}` : `/dashboard?tab=messages&contactId=${id}`}
                       className="inline-flex items-center gap-2 rounded-full border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 px-4 py-2 text-xs font-bold text-stone-900 dark:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-700 transition shadow-sm"
                     >
                       <MessageSquare className="h-3.5 w-3.5 text-stone-600 dark:text-stone-300" />

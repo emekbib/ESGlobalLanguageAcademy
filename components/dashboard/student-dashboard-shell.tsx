@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Search,
   Star,
@@ -57,6 +58,7 @@ export default function StudentDashboardShell({
   past,
   tutors,
 }: StudentDashboardShellProps) {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<
     'lessons' | 'teachers' | 'tutors' | 'settings' | 'messages' | 'payments'
   >('lessons');
@@ -69,17 +71,15 @@ export default function StudentDashboardShell({
   const [liveUpcoming, setLiveUpcoming] = useState<BookingItem[]>(upcoming);
   const [livePast, setLivePast] = useState<BookingItem[]>(past);
   const [liveTutors, setLiveTutors] = useState<any[]>(tutors);
-  const { unreadCount, clearUnread } = useMessageNotifications({
+  const [activeMessageContactId, setActiveMessageContactId] = useState<string | undefined>(undefined);
+  const { unreadCount, refreshUnread } = useMessageNotifications({
     userId: profile.user_id,
     activeTab,
-    onOpenMessages: () => setActiveTab('messages'),
+    onOpenMessages: (senderId) => {
+      if (senderId) setActiveMessageContactId(senderId);
+      setActiveTab('messages');
+    },
   });
-
-  useEffect(() => {
-    if (activeTab === 'messages') {
-      clearUnread();
-    }
-  }, [activeTab, clearUnread]);
 
   const supabase = createSupabaseBrowserClient();
 
@@ -163,24 +163,21 @@ export default function StudentDashboardShell({
   }, [upcoming, past, tutors]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (
-        tabParam &&
-        ['lessons', 'teachers', 'tutors', 'settings', 'messages', 'payments'].includes(tabParam)
-      ) {
-        setActiveTab(tabParam as any);
-      }
-      if (params.get('payment') === 'success' || params.get('booking') === 'confirmed') {
-        const teacherName = params.get('teacher') || 'your educator';
-        setSuccessBanner(
-          `Booking confirmed with ${teacherName}! Your 1-on-1 speaking session is scheduled.`
-        );
-        void fetchLiveBookings();
-      }
+    const tabParam = searchParams?.get('tab');
+    if (
+      tabParam &&
+      ['lessons', 'teachers', 'tutors', 'settings', 'messages', 'payments'].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as any);
     }
-  }, [fetchLiveBookings]);
+    if (searchParams?.get('payment') === 'success' || searchParams?.get('booking') === 'confirmed') {
+      const teacherName = searchParams?.get('teacher') || 'your educator';
+      setSuccessBanner(
+        `Booking confirmed with ${teacherName}! Your 1-on-1 speaking session is scheduled.`
+      );
+      void fetchLiveBookings();
+    }
+  }, [searchParams, fetchLiveBookings]);
 
   // Realtime subscription for instant booking updates
   useEffect(() => {
@@ -413,7 +410,11 @@ export default function StudentDashboardShell({
 
           {/* TAB 5: MESSAGES */}
           {activeTab === 'messages' && (
-            <DashboardMessagesTab currentUser={{ id: profile.user_id, role: 'student' }} />
+            <DashboardMessagesTab
+              currentUser={{ id: profile.user_id, role: 'student' }}
+              initialContactId={activeMessageContactId}
+              onMessagesRead={refreshUnread}
+            />
           )}
 
           {/* TAB 6: PAYMENTS */}

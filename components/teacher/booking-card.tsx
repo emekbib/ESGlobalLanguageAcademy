@@ -403,7 +403,7 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
           </button>
 
           <Link
-            href="/dashboard?tab=messages"
+            href={teacherId ? `/dashboard?tab=messages&contactId=${teacherId}` : '/dashboard?tab=messages'}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 py-3 text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-200 transition hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700"
           >
             <MessageCircle className="h-3.5 w-3.5 text-stone-400" />
