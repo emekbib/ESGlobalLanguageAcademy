@@ -9,6 +9,7 @@ import type { TeacherAvailability } from '@/lib/types/database';
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
 const COMMON_TIMEZONES = [
+  'Africa/Addis_Ababa', 'Africa/Nairobi', 'Asia/Dubai', 'Africa/Cairo',
   'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
   'America/Toronto', 'America/Sao_Paulo', 'Europe/London', 'Europe/Paris',
   'Europe/Berlin', 'Europe/Madrid', 'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Kolkata',
