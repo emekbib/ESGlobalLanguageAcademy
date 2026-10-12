@@ -76,6 +76,24 @@ WHERE user_id IN (
 
 ---
 
+## 4.1 Live QA & Testing Accounts (Student & Teacher)
+
+To test the application end-to-end across roles, the following dedicated accounts are active in Supabase:
+
+### A. Student Account
+* **Email:** `student.test@esglobal.com`
+* **Password:** `Password123!`
+* **Profile:** Selamawit Bekele (Student)
+* **Access:** `/dashboard` (Student Workspace: Browse tutors, booking checkout, direct chat, and lessons)
+
+### B. Teacher Account
+* **Email:** `teacher.test@esglobal.com`
+* **Password:** `Password123!`
+* **Profile:** Bethelhem Mengistu (Approved & Published Amharic Educator)
+* **Access:** `/teacher/dashboard` (Teacher Workspace: Live roster, recurring availability calendar, video classroom, and profile settings)
+
+---
+
 ## 5. Deployment Checklist (Vercel)
 
 1. Connect the GitHub repository `emekbib/ESGlobalLanguageAcademy` to Vercel.
