@@ -2,20 +2,22 @@
 
 import { Trophy, Flame, Sparkles, ArrowUp, Medal } from 'lucide-react';
 
-const LEADERBOARD_USERS = [
-  { rank: 1, name: 'Marcus Vance', xp: 620, streak: 14, avatar: 'M', isUser: false, league: 'Silver' },
-  { rank: 2, name: 'Sophie Lindqvist', xp: 540, streak: 9, avatar: 'S', isUser: false, league: 'Silver' },
-  { rank: 3, name: 'You (Meareg)', xp: 480, streak: 7, avatar: 'Y', isUser: true, league: 'Silver' },
-  { rank: 4, name: 'Dawit Mengesha', xp: 410, streak: 5, avatar: 'D', isUser: false, league: 'Silver' },
-  { rank: 5, name: 'Klara Becker', xp: 390, streak: 8, avatar: 'K', isUser: false, league: 'Silver' },
-  { rank: 6, name: 'Amanuel Kebede', xp: 340, streak: 4, avatar: 'A', isUser: false, league: 'Silver' },
-  { rank: 7, name: 'Lina Al-Hassan', xp: 310, streak: 6, avatar: 'L', isUser: false, league: 'Silver' },
-  { rank: 8, name: 'Daniel Tesfaye', xp: 280, streak: 3, avatar: 'D', isUser: false, league: 'Silver' },
-  { rank: 9, name: 'Elena Rostova', xp: 260, streak: 2, avatar: 'E', isUser: false, league: 'Silver' },
-  { rank: 10, name: 'Lucas Meyer', xp: 220, streak: 1, avatar: 'L', isUser: false, league: 'Silver' },
-];
+export default function DashboardLeaderboardTab({ userName }: { userName?: string }) {
+  const displayName = userName ? `You (${userName})` : 'You';
+  const displayAvatar = userName ? userName.charAt(0).toUpperCase() : 'Y';
 
-export default function DashboardLeaderboardTab() {
+  const LEADERBOARD_USERS = [
+    { rank: 1, name: 'Marcus Vance', xp: 620, streak: 14, avatar: 'M', isUser: false, league: 'Silver' },
+    { rank: 2, name: 'Sophie Lindqvist', xp: 540, streak: 9, avatar: 'S', isUser: false, league: 'Silver' },
+    { rank: 3, name: displayName, xp: 480, streak: 7, avatar: displayAvatar, isUser: true, league: 'Silver' },
+    { rank: 4, name: 'Dawit Mengesha', xp: 410, streak: 5, avatar: 'D', isUser: false, league: 'Silver' },
+    { rank: 5, name: 'Klara Becker', xp: 390, streak: 8, avatar: 'K', isUser: false, league: 'Silver' },
+    { rank: 6, name: 'Amanuel Kebede', xp: 340, streak: 4, avatar: 'A', isUser: false, league: 'Silver' },
+    { rank: 7, name: 'Lina Al-Hassan', xp: 310, streak: 6, avatar: 'L', isUser: false, league: 'Silver' },
+    { rank: 8, name: 'Daniel Tesfaye', xp: 280, streak: 3, avatar: 'D', isUser: false, league: 'Silver' },
+    { rank: 9, name: 'Elena Rostova', xp: 260, streak: 2, avatar: 'E', isUser: false, league: 'Silver' },
+    { rank: 10, name: 'Lucas Meyer', xp: 220, streak: 1, avatar: 'L', isUser: false, league: 'Silver' },
+  ];
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       {/* League Banner */}

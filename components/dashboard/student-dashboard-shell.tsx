@@ -46,6 +46,7 @@ type StudentDashboardShellProps = {
     role: string;
     full_name: string;
     avatar_url: string | null;
+    bio?: string | null;
   };
   upcoming: BookingItem[];
   past: BookingItem[];
@@ -175,7 +176,8 @@ export default function StudentDashboardShell({
     setLiveUpcoming(upcoming);
     setLivePast(past);
     setLiveTutors(tutors);
-  }, [upcoming, past, tutors]);
+    void fetchLiveBookings();
+  }, [upcoming, past, tutors, fetchLiveBookings]);
 
   useEffect(() => {
     const tabParam = searchParams?.get('tab');
@@ -389,6 +391,7 @@ export default function StudentDashboardShell({
                   title="Upcoming 1-on-1 Lessons"
                   emptyMessage="You have no upcoming lessons scheduled. Book a session with a native tutor above."
                   viewerRole="student"
+                  onBookingCancelled={fetchLiveBookings}
                 />
 
                 {livePast.length > 0 && (
@@ -420,6 +423,7 @@ export default function StudentDashboardShell({
               fullName={profile.full_name}
               avatarUrl={profile.avatar_url}
               role={profile.role}
+              initialLanguage={profile.bio}
             />
           )}
 

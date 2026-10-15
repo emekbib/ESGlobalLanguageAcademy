@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/lib/types/database';
 import CompleteBookingButton from '@/components/teacher/complete-booking-button';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
-type EnrichedBooking = Pick<Booking, 'id' | 'teacher_id' | 'student_id' | 'start_time_utc' | 'end_time_utc' | 'status'> & { teacher_name: string; teacher_avatar: string | null };
+type EnrichedBooking = Pick<
+  Booking,
+  'id' | 'teacher_id' | 'student_id' | 'start_time_utc' | 'end_time_utc' | 'status'
+> & { teacher_name: string; teacher_avatar: string | null };
 
 const STATUS_STYLES: Record<BookingStatus, string> = {
   pending: 'bg-amber-50 text-amber-700 border border-amber-200/60',
@@ -19,8 +23,17 @@ function formatLocal(iso: string): { date: string; time: string } {
   const d = new Date(iso);
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   return {
-    date: new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: tz }).format(d),
-    time: new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz }).format(d),
+    date: new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: tz,
+    }).format(d),
+    time: new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: tz,
+    }).format(d),
   };
 }
 
@@ -29,16 +42,48 @@ export default function BookingsList({
   title,
   emptyMessage,
   viewerRole,
+  onBookingCancelled,
 }: {
   bookings: EnrichedBooking[];
   title: string;
   emptyMessage: string;
   viewerRole: 'student' | 'teacher';
+  onBookingCancelled?: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const supabase = createSupabaseBrowserClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted) return null;
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this scheduled lesson?')) {
+      return;
+    }
+    setCancellingId(bookingId);
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'cancelled' })
+        .eq('id', bookingId);
+
+      if (!error) {
+        if (onBookingCancelled) {
+          onBookingCancelled();
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (err) {
+      console.error('Failed to cancel booking:', err);
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   return (
     <div className="mt-8">
@@ -46,7 +91,9 @@ export default function BookingsList({
         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-stone-500">
           Lesson Schedule
         </span>
-        <h2 className="font-display text-xl font-black tracking-tight text-slate-900 dark:text-white">{title}</h2>
+        <h2 className="font-display text-xl font-black tracking-tight text-slate-900 dark:text-white">
+          {title}
+        </h2>
       </div>
 
       {bookings.length === 0 ? (
@@ -54,7 +101,9 @@ export default function BookingsList({
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 dark:bg-stone-800 text-slate-400 dark:text-stone-500">
             <Calendar className="h-6 w-6" />
           </div>
-          <p className="mt-3 text-xs text-slate-500 dark:text-stone-400 font-medium">{emptyMessage}</p>
+          <p className="mt-3 text-xs text-slate-500 dark:text-stone-400 font-medium">
+            {emptyMessage}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -108,6 +157,19 @@ export default function BookingsList({
                       {booking.status}
                     </Link>
                   </div>
+
+                  {viewerRole === 'student' &&
+                    (booking.status === 'confirmed' || booking.status === 'pending') && (
+                      <button
+                        type="button"
+                        onClick={() => void handleCancelBooking(booking.id)}
+                        disabled={cancellingId === booking.id}
+                        className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer disabled:opacity-50"
+                      >
+                        {cancellingId === booking.id ? 'Cancelling…' : 'Cancel Lesson'}
+                      </button>
+                    )}
+
                   {viewerRole === 'student' && booking.status === 'completed' && (
                     <Link
                       href={`/booking/${booking.id}#review`}

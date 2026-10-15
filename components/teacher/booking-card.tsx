@@ -102,19 +102,7 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
           (b.hold_expires_at && new Date(b.hold_expires_at).getTime() > now),
       );
       if (active) {
-        const effectiveAvail =
-          avail && avail.length > 0
-            ? avail
-            : [1, 2, 3, 4, 5].map((day) => ({
-                id: `default-${day}`,
-                teacher_id: teacherId,
-                weekday: day,
-                start_time: '09:00',
-                end_time: '18:00',
-                timezone: browserTz || 'UTC',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              }));
+        const effectiveAvail = avail && avail.length > 0 ? avail : [];
 
         setAvailability(effectiveAvail);
         setExistingBookings(
@@ -138,8 +126,9 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
   const visibleDays = grouped.slice(dayOffset, dayOffset + DAYS_PER_PAGE);
 
   const pricePerLesson = useMemo(() => {
-    const hourly = Number(hourlyRate);
-    return Math.round(((hourly * lessonMinutes) / 60) * 100) / 100;
+    const hourly = Number(hourlyRate) || 35;
+    const mins = Number(lessonMinutes) || 60;
+    return Math.round(((hourly * mins) / 60) * 100) / 100;
   }, [hourlyRate, lessonMinutes]);
 
   const canGoBack = dayOffset > 0;
@@ -384,14 +373,16 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
           <button
             type="button"
             onClick={handleBookSlot}
-            disabled={bookingInProgress}
-            className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-stone-950 dark:bg-stone-100 py-3.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white active:scale-95 disabled:opacity-60"
+            disabled={bookingInProgress || slots.length === 0}
+            className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-stone-950 dark:bg-stone-100 py-3.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white active:scale-95 disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
           >
             {bookingInProgress ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Preparing Checkout…
               </>
+            ) : slots.length === 0 ? (
+              <span>No Open Slots Scheduled</span>
             ) : (
               <>
                 <span>{selectedSlot ? 'Book Selected Slot' : 'Instant Book Lesson'}</span>

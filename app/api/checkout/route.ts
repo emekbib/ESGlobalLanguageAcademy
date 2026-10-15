@@ -79,10 +79,38 @@ export async function POST(req: Request) {
         if (anyTp) targetTeacherProfileId = anyTp.id;
       }
 
+      // If still no teacher profile exists, link to any educator or admin profile
+      if (!targetTeacherProfileId) {
+        const { data: anyTeacherUser } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .in('role', ['teacher', 'admin'])
+          .limit(1)
+          .maybeSingle();
+
+        if (anyTeacherUser) {
+          const { data: newTp } = await supabase
+            .from('teacher_profiles')
+            .upsert(
+              {
+                user_id: anyTeacherUser.user_id,
+                languages_taught: [sampleTeacher?.languages?.[0] || 'Amharic'],
+                hourly_rate: hourlyRate,
+                application_status: 'approved',
+                is_published: true,
+              },
+              { onConflict: 'user_id' }
+            )
+            .select('id')
+            .maybeSingle();
+          if (newTp) targetTeacherProfileId = newTp.id;
+        }
+      }
+
       // Insert confirmed booking record so it appears immediately in the student's dashboard
       let bookingId: string | null = null;
       if (targetTeacherProfileId) {
-        const { data: bookingRecord } = await supabase
+        const { data: bookingRecord, error: insertError } = await supabase
           .from('bookings')
           .insert({
             student_id: user.id,
@@ -96,8 +124,19 @@ export async function POST(req: Request) {
           })
           .select('id')
           .maybeSingle();
+
         if (bookingRecord) {
           bookingId = bookingRecord.id;
+        } else if (insertError) {
+          console.warn('Booking insertion notice:', insertError.message);
+          const { data: existingBooking } = await supabase
+            .from('bookings')
+            .select('id')
+            .eq('student_id', user.id)
+            .eq('teacher_id', targetTeacherProfileId)
+            .eq('start_time_utc', start.toISOString())
+            .maybeSingle();
+          if (existingBooking) bookingId = existingBooking.id;
         }
       }
 

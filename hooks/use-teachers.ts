@@ -98,7 +98,13 @@ export function useTeachers() {
       // Include any user who registered as a teacher but whose profile is not yet in teacherProfiles
       const existingUserIds = new Set(teacherProfiles.map((t) => t.user_id));
       const additionalTeachers: TeacherCardData[] = (teacherProfilesFromUsers ?? [])
-        .filter((p) => !existingUserIds.has(p.user_id))
+        .filter(
+          (p) =>
+            !existingUserIds.has(p.user_id) &&
+            p.full_name &&
+            p.full_name.trim().length > 2 &&
+            p.full_name.trim().toLowerCase() !== 'not'
+        )
         .map((p) => ({
           id: p.user_id,
           userId: p.user_id,
@@ -112,11 +118,24 @@ export function useTeachers() {
           specialties: ['Conversational Fluency'],
         }));
 
-      const allRealTeachers = [...enriched, ...additionalTeachers];
+      const allRealTeachers = [...enriched, ...additionalTeachers].filter(
+        (t) => t.name && t.name.trim().toLowerCase() !== 'not'
+      );
 
-      // Show real registered teachers at the top, followed by sample educators
+      // Deduplicate so sample educators matching existing real educators by name are not repeated
+      const existingNames = new Set(
+        allRealTeachers.map((t) => t.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      );
+      const filteredSampleTeachers = SAMPLE_TEACHERS.filter((st) => {
+        const normalized = st.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return !existingNames.has(normalized);
+      });
+
+      // Show real registered teachers at the top, followed by deduplicated sample educators
       const allTeachers: TeacherCardData[] =
-        allRealTeachers.length > 0 ? [...allRealTeachers, ...SAMPLE_TEACHERS] : SAMPLE_TEACHERS;
+        allRealTeachers.length > 0
+          ? [...allRealTeachers, ...filteredSampleTeachers]
+          : SAMPLE_TEACHERS;
 
       setTeachers(allTeachers);
       setAllLanguages(

@@ -9,22 +9,32 @@ export default function DashboardSettingsTab({
   fullName,
   avatarUrl,
   role = 'student',
+  initialLanguage = 'Amharic',
 }: {
   fullName: string;
   avatarUrl: string | null;
   role?: string;
+  initialLanguage?: string | null;
 }) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
   const [name, setName] = useState(fullName);
-  const [selectedLanguage, setSelectedLanguage] = useState('Amharic');
+  const [selectedLanguage, setSelectedLanguage] = useState(initialLanguage || 'Amharic');
   const [timezone, setTimezone] = useState(
     typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC'
   );
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('es_student_target_language') : null;
+    if (stored) {
+      setSelectedLanguage(stored);
+    } else if (initialLanguage) {
+      setSelectedLanguage(initialLanguage);
+    }
+  }, [initialLanguage]);
 
   const supabase = createSupabaseBrowserClient();
 
@@ -36,7 +46,13 @@ export default function DashboardSettingsTab({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('profiles').update({ full_name: name }).eq('user_id', user.id);
+        await supabase.from('profiles').update({
+          full_name: name,
+          bio: selectedLanguage,
+        }).eq('user_id', user.id);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('es_student_target_language', selectedLanguage);
+        }
       }
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);

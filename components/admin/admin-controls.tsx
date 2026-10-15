@@ -177,25 +177,61 @@ export function RoleDropdown({
 export function SuspensionButton({
   userId,
   suspended,
+  isSelf = false,
 }: {
   userId: string;
   suspended: boolean;
+  isSelf?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [reason, setReason] = useState('');
-  const supabase = createSupabaseBrowserClient();
+  const [formError, setFormError] = useState('');
+
+  if (isSelf) {
+    return (
+      <span
+        title="You cannot suspend your own administrator account"
+        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold text-stone-400 bg-stone-100 dark:bg-stone-800/80 cursor-not-allowed select-none"
+      >
+        <ShieldAlert className="h-3.5 w-3.5 opacity-50" />
+        Current Admin
+      </span>
+    );
+  }
 
   async function performSuspension(finalReason: string | null) {
+    setFormError('');
+    if (!suspended && (!finalReason || finalReason.trim().length === 0)) {
+      setFormError('Please enter a specific reason for audit purposes.');
+      return;
+    }
+
     setLoading(true);
-    const { error } = await supabase.rpc('admin_set_account_suspension', {
-      p_user_id: userId,
-      p_suspended: !suspended,
-      p_reason: finalReason,
-    });
-    if (!error) window.location.reload();
-    setLoading(false);
-    setShowModal(false);
+    try {
+      const res = await fetch('/api/admin/users/suspend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          suspended: !suspended,
+          reason: finalReason ? finalReason.trim() : null,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setFormError(data?.error || 'Failed to update user suspension state.');
+        setLoading(false);
+        return;
+      }
+
+      setShowModal(false);
+      window.location.reload();
+    } catch (err: any) {
+      setFormError(err?.message || 'Network error updating suspension state.');
+      setLoading(false);
+    }
   }
 
   function handleToggleClick() {
@@ -205,6 +241,7 @@ export function SuspensionButton({
     } else {
       // Open modal to get reason for suspension
       setReason('');
+      setFormError('');
       setShowModal(true);
     }
   }
@@ -262,14 +299,23 @@ export function SuspensionButton({
               <input
                 type="text"
                 value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  if (formError) setFormError('');
+                }}
                 placeholder="e.g., Violation of terms of service"
                 className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-950/50 px-4 py-2.5 text-sm font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 dark:focus:border-red-600 dark:focus:ring-red-600"
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') void performSuspension(reason || 'Administrative suspension');
+                  if (e.key === 'Enter') void performSuspension(reason);
                 }}
               />
+
+              {formError && (
+                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                  {formError}
+                </p>
+              )}
             </div>
             
             <div className="mt-6 flex items-center justify-end gap-3">
@@ -283,7 +329,7 @@ export function SuspensionButton({
               </button>
               <button
                 type="button"
-                onClick={() => void performSuspension(reason || 'Administrative suspension')}
+                onClick={() => void performSuspension(reason)}
                 disabled={loading}
                 className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
               >

@@ -23,6 +23,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
   const [loading, setLoading] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [canSimulate, setCanSimulate] = useState(false);
 
   async function startOnboarding() {
@@ -74,6 +75,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
       const data = await res.json();
 
       if (res.ok && data.success) {
+        setSuccessMsg('Stripe Connect payout account simulated and linked successfully! Payout status is now active.');
         router.refresh();
       } else {
         setError(data?.error || 'Failed to simulate connection.');
@@ -187,6 +189,13 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
             )}
             <span>Simulate Connect (Demo Test)</span>
           </button>
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <p className="font-semibold">{successMsg}</p>
         </div>
       )}
 

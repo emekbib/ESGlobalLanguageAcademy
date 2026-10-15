@@ -243,13 +243,21 @@ export default function TeacherDashboardShell({
               )}
 
               {/* Edit Profile Link */}
-              <Link
-                href="/teacher/onboarding"
-                className="group flex w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-sm font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white transition-all duration-200"
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('profile');
+                  setMobileMenuOpen(false);
+                }}
+                className={`group flex w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 cursor-pointer ${
+                  activeTab === 'profile'
+                    ? 'bg-stone-950 dark:bg-white text-white dark:text-stone-950 shadow-sm'
+                    : 'text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-950 dark:hover:text-white'
+                }`}
               >
                 <Pencil className="h-4 w-4 shrink-0 text-stone-400 dark:text-stone-500 group-hover:text-stone-700 dark:group-hover:text-stone-300" />
                 <span>Edit Profile Details</span>
-              </Link>
+              </button>
             </nav>
           </div>
         </div>

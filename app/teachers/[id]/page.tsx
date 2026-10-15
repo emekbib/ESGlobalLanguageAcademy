@@ -287,7 +287,9 @@ export default async function TeacherProfilePage({
                 About {firstName}
               </h2>
               <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 dark:text-stone-300 font-medium sm:text-base">
-                {bio}
+                {bio && bio.trim().length > 10
+                  ? bio
+                  : `Selam! I am ${fullName}, a dedicated language educator with ESGlobal Language Academy. My teaching methodology emphasizes authentic conversational fluency, cultural immersion, and personalized 1-on-1 pacing tailored to each learner's heritage, travel, or academic goals.`}
               </p>
 
               {/* Teaching Specialties */}

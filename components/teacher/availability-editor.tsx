@@ -114,7 +114,9 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
         <select id="tz" value={timezone} onChange={(e) => void updateTimezone(e.target.value)} disabled={saving} className="mt-2 h-11 sm:h-12 w-full rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/60 px-4 text-xs sm:text-sm font-semibold text-stone-900 dark:text-white outline-none transition focus:border-stone-400 dark:focus:border-stone-600">
           {(COMMON_TIMEZONES.includes(timezone) ? [timezone, ...COMMON_TIMEZONES.filter((t) => t !== timezone)] : [timezone, ...COMMON_TIMEZONES]).map((tz) => <option key={tz} value={tz}>{tz}</option>)}
         </select>
-        <p className="mt-1.5 text-[11px] text-stone-400 dark:text-stone-500">All session times below are calculated in {timezone}.</p>
+        <p className="mt-1.5 text-[11px] text-stone-400 dark:text-stone-500">
+          All session times below are calculated in <strong className="font-semibold text-stone-700 dark:text-stone-300">{timezone}</strong>.
+        </p>
       </div>
 
       {grouped.length > 0 && (
@@ -123,12 +125,40 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
             <div key={day}>
               <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">{weekdayName(day)}</p>
               <div className="mt-2 space-y-2">
-                {items.map((w) => (
-                  <div key={w.id} className="flex items-center justify-between rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 px-4 py-3">
-                    <span className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200">{w.start_time} — {w.end_time}</span>
-                    <button type="button" onClick={() => void deleteWindow(w.id)} disabled={saving} className="rounded-xl p-1.5 text-stone-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition disabled:opacity-50" title="Delete slot"><Trash2 className="h-4 w-4" /></button>
-                  </div>
-                ))}
+                {items.map((w) => {
+                  const formatCleanTime = (t: string) => {
+                    if (!t) return '';
+                    const parts = t.split(':');
+                    if (parts.length >= 2) {
+                      const h = parseInt(parts[0], 10);
+                      const m = parts[1];
+                      const ampm = h >= 12 ? 'PM' : 'AM';
+                      const dh = h % 12 || 12;
+                      return `${dh}:${m} ${ampm}`;
+                    }
+                    return t;
+                  };
+                  return (
+                    <div key={w.id} className="flex items-center justify-between rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 px-4 py-3">
+                      <span className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200">
+                        {formatCleanTime(w.start_time)} — {formatCleanTime(w.end_time)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to remove this availability window?')) {
+                            void deleteWindow(w.id);
+                          }
+                        }}
+                        disabled={saving}
+                        className="rounded-xl p-1.5 text-stone-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition disabled:opacity-50 cursor-pointer"
+                        title="Delete slot"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}

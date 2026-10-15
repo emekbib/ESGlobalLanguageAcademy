@@ -41,15 +41,17 @@ export default function DashboardMetrics({
         <div className="mt-4">
           <div className="flex items-baseline gap-1.5">
             <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
-              {upcomingCount > 0 ? upcomingCount : '1'}
+              {upcomingCount}
             </span>
-            <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">Session</span>
+            <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">
+              {upcomingCount === 1 ? 'Session' : 'Sessions'}
+            </span>
           </div>
           <p className="mt-1 text-xs font-bold text-stone-800 dark:text-stone-200">
             Upcoming Lessons
           </p>
           <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
-            <span>Next session booked</span>
+            <span>{upcomingCount > 0 ? 'Next session booked' : 'Schedule your first session'}</span>
             <ArrowUpRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
           </div>
         </div>
@@ -127,7 +129,7 @@ export default function DashboardMetrics({
         <div className="mt-4">
           <div className="flex items-baseline gap-1.5">
             <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
-              5
+              4
             </span>
             <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">Native</span>
           </div>
@@ -135,7 +137,7 @@ export default function DashboardMetrics({
             Focus Languages
           </p>
           <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
-            <span>Amharic, Tigrigna + 3</span>
+            <span>Amharic, Tigrigna, Oromo, Somali</span>
             <ArrowUpRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
           </div>
         </div>

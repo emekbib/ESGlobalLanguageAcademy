@@ -72,6 +72,7 @@ export default async function AdminPage() {
   return (
     <AdminDashboardShell
       profile={{
+        user_id: profile.user_id,
         full_name: profile.full_name,
         avatar_url: (profile as { avatar_url?: string | null }).avatar_url ?? null,
       }}

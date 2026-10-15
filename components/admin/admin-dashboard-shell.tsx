@@ -77,6 +77,7 @@ type Booking = {
 
 type AdminDashboardShellProps = {
   profile: {
+    user_id?: string;
     full_name: string;
     avatar_url: string | null;
   };
@@ -418,7 +419,7 @@ export default function AdminDashboardShell({
                       Track 2 Vetting Queue
                     </h3>
                     <span className="rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold">
-                      {pendingCount} Pending
+                      {pendingCount > 0 ? `${pendingCount} Pending` : 'None Pending'}
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
@@ -442,7 +443,7 @@ export default function AdminDashboardShell({
                       Community Safety &amp; Reviews
                     </h3>
                     <span className="rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 px-2.5 py-0.5 text-[10px] font-bold">
-                      {flaggedCount} Flags
+                      {flaggedCount > 0 ? `${flaggedCount} Flags` : 'No Flags'}
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium">
@@ -684,6 +685,7 @@ export default function AdminDashboardShell({
                             <SuspensionButton
                               userId={teacher.user_id}
                               suspended={isSuspended}
+                              isSelf={Boolean(profile.user_id && profile.user_id === teacher.user_id)}
                             />
                           </div>
                         </div>
@@ -774,6 +776,7 @@ export default function AdminDashboardShell({
                           <SuspensionButton
                             userId={learner.user_id}
                             suspended={isSuspended}
+                            isSelf={Boolean(profile.user_id && profile.user_id === learner.user_id)}
                           />
                         </div>
                       </div>
@@ -990,6 +993,10 @@ export default function AdminDashboardShell({
                       <SuspensionButton
                         userId={account.user_id}
                         suspended={Boolean(account.suspended_at)}
+                        isSelf={Boolean(
+                          (profile.user_id && profile.user_id === account.user_id) ||
+                            account.role === 'admin'
+                        )}
                       />
                     </div>
                   ))

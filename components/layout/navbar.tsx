@@ -35,27 +35,46 @@ export default function Navbar({
     
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+      const user = session?.user;
+
+      if (user) {
         setIsLoggedIn(true);
-        // Fetch role to determine which dashboard to link to
         const { data: profile } = await supabase
           .from('profiles')
           .select('role, full_name, avatar_url')
-          .or(`user_id.eq.${session.user.id},id.eq.${session.user.id}`)
+          .or(`user_id.eq.${user.id},id.eq.${user.id}`)
           .maybeSingle();
         if (profile) {
           setUserRole(profile.role);
           setUserProfile({ full_name: profile.full_name, avatar_url: profile.avatar_url });
         }
+      } else {
+        const { data: { user: directUser } } = await supabase.auth.getUser();
+        if (directUser) {
+          setIsLoggedIn(true);
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, full_name, avatar_url')
+            .or(`user_id.eq.${directUser.id},id.eq.${directUser.id}`)
+            .maybeSingle();
+          if (profile) {
+            setUserRole(profile.role);
+            setUserProfile({ full_name: profile.full_name, avatar_url: profile.avatar_url });
+          }
+        } else {
+          setIsLoggedIn(false);
+          setUserRole(null);
+          setUserProfile(null);
+        }
       }
     };
     
-    checkUser();
+    void checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsLoggedIn(!!session);
       if (session?.user) {
-        checkUser(); // Re-fetch role
+        void checkUser();
       } else {
         setUserRole(null);
         setUserProfile(null);
@@ -103,7 +122,7 @@ export default function Navbar({
             Find a Teacher
           </Link>
 
-          {!isLoggedIn ? (
+          {mounted && !isLoggedIn ? (
             <Link
               href="/auth"
               className={`text-sm font-medium transition-colors ${
@@ -132,7 +151,7 @@ export default function Navbar({
 
         {/* Right action buttons */}
         <div className="hidden items-center gap-5 md:flex">
-          {isLoggedIn ? (
+          {mounted && isLoggedIn ? (
             <div className="flex items-center gap-4">
               <Link
                 href={dashboardLink}
@@ -170,7 +189,7 @@ export default function Navbar({
                 )}
               </div>
             </div>
-          ) : (
+          ) : mounted ? (
             <>
               <Link
                 href="/auth"
@@ -193,7 +212,7 @@ export default function Navbar({
                 Sign up
               </Link>
             </>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile menu button */}
