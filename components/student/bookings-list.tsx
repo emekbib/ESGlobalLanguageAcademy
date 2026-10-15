@@ -19,9 +19,16 @@ const STATUS_STYLES: Record<BookingStatus, string> = {
   cancelled: 'bg-rose-50 text-rose-700 border border-rose-200/60',
 };
 
-function formatLocal(iso: string): { date: string; time: string } {
+function formatLocal(iso: string): { date: string; time: string; tzCode: string } {
   const d = new Date(iso);
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  let tzCode = 'UTC';
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short', timeZone: tz }).formatToParts(d);
+    tzCode = parts.find((p) => p.type === 'timeZoneName')?.value || tz;
+  } catch {
+    tzCode = tz;
+  }
   return {
     date: new Intl.DateTimeFormat('en-US', {
       weekday: 'short',
@@ -34,6 +41,7 @@ function formatLocal(iso: string): { date: string; time: string } {
       minute: '2-digit',
       timeZone: tz,
     }).format(d),
+    tzCode,
   };
 }
 
@@ -133,7 +141,7 @@ export default function BookingsList({
                       {start.date}
                     </p>
                     <p className="text-xs text-slate-400 dark:text-stone-400 font-medium">
-                      {start.time} – {end.time}
+                      {start.time} – {end.time} <span className="font-mono text-[10px] text-stone-400 dark:text-stone-500">({start.tzCode})</span>
                     </p>
                     <p className="text-xs text-slate-600 dark:text-stone-300 font-medium mt-0.5">
                       with {otherParty}

@@ -49,7 +49,23 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
       setError('Cannot edit availability in admin preview mode.');
       return;
     }
-    if (draft.end_time <= draft.start_time) { setError('End time must be after start time.'); return; }
+    if (draft.end_time <= draft.start_time) {
+      setError('End time must be after start time.');
+      return;
+    }
+
+    const hasOverlap = windows.some(
+      (w) =>
+        w.weekday === draft.weekday &&
+        ((draft.start_time >= w.start_time && draft.start_time < w.end_time) ||
+          (draft.end_time > w.start_time && draft.end_time <= w.end_time) ||
+          (draft.start_time <= w.start_time && draft.end_time >= w.end_time))
+    );
+    if (hasOverlap) {
+      setError('This window overlaps with an existing availability window for this day.');
+      return;
+    }
+
     setSaving(true);
     const { data, error: insertError } = await supabase.from('teacher_availability').insert({
       teacher_id: teacherId,

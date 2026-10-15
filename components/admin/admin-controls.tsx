@@ -344,7 +344,13 @@ export function SuspensionButton({
   );
 }
 
-export function ReviewModerationActions({ reviewId }: { reviewId: string }) {
+export function ReviewModerationActions({
+  reviewId,
+  onActionComplete,
+}: {
+  reviewId: string;
+  onActionComplete?: (reviewId: string, action: 'dismiss' | 'delete') => void;
+}) {
   const [loading, setLoading] = useState<'dismiss' | 'delete' | ''>('');
   const [done, setDone] = useState('');
 
@@ -364,7 +370,11 @@ export function ReviewModerationActions({ reviewId }: { reviewId: string }) {
 
       if (res.ok) {
         setDone(action === 'dismiss' ? 'Flag Dismissed' : 'Review Deleted');
-        window.location.reload();
+        if (onActionComplete) {
+          onActionComplete(reviewId, action);
+        } else {
+          setTimeout(() => window.location.reload(), 600);
+        }
       } else {
         const data = await res.json().catch(() => ({}));
         alert(data.error || 'Failed to moderate review.');

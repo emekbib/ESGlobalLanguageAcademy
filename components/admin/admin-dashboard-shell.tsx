@@ -107,9 +107,10 @@ export default function AdminDashboardShell({
   const [accountRoleFilter, setAccountRoleFilter] = useState<'all' | 'student' | 'teacher' | 'admin'>('all');
   const [searchFacultyQuery, setSearchFacultyQuery] = useState('');
   const [searchLearnersQuery, setSearchLearnersQuery] = useState('');
+  const [liveReviews, setLiveReviews] = useState<FlaggedReview[]>(flaggedReviews);
 
   const pendingCount = pendingApplications.length;
-  const flaggedCount = flaggedReviews.length;
+  const flaggedCount = liveReviews.length;
   const totalAccounts = accounts.length;
   const learners = accounts.filter((a) => a.role === 'student');
 
@@ -888,8 +889,8 @@ export default function AdminDashboardShell({
               </div>
 
               <div className="mt-6 space-y-4">
-                {flaggedReviews.length ? (
-                  flaggedReviews.map((review) => {
+                {liveReviews.length ? (
+                  liveReviews.map((review) => {
                     const studentName = names[review.student_id] || 'Student';
                     const isLowRating = review.rating < 3;
                     return (
@@ -924,7 +925,12 @@ export default function AdminDashboardShell({
                           <span className="text-[11px] font-medium text-stone-400">
                             Moderation Action
                           </span>
-                          <ReviewModerationActions reviewId={review.id} />
+                          <ReviewModerationActions
+                            reviewId={review.id}
+                            onActionComplete={(id) => {
+                              setLiveReviews((prev) => prev.filter((r) => r.id !== id));
+                            }}
+                          />
                         </div>
                       </article>
                     );
