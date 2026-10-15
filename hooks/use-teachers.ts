@@ -134,17 +134,31 @@ export function useTeachers() {
           specialties: ['Conversational Fluency'],
         }));
 
-      const allRealTeachers = [...enriched, ...additionalTeachers].filter(
-        (t) => t.name && t.name.trim().toLowerCase() !== 'not'
-      );
+      // Clean name helper to strip demo tags and special characters
+      const cleanName = (n: string) =>
+        n.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/[^a-z0-9]/g, '').trim();
 
-      // Deduplicate so sample educators matching existing real educators by name are not repeated
-      const existingNames = new Set(
-        allRealTeachers.map((t) => t.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
-      );
+      // Deduplicate real teachers so multiple database entries don't duplicate cards
+      const uniqueRealMap = new Map<string, TeacherCardData>();
+      for (const t of [...enriched, ...additionalTeachers]) {
+        if (!t.name || t.name.trim().toLowerCase() === 'not') continue;
+        const key = cleanName(t.name);
+        const existing = uniqueRealMap.get(key);
+        if (!existing) {
+          uniqueRealMap.set(key, t);
+        } else {
+          // Prefer teacher with avatarUrl, higher lessons taught, or verified status
+          if ((!existing.avatarUrl && t.avatarUrl) || t.lessonsTaught > existing.lessonsTaught) {
+            uniqueRealMap.set(key, t);
+          }
+        }
+      }
+      const allRealTeachers = Array.from(uniqueRealMap.values());
+
+      // Deduplicate sample educators matching any real educator by base name
+      const existingBaseNames = new Set(allRealTeachers.map((t) => cleanName(t.name)));
       const filteredSampleTeachers = SAMPLE_TEACHERS.filter((st) => {
-        const normalized = st.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        return !existingNames.has(normalized);
+        return !existingBaseNames.has(cleanName(st.name));
       });
 
       // Show real registered teachers at the top, followed by deduplicated sample educators

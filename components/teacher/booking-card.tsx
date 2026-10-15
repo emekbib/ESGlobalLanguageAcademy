@@ -19,7 +19,7 @@ import { generateSlots } from '@/lib/availability/slots';
 import type { TeacherAvailability } from '@/lib/types/database';
 import type { Booking as SlotBooking } from '@/lib/availability/slots';
 
-const LESSON_LENGTHS = [30, 45, 60];
+const LESSON_LENGTHS = [30, 50, 60];
 const DAYS_PER_PAGE = 5;
 
 type BookingCardProps = {
@@ -36,7 +36,7 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
   const [existingBookings, setExistingBookings] = useState<SlotBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [lessonMinutes, setLessonMinutes] = useState(60);
+  const [lessonMinutes, setLessonMinutes] = useState(50);
   const [selectedTrack, setSelectedTrack] = useState<'track_1' | 'track_2'>('track_1');
   const [viewerTz, setViewerTz] = useState('UTC');
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -127,8 +127,9 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
 
   const pricePerLesson = useMemo(() => {
     const hourly = Number(hourlyRate) || 35;
-    const mins = Number(lessonMinutes) || 60;
-    return Math.round(((hourly * mins) / 60) * 100) / 100;
+    const mins = Number(lessonMinutes) || 50;
+    if (mins === 50) return hourly;
+    return Math.round(((hourly * mins) / 50) * 100) / 100;
   }, [hourlyRate, lessonMinutes]);
 
   const canGoBack = dayOffset > 0;

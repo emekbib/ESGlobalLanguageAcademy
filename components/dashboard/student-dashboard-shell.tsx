@@ -67,6 +67,7 @@ export default function StudentDashboardShell({
   const [selectedTeacherForBooking, setSelectedTeacherForBooking] =
     useState<SampleTeacherDetail | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+  const [currentFullName, setCurrentFullName] = useState(profile.full_name || 'Student');
 
   // Live state synchronized with Supabase
   const [liveUpcoming, setLiveUpcoming] = useState<BookingItem[]>(upcoming);
@@ -235,7 +236,7 @@ export default function StudentDashboardShell({
     >
       {/* Intro.co Style Sidebar Navigation */}
       <DashboardSidebar
-        fullName={profile.full_name || 'Student'}
+        fullName={currentFullName}
         avatarUrl={profile.avatar_url}
         role={profile.role}
         activeTab={activeTab}
@@ -252,7 +253,7 @@ export default function StudentDashboardShell({
       >
         {/* Intro.co Style Top Bar */}
         <DashboardHeader
-          fullName={profile.full_name || 'Student'}
+          fullName={currentFullName}
           avatarUrl={profile.avatar_url}
           activeTab={activeTab}
           unreadMessagesCount={unreadCount}
@@ -420,10 +421,11 @@ export default function StudentDashboardShell({
           {/* TAB 4: PROFILE & SETTINGS */}
           {activeTab === 'settings' && (
             <DashboardSettingsTab
-              fullName={profile.full_name}
+              fullName={currentFullName}
               avatarUrl={profile.avatar_url}
               role={profile.role}
               initialLanguage={profile.bio}
+              onNameUpdate={setCurrentFullName}
             />
           )}
 

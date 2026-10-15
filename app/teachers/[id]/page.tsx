@@ -218,12 +218,24 @@ export default async function TeacherProfilePage({
                   </h1>
 
                   <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-stone-600 dark:text-stone-400 font-medium">
-                    <div className="flex items-center gap-1 font-bold text-stone-950 dark:text-white">
-                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      {rating.toFixed(1)}
-                    </div>
-                    <span className="text-stone-300 dark:text-stone-700">·</span>
-                    <span>{totalLessons.toLocaleString()} 1-on-1 sessions taught</span>
+                    {totalLessons > 0 ? (
+                      <>
+                        <div className="flex items-center gap-1 font-bold text-stone-950 dark:text-white">
+                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                          {rating.toFixed(1)}
+                        </div>
+                        <span className="text-stone-300 dark:text-stone-700">·</span>
+                        <span>{totalLessons.toLocaleString()} 1-on-1 sessions taught</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full text-xs">
+                          New Educator
+                        </span>
+                        <span className="text-stone-300 dark:text-stone-700">·</span>
+                        <span>0 lessons completed</span>
+                      </>
+                    )}
                   </div>
 
                   {/* Languages Taught */}
@@ -239,13 +251,20 @@ export default async function TeacherProfilePage({
                     ))}
                   </div>
 
-                  {/* Also Speaks */}
-                  {languagesSpoken && languagesSpoken.length > 0 && (
-                    <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                      <Globe2 className="h-3.5 w-3.5 text-stone-400" />
-                      Also speaks: <span className="text-stone-800 dark:text-stone-200 font-semibold">{languagesSpoken.join(', ')}</span>
-                    </p>
-                  )}
+                  {/* Also Speaks (non-redundant) */}
+                  {(() => {
+                    const taughtLower = new Set(languagesTaught.map((l: string) => l.toLowerCase()));
+                    const filteredSpoken = (languagesSpoken || []).filter(
+                      (l: string) => !taughtLower.has(l.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').trim())
+                    );
+                    if (filteredSpoken.length === 0) return null;
+                    return (
+                      <p className="mt-2.5 flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
+                        <Globe2 className="h-3.5 w-3.5 text-stone-400" />
+                        Also speaks: <span className="text-stone-800 dark:text-stone-200 font-semibold">{filteredSpoken.join(', ')}</span>
+                      </p>
+                    );
+                  })()}
 
                   {/* Message Educator Button */}
                   <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center gap-3">
@@ -287,7 +306,7 @@ export default async function TeacherProfilePage({
                 About {firstName}
               </h2>
               <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 dark:text-stone-300 font-medium sm:text-base">
-                {bio && bio.trim().length > 10
+                {bio && bio.trim().length > 10 && !bio.toLowerCase().includes('introduce yourself')
                   ? bio
                   : `Selam! I am ${fullName}, a dedicated language educator with ESGlobal Language Academy. My teaching methodology emphasizes authentic conversational fluency, cultural immersion, and personalized 1-on-1 pacing tailored to each learner's heritage, travel, or academic goals.`}
               </p>

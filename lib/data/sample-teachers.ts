@@ -98,7 +98,7 @@ From mastering the Ge’ez alphabet to holding lively everyday conversations wit
   },
   {
     id: 'sample-3',
-    name: 'Dawit Tolosa',
+    name: 'Dawit Kebede',
     avatarUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop',
     languages: ['Afaan Oromo'],
     rating: 4.96,

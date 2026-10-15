@@ -131,7 +131,8 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
           {(COMMON_TIMEZONES.includes(timezone) ? [timezone, ...COMMON_TIMEZONES.filter((t) => t !== timezone)] : [timezone, ...COMMON_TIMEZONES]).map((tz) => <option key={tz} value={tz}>{tz}</option>)}
         </select>
         <p className="mt-1.5 text-[11px] text-stone-400 dark:text-stone-500">
-          All session times below are calculated in <strong className="font-semibold text-stone-700 dark:text-stone-300">{timezone}</strong>.
+          All session times below are calculated in{' '}
+          <strong className="font-semibold text-stone-700 dark:text-stone-300">{timezone}</strong>.
         </p>
       </div>
 

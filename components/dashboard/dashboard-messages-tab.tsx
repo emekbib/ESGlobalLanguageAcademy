@@ -23,6 +23,8 @@ import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 import { isToday, isYesterday, format } from 'date-fns';
 import { playNotificationChime } from '@/lib/audio';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 type Message = {
   id: string;
   sender_id: string;
@@ -415,6 +417,27 @@ export default function DashboardMessagesTab({
 
         if (!active) return;
 
+        // Filter out corrupted test records like 'Not'
+        loadedContacts = loadedContacts.filter(
+          (c) => c.full_name && c.full_name.trim().toLowerCase() !== 'not'
+        );
+
+        // Deduplicate contacts by clean name to eliminate duplicate entries (e.g. Selamawit Bekele)
+        const nameMap = new Map<string, Contact>();
+        loadedContacts.forEach((c) => {
+          const key = c.full_name.trim().toLowerCase().replace(/\s*\(.*?\)\s*/g, '');
+          const existing = nameMap.get(key);
+          if (!existing) {
+            nameMap.set(key, c);
+          } else {
+            // Prefer contact with avatar or more recent message
+            if ((!existing.avatar_url && c.avatar_url) || (!existing.lastMessageTime && c.lastMessageTime)) {
+              nameMap.set(key, c);
+            }
+          }
+        });
+        loadedContacts = Array.from(nameMap.values());
+
         // Sort contacts: unread messages first, then by most recent message timestamp
         loadedContacts.sort((a, b) => {
           const unreadA = countsMap[a.id] || 0;
@@ -608,6 +631,28 @@ export default function DashboardMessagesTab({
 
     async function loadConversationMessages() {
       if (!selectedContact) return;
+
+      // For non-UUID recipients (e.g. sample educator or demo contact), retrieve from local storage
+      if (!UUID_REGEX.test(selectedContact.id)) {
+        try {
+          const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+          const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+          const localMsgs: Message[] = raw ? JSON.parse(raw) : [];
+          setMessages((prev) => {
+            const temps = prev.filter((m) => m.id.startsWith('temp-'));
+            return deduplicateMessages([...localMsgs, ...temps]);
+          });
+          requestAnimationFrame(() => {
+            scrollToBottom(true);
+          });
+        } catch (err) {
+          console.warn('Error loading local conversation:', err);
+        } finally {
+          setLoadingMessages(false);
+        }
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('messages')
@@ -732,6 +777,19 @@ export default function DashboardMessagesTab({
           const filtered = prev.filter((m) => m.id !== tempId);
           return deduplicateMessages([...filtered, result.message as Message]);
         });
+
+        // Persist to local storage if non-UUID contact
+        if (!UUID_REGEX.test(selectedContact.id)) {
+          try {
+            const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+            const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+            const existingList: Message[] = raw ? JSON.parse(raw) : [];
+            existingList.push(result.message as Message);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(existingList)));
+            }
+          } catch {}
+        }
       }
 
       // If sending to a simulated recipient, trigger auto-reply
@@ -744,8 +802,20 @@ export default function DashboardMessagesTab({
             content: `Hello! Thank you for reaching out. I'm excited to help you achieve your language learning goals! Please feel free to book a lesson slot or let me know what topics you'd like to practice.`,
             created_at: new Date().toISOString(),
           };
+
           setMessages((prev) => deduplicateMessages([...prev, replyMsg]));
           requestAnimationFrame(() => scrollToBottom(false));
+          playNotificationChime();
+
+          try {
+            const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+            const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+            const existingList: Message[] = raw ? JSON.parse(raw) : [];
+            existingList.push(replyMsg);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(existingList)));
+            }
+          } catch {}
         }, 800);
       }
     } catch (err: any) {

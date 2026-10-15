@@ -20,9 +20,20 @@ export default function DashboardTutorsTab({
   onFindMore: () => void;
 }) {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
-  const myTutors = tutors && tutors.length > 0 ? tutors : SAMPLE_TEACHERS.slice(0, 3);
 
-  const selectedTeacher = myTutors.find((t) => t.id === selectedTeacherId);
+  const cleanName = (n: string) =>
+    (n || '').toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/[^a-z0-9]/g, '').trim();
+
+  const rawList = tutors && tutors.length > 0 ? tutors : SAMPLE_TEACHERS.slice(0, 3);
+  const seen = new Set<string>();
+  const myTutors = rawList.filter((t: any) => {
+    const key = cleanName(t.name);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const selectedTeacher = myTutors.find((t: any) => t.id === selectedTeacherId);
 
   return (
     <div className="space-y-6 animate-fade-in">

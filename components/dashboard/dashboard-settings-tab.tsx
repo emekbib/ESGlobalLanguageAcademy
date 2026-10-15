@@ -10,11 +10,13 @@ export default function DashboardSettingsTab({
   avatarUrl,
   role = 'student',
   initialLanguage = 'Amharic',
+  onNameUpdate,
 }: {
   fullName: string;
   avatarUrl: string | null;
   role?: string;
   initialLanguage?: string | null;
+  onNameUpdate?: (newName: string) => void;
 }) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -26,13 +28,22 @@ export default function DashboardSettingsTab({
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  const normalizeTargetLang = (l: string | null | undefined): string => {
+    if (!l) return 'Amharic';
+    const lower = l.toLowerCase();
+    if (lower.includes('somali')) return 'Somali';
+    if (lower.includes('tigrigna') || lower.includes('tigrinya')) return 'Tigrigna';
+    if (lower.includes('oromo') || lower.includes('qubee')) return 'Afaan Oromo';
+    return 'Amharic';
+  };
+
   useEffect(() => {
     setMounted(true);
     const stored = typeof window !== 'undefined' ? localStorage.getItem('es_student_target_language') : null;
     if (stored) {
-      setSelectedLanguage(stored);
+      setSelectedLanguage(normalizeTargetLang(stored));
     } else if (initialLanguage) {
-      setSelectedLanguage(initialLanguage);
+      setSelectedLanguage(normalizeTargetLang(initialLanguage));
     }
   }, [initialLanguage]);
 
@@ -52,6 +63,9 @@ export default function DashboardSettingsTab({
         }).eq('user_id', user.id);
         if (typeof window !== 'undefined') {
           localStorage.setItem('es_student_target_language', selectedLanguage);
+        }
+        if (onNameUpdate) {
+          onNameUpdate(name);
         }
       }
       setSavedSuccess(true);
