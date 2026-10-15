@@ -10,6 +10,18 @@ type RawTeacher = TeacherProfile & {
   profile: Pick<Profile, 'full_name' | 'avatar_url'> | null;
 };
 
+export const APPROVED_LANGUAGES = ['Amharic', 'Tigrigna', 'Afaan Oromo', 'Somali'] as const;
+
+export function normalizeLanguageName(lang: string): string {
+  if (!lang) return '';
+  const l = lang.trim().toLowerCase();
+  if (l.includes('amharic')) return 'Amharic';
+  if (l.includes('tigrigna') || l.includes('tigrinya')) return 'Tigrigna';
+  if (l.includes('oromo') || l.includes('afaan')) return 'Afaan Oromo';
+  if (l.includes('somali')) return 'Somali';
+  return lang.trim();
+}
+
 export type TeacherFilters = {
   language?: string;
   minPrice?: number;
@@ -81,12 +93,16 @@ export function useTeachers() {
       const enriched: TeacherCardData[] = teacherProfiles.map((t) => {
         const profile = profileMap.get(t.user_id);
         const stats = reviewStats.get(t.id);
+        const rawLangs: string[] = Array.isArray(t.languages_taught) ? t.languages_taught : [];
+        const normalizedLangs: string[] = Array.from(
+          new Set(rawLangs.map((l) => normalizeLanguageName(l)).filter((l): l is string => Boolean(l)))
+        );
         return {
           id: t.id,
           userId: t.user_id,
           name: profile?.full_name ?? 'Language Teacher',
           avatarUrl: profile?.avatar_url ?? null,
-          languages: t.languages_taught ?? ['Amharic'],
+          languages: normalizedLangs.length > 0 ? normalizedLangs : ['Amharic'],
           rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 5.0,
           lessonsTaught: lessonCounts.get(t.id) ?? 0,
           hourlyRate: Number(t.hourly_rate) || 35,
@@ -138,14 +154,13 @@ export function useTeachers() {
           : SAMPLE_TEACHERS;
 
       setTeachers(allTeachers);
-      setAllLanguages(
-        Array.from(
-          new Set([
-            ...allRealTeachers.flatMap((t) => t.languages ?? []),
-            ...SAMPLE_TEACHERS.flatMap((t) => t.languages),
-          ])
-        ).sort(),
+
+      // Discovered approved languages for filter sidebar
+      const discoveredLangs = new Set(
+        allTeachers.flatMap((t) => (t.languages ?? []).map(normalizeLanguageName).filter(Boolean))
       );
+      const activeApproved = APPROVED_LANGUAGES.filter((lang) => discoveredLangs.has(lang));
+      setAllLanguages(activeApproved.length > 0 ? activeApproved : [...APPROVED_LANGUAGES]);
       setLoading(false);
     }
 

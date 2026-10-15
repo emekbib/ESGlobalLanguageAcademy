@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, ArrowLeft, X } from 'lucide-react';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
-import { useTeachers, type TeacherFilters, type SortOption } from '@/hooks/use-teachers';
+import { useTeachers, normalizeLanguageName, type TeacherFilters, type SortOption } from '@/hooks/use-teachers';
 import FilterSidebar from '@/components/teacher/filter-sidebar';
 import TeacherGrid from '@/components/teacher/teacher-grid';
 import type { TeacherCardData } from '@/components/teacher/teacher-card';
@@ -68,7 +68,13 @@ function TeachersPageContent() {
 
   const filteredTeachers = useMemo(() => {
     return teachers.filter((t) => {
-      if (filters.language && !t.languages.includes(filters.language)) return false;
+      if (filters.language) {
+        const target = normalizeLanguageName(filters.language).toLowerCase();
+        const matches = (t.languages ?? []).some(
+          (l) => normalizeLanguageName(l).toLowerCase() === target
+        );
+        if (!matches) return false;
+      }
       if (filters.minPrice !== undefined && t.hourlyRate < filters.minPrice) return false;
       if (filters.maxPrice !== undefined && t.hourlyRate > filters.maxPrice) return false;
       if (filters.teacherType && filters.teacherType !== 'all' && t.teacherType !== filters.teacherType)

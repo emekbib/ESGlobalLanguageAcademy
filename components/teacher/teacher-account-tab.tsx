@@ -126,11 +126,14 @@ export default function TeacherAccountTab({
       }
 
       // 2. Update or Insert teacher profile
+      const validatedRate = Math.max(5, Math.min(200, Number(hourlyRate) || 35));
+      const validatedLangs = languagesTaught.length > 0 ? languagesTaught : ['Amharic'];
+
       const teacherPayload = {
         user_id: user.id,
-        hourly_rate: Number(hourlyRate),
-        years_experience: Number(yearsExperience),
-        languages_taught: languagesTaught,
+        hourly_rate: validatedRate,
+        years_experience: Math.max(0, Number(yearsExperience) || 0),
+        languages_taught: validatedLangs,
         bio: bio.trim(),
         video_intro_url: videoIntroUrl.trim() || null,
         is_published: true,

@@ -104,6 +104,7 @@ export default function AdminDashboardShell({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [searchAccountQuery, setSearchAccountQuery] = useState('');
+  const [accountRoleFilter, setAccountRoleFilter] = useState<'all' | 'student' | 'teacher' | 'admin'>('all');
   const [searchFacultyQuery, setSearchFacultyQuery] = useState('');
   const [searchLearnersQuery, setSearchLearnersQuery] = useState('');
 
@@ -160,9 +161,15 @@ export default function AdminDashboardShell({
   });
 
   const filteredAccounts = accounts.filter((acc) => {
+    if (accountRoleFilter !== 'all' && acc.role !== accountRoleFilter) return false;
     if (!searchAccountQuery) return true;
     const q = searchAccountQuery.toLowerCase();
-    return acc.full_name?.toLowerCase().includes(q) || acc.role?.toLowerCase().includes(q);
+    return (
+      acc.full_name?.toLowerCase().includes(q) ||
+      acc.role?.toLowerCase().includes(q) ||
+      acc.user_id?.toLowerCase().includes(q) ||
+      acc.suspension_reason?.toLowerCase().includes(q)
+    );
   });
 
   const filteredFaculty = faculty.filter((t) => {
@@ -658,7 +665,7 @@ export default function AdminDashboardShell({
                               )}
                             </div>
                             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                              {(teacher.languages_taught || []).join(' • ')} · ${teacher.hourly_rate}/50 min
+                              {(teacher.languages_taught && teacher.languages_taught.length > 0 ? teacher.languages_taught : ['Amharic']).join(' • ')} · ${Number(teacher.hourly_rate) || 35}/50 min
                             </p>
                           </div>
                         </div>
@@ -935,27 +942,55 @@ export default function AdminDashboardShell({
           )}
 
           {/* TAB 6: USER ACCOUNTS (Role dropdown removed, replaced with static role badge) */}
+          {/* TAB 6: USER ACCOUNTS (Role filter chips, metadata audit & suspension controls) */}
           {activeTab === 'accounts' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
-                <div>
-                  <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
-                    User Accounts &amp; Access Controls
-                  </h2>
-                  <p className="text-xs text-stone-400 mt-0.5">
-                    Audit accounts, inspect roles, and enact administrative suspensions
-                  </p>
+              <div className="flex flex-col gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
+                      User Accounts &amp; Access Controls ({accounts.length})
+                    </h2>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      Audit accounts, inspect roles, filter by persona, and enact administrative suspensions
+                    </p>
+                  </div>
+
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type="text"
+                      value={searchAccountQuery}
+                      onChange={(e) => setSearchAccountQuery(e.target.value)}
+                      placeholder="Search name, role, ID..."
+                      className="w-full rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 pl-9 pr-4 py-2 text-xs font-medium placeholder-stone-400 focus:border-stone-400 dark:focus:border-stone-600 focus:outline-none transition"
+                    />
+                  </div>
                 </div>
 
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-                  <input
-                    type="text"
-                    value={searchAccountQuery}
-                    onChange={(e) => setSearchAccountQuery(e.target.value)}
-                    placeholder="Search accounts..."
-                    className="w-full rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 pl-9 pr-4 py-2 text-xs font-medium placeholder-stone-400 focus:border-stone-400 dark:focus:border-stone-600 focus:outline-none transition"
-                  />
+                {/* Role Filter Chips */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {(
+                    [
+                      { id: 'all', label: 'All Accounts', count: accounts.length },
+                      { id: 'student', label: 'Learners', count: accounts.filter((a) => a.role === 'student').length },
+                      { id: 'teacher', label: 'Faculty', count: accounts.filter((a) => a.role === 'teacher').length },
+                      { id: 'admin', label: 'Admins', count: accounts.filter((a) => a.role === 'admin').length },
+                    ] as const
+                  ).map((chip) => (
+                    <button
+                      key={chip.id}
+                      type="button"
+                      onClick={() => setAccountRoleFilter(chip.id)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
+                        accountRoleFilter === chip.id
+                          ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950 shadow-sm'
+                          : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      }`}
+                    >
+                      {chip.label} ({chip.count})
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -964,13 +999,13 @@ export default function AdminDashboardShell({
                   filteredAccounts.map((account) => (
                     <div
                       key={account.user_id}
-                      className="flex items-center justify-between gap-4 py-4 transition hover:bg-stone-50/50 dark:hover:bg-stone-800/20 px-2 rounded-xl"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 transition hover:bg-stone-50/50 dark:hover:bg-stone-800/20 px-2 rounded-xl"
                     >
                       <div>
-                        <p className="font-display font-bold text-sm text-stone-950 dark:text-white">
-                          {account.full_name}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-display font-bold text-sm text-stone-950 dark:text-white">
+                            {account.full_name || 'Unnamed User'}
+                          </p>
                           <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                               account.role === 'admin'
@@ -985,6 +1020,17 @@ export default function AdminDashboardShell({
                           {account.suspended_at && (
                             <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-400">
                               Suspended
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-stone-400">
+                          <span className="font-mono text-[10px] text-stone-400">ID: {account.user_id.slice(0, 8)}…</span>
+                          {account.created_at && (
+                            <span>Joined {new Date(account.created_at).toLocaleDateString()}</span>
+                          )}
+                          {account.suspended_at && account.suspension_reason && (
+                            <span className="text-red-600 dark:text-red-400 font-medium">
+                              Reason: {account.suspension_reason}
                             </span>
                           )}
                         </div>
