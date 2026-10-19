@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, MessageSquare, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MessageSquare } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/lib/types/database';
 import CompleteBookingButton from '@/components/teacher/complete-booking-button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -60,6 +60,7 @@ export default function BookingsList({
 }) {
   const [mounted, setMounted] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
@@ -69,22 +70,36 @@ export default function BookingsList({
   if (!mounted) return null;
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!window.confirm('Are you sure you want to cancel this scheduled lesson?')) {
-      return;
-    }
     setCancellingId(bookingId);
     try {
-      const { error } = await supabase
+      // 1. Try DB update
+      await supabase
         .from('bookings')
         .update({ status: 'cancelled' })
         .eq('id', bookingId);
 
-      if (!error) {
-        if (onBookingCancelled) {
-          onBookingCancelled();
-        } else {
-          window.location.reload();
+      // 2. Also update local storage across all student bookings keys
+      if (typeof window !== 'undefined') {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('es_student_bookings_')) {
+            try {
+              const raw = localStorage.getItem(k);
+              if (raw) {
+                const list: any[] = JSON.parse(raw);
+                const updated = list.map((b) => (b.id === bookingId ? { ...b, status: 'cancelled' } : b));
+                localStorage.setItem(k, JSON.stringify(updated));
+              }
+            } catch {}
+          }
         }
+      }
+
+      setConfirmCancelId(null);
+      if (onBookingCancelled) {
+        onBookingCancelled();
+      } else {
+        window.location.reload();
       }
     } catch (err) {
       console.error('Failed to cancel booking:', err);
@@ -123,6 +138,8 @@ export default function BookingsList({
               viewerRole === 'student'
                 ? `/dashboard?tab=messages&contactId=${booking.teacher_id}`
                 : `/teacher/dashboard?tab=messages&contactId=${booking.student_id}`;
+
+            const isConfirming = confirmCancelId === booking.id;
 
             return (
               <div
@@ -168,14 +185,35 @@ export default function BookingsList({
 
                   {viewerRole === 'student' &&
                     (booking.status === 'confirmed' || booking.status === 'pending') && (
-                      <button
-                        type="button"
-                        onClick={() => void handleCancelBooking(booking.id)}
-                        disabled={cancellingId === booking.id}
-                        className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer disabled:opacity-50"
-                      >
-                        {cancellingId === booking.id ? 'Cancelling…' : 'Cancel Lesson'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {isConfirming ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => void handleCancelBooking(booking.id)}
+                              disabled={cancellingId === booking.id}
+                              className="rounded-lg bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-rose-700 transition disabled:opacity-50 cursor-pointer"
+                            >
+                              {cancellingId === booking.id ? 'Cancelling…' : 'Confirm Cancel?'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmCancelId(null)}
+                              className="rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 px-2 py-1 text-[11px] font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 transition cursor-pointer"
+                            >
+                              Keep
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setConfirmCancelId(booking.id)}
+                            className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                          >
+                            Cancel Lesson
+                          </button>
+                        )}
+                      </div>
                     )}
 
                   {viewerRole === 'student' && booking.status === 'completed' && (

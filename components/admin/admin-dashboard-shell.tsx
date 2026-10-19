@@ -22,6 +22,10 @@ import {
   Award,
   Calendar,
   XCircle,
+  Plus,
+  Trash2,
+  Compass,
+  Loader2,
 } from 'lucide-react';
 import AdminSidebar, { type AdminTab } from './admin-sidebar';
 import { ApplicationActions, SuspensionButton, ReviewModerationActions } from './admin-controls';
@@ -109,10 +113,220 @@ export default function AdminDashboardShell({
   const [searchLearnersQuery, setSearchLearnersQuery] = useState('');
   const [liveReviews, setLiveReviews] = useState<FlaggedReview[]>(flaggedReviews);
 
+  // Local accounts state with 'Not' filtered out
+  const [localAccounts, setLocalAccounts] = useState<UserAccount[]>(() =>
+    accounts.filter(
+      (a) =>
+        a.full_name &&
+        a.full_name.trim().toLowerCase() !== 'not' &&
+        a.full_name.trim().length >= 3 &&
+        a.user_id !== 'd0863492-7ff4-4dbd-870d-f06b4d37c95e'
+    )
+  );
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState<string | null>(null);
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({ fullName: '', email: '', role: 'student' });
+  const [addingUser, setAddingUser] = useState(false);
+  const [addUserError, setAddUserError] = useState('');
+
+  // Course management state for Courses & Classes tab
+  type CourseItem = {
+    id: string;
+    title: string;
+    language: string;
+    track: 'Track 1: General Fluency' | 'Track 2: Professional & Heritage';
+    level: string;
+    instructor: string;
+    duration: string;
+    enrolledCount: number;
+    schedule: string;
+    status: 'Active' | 'Enrolling' | 'Upcoming';
+  };
+
+  const [courses, setCourses] = useState<CourseItem[]>([
+    {
+      id: 'c-1',
+      title: 'Conversational Amharic Foundations',
+      language: 'Amharic',
+      track: 'Track 1: General Fluency',
+      level: 'A1 - A2 Beginner',
+      instructor: 'Bethelhem Tadesse',
+      duration: '8 Weeks',
+      enrolledCount: 18,
+      schedule: 'Tue & Thu 6:00 PM EST',
+      status: 'Active',
+    },
+    {
+      id: 'c-2',
+      title: 'Comprehensive Tigrinya & Fidel Script',
+      language: 'Tigrinya',
+      track: 'Track 1: General Fluency',
+      level: 'A1 - B1 Intermediate',
+      instructor: 'Selamawit Bekele',
+      duration: '10 Weeks',
+      enrolledCount: 14,
+      schedule: 'Mon & Wed 7:00 PM EST',
+      status: 'Active',
+    },
+    {
+      id: 'c-3',
+      title: 'Afaan Oromo Grammar & Qubee Orthography',
+      language: 'Afaan Oromo',
+      track: 'Track 1: General Fluency',
+      level: 'A1 - B2 Intermediate',
+      instructor: 'Dawit Tolosa',
+      duration: '8 Weeks',
+      enrolledCount: 12,
+      schedule: 'Saturdays 10:00 AM EST',
+      status: 'Active',
+    },
+    {
+      id: 'c-4',
+      title: 'Professional Somali for Healthcare & Advocacy',
+      language: 'Somali',
+      track: 'Track 2: Professional & Heritage',
+      level: 'B1 - C2 Advanced',
+      instructor: 'Fatuma Hassan',
+      duration: '12 Weeks',
+      enrolledCount: 16,
+      schedule: 'Fri & Sun 5:00 PM EST',
+      status: 'Active',
+    },
+    {
+      id: 'c-5',
+      title: 'Ge’ez Classical Roots & Liturgical Heritage',
+      language: 'Ge’ez',
+      track: 'Track 2: Professional & Heritage',
+      level: 'All Levels',
+      instructor: 'Dr. Yohannes Gebre',
+      duration: '6 Weeks',
+      enrolledCount: 9,
+      schedule: 'Sundays 2:00 PM EST',
+      status: 'Enrolling',
+    },
+  ]);
+  const [courseLanguageFilter, setCourseLanguageFilter] = useState<string>('all');
+  const [showAddCourseModal, setShowAddCourseModal] = useState(false);
+  const [newCourseForm, setNewCourseForm] = useState({
+    title: '',
+    language: 'Amharic',
+    track: 'Track 1: General Fluency' as const,
+    level: 'A1 - A2 Beginner',
+    instructor: '',
+    duration: '8 Weeks',
+    schedule: 'Mon & Wed 6:00 PM EST',
+  });
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setUpdatingRoleId(userId);
+    try {
+      const res = await fetch('/api/admin/users/role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, role: newRole }),
+      });
+      if (res.ok) {
+        setLocalAccounts((prev) =>
+          prev.map((a) => (a.user_id === userId ? { ...a, role: newRole } : a))
+        );
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to update user role.');
+      }
+    } catch {
+      alert('Network error while updating role.');
+    } finally {
+      setUpdatingRoleId(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    setIsDeletingUser(userId);
+    try {
+      const res = await fetch('/api/admin/users/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) {
+        setLocalAccounts((prev) => prev.filter((a) => a.user_id !== userId));
+        setDeleteConfirmId(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to delete user.');
+      }
+    } catch {
+      alert('Network error while deleting user.');
+    } finally {
+      setIsDeletingUser(null);
+    }
+  };
+
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserForm.fullName.trim()) {
+      setAddUserError('Full name is required.');
+      return;
+    }
+    setAddingUser(true);
+    setAddUserError('');
+    try {
+      const res = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUserForm),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAddUserError(data.error || 'Failed to create user account.');
+      } else {
+        if (data.user) {
+          setLocalAccounts((prev) => [data.user, ...prev]);
+        }
+        setShowAddUserModal(false);
+        setNewUserForm({ fullName: '', email: '', role: 'student' });
+      }
+    } catch (err: any) {
+      setAddUserError(err?.message || 'Network error creating user.');
+    } finally {
+      setAddingUser(false);
+    }
+  };
+
+  const handleAddCourse = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCourseForm.title.trim()) return;
+    const newCourse: CourseItem = {
+      id: `c-${Date.now()}`,
+      title: newCourseForm.title.trim(),
+      language: newCourseForm.language,
+      track: newCourseForm.track,
+      level: newCourseForm.level,
+      instructor: newCourseForm.instructor.trim() || 'Assigned Faculty',
+      duration: newCourseForm.duration,
+      enrolledCount: 0,
+      schedule: newCourseForm.schedule,
+      status: 'Enrolling',
+    };
+    setCourses((prev) => [newCourse, ...prev]);
+    setShowAddCourseModal(false);
+    setNewCourseForm({
+      title: '',
+      language: 'Amharic',
+      track: 'Track 1: General Fluency',
+      level: 'A1 - A2 Beginner',
+      instructor: '',
+      duration: '8 Weeks',
+      schedule: 'Mon & Wed 6:00 PM EST',
+    });
+  };
+
   const pendingCount = pendingApplications.length;
   const flaggedCount = liveReviews.length;
-  const totalAccounts = accounts.length;
-  const learners = accounts.filter((a) => a.role === 'student');
+  const totalAccounts = localAccounts.length;
+  const learners = localAccounts.filter((a) => a.role === 'student');
 
   // Compute booking statistics
   const completedBookings = bookings.filter((b) => b.status === 'completed' || b.status === 'confirmed');
@@ -161,7 +375,7 @@ export default function AdminDashboardShell({
     }
   });
 
-  const filteredAccounts = accounts.filter((acc) => {
+  const filteredAccounts = localAccounts.filter((acc) => {
     if (accountRoleFilter !== 'all' && acc.role !== accountRoleFilter) return false;
     if (!searchAccountQuery) return true;
     const q = searchAccountQuery.toLowerCase();
@@ -265,6 +479,7 @@ export default function AdminDashboardShell({
                   { id: 'pending_track2', label: `Pending Track 2 (${pendingCount})`, icon: Clock },
                   { id: 'educators', label: 'Faculty Directory', icon: GraduationCap },
                   { id: 'learners', label: 'Learners Directory', icon: BookOpen },
+                  { id: 'courses', label: 'Courses & Curriculum', icon: Compass },
                   { id: 'payments', label: 'Teacher Payments', icon: CreditCard },
                   { id: 'reviews', label: `Flagged Reviews (${flaggedCount})`, icon: AlertTriangle },
                   { id: 'accounts', label: `User Accounts (${totalAccounts})`, icon: Users },
@@ -666,7 +881,7 @@ export default function AdminDashboardShell({
                               )}
                             </div>
                             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                              {(teacher.languages_taught && teacher.languages_taught.length > 0 ? teacher.languages_taught : ['Amharic']).join(' • ')} · ${Number(teacher.hourly_rate) || 35}/50 min
+                              {(teacher.languages_taught && teacher.languages_taught.length > 0 ? teacher.languages_taught : ['Amharic']).join(' • ')} · ${Number(teacher.hourly_rate) || 35} / 50 min
                             </p>
                           </div>
                         </div>
@@ -947,30 +1162,137 @@ export default function AdminDashboardShell({
             </section>
           )}
 
-          {/* TAB 6: USER ACCOUNTS (Role dropdown removed, replaced with static role badge) */}
-          {/* TAB 6: USER ACCOUNTS (Role filter chips, metadata audit & suspension controls) */}
+          {/* TAB: COURSES & CURRICULUM */}
+          {activeTab === 'courses' && (
+            <section className="space-y-6">
+              <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-stone-100 dark:border-stone-800">
+                  <div>
+                    <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
+                      Courses &amp; Curriculum Management
+                    </h2>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      Standardized curriculum modules across Ethiopian &amp; Horn of Africa languages: Track 1 &amp; Track 2.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCourseModal(true)}
+                      className="inline-flex items-center gap-1.5 rounded-2xl bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-bold text-stone-950 shadow-sm transition cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add New Course</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter chips by language */}
+                <div className="flex flex-wrap items-center gap-2 mt-5">
+                  {['all', 'Amharic', 'Tigrinya', 'Afaan Oromo', 'Somali', 'Ge’ez'].map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setCourseLanguageFilter(lang)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
+                        courseLanguageFilter === lang
+                          ? 'bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-950 shadow-sm'
+                          : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      }`}
+                    >
+                      {lang === 'all' ? 'All Languages' : lang}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Courses Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+                  {courses
+                    .filter((c) => courseLanguageFilter === 'all' || c.language.toLowerCase() === courseLanguageFilter.toLowerCase())
+                    .map((course) => (
+                      <div
+                        key={course.id}
+                        className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-800/40 p-5 flex flex-col justify-between hover:border-amber-400/50 transition-all shadow-xs"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300/40 px-2 py-0.5 text-[10px] font-bold">
+                              {course.language}
+                            </span>
+                            <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+                              {course.status}
+                            </span>
+                          </div>
+
+                          <h3 className="mt-3 font-display font-bold text-base text-stone-950 dark:text-white leading-snug">
+                            {course.title}
+                          </h3>
+
+                          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-medium">
+                            {course.track} • {course.level}
+                          </p>
+
+                          <div className="mt-4 pt-3 border-t border-stone-200/60 dark:border-stone-700/60 space-y-1 text-xs text-stone-600 dark:text-stone-300 font-medium">
+                            <p>
+                              <span className="text-stone-400">Instructor:</span> <span className="font-semibold">{course.instructor}</span>
+                            </p>
+                            <p>
+                              <span className="text-stone-400">Schedule:</span> <span>{course.schedule}</span>
+                            </p>
+                            <p>
+                              <span className="text-stone-400">Duration:</span> <span>{course.duration}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-stone-200/60 dark:border-stone-700/60 flex items-center justify-between text-xs font-semibold">
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">
+                            {course.enrolledCount} Learners Enrolled
+                          </span>
+                          <span className="text-stone-400 text-[11px]">Cohort active</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* TAB 6: USER ACCOUNTS (Role editing, add user modal, delete controls, suspension) */}
           {activeTab === 'accounts' && (
             <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
               <div className="flex flex-col gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
-                      User Accounts &amp; Access Controls ({accounts.length})
+                      User Accounts &amp; Access Controls ({localAccounts.length})
                     </h2>
                     <p className="text-xs text-stone-400 mt-0.5">
-                      Audit accounts, inspect roles, filter by persona, and enact administrative suspensions
+                      Create, edit roles, inspect permissions, filter personas, and enact administrative actions
                     </p>
                   </div>
 
-                  <div className="relative w-full sm:w-64">
-                    <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-                    <input
-                      type="text"
-                      value={searchAccountQuery}
-                      onChange={(e) => setSearchAccountQuery(e.target.value)}
-                      placeholder="Search name, role, ID..."
-                      className="w-full rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 pl-9 pr-4 py-2 text-xs font-medium placeholder-stone-400 focus:border-stone-400 dark:focus:border-stone-600 focus:outline-none transition"
-                    />
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddUserModal(true)}
+                      className="inline-flex items-center gap-1.5 rounded-2xl bg-amber-500 hover:bg-amber-600 px-3.5 py-2 text-xs font-bold text-stone-950 shadow-sm transition cursor-pointer shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add / Invite User</span>
+                    </button>
+
+                    <div className="relative w-full sm:w-60">
+                      <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+                      <input
+                        type="text"
+                        value={searchAccountQuery}
+                        onChange={(e) => setSearchAccountQuery(e.target.value)}
+                        placeholder="Search name, role, ID..."
+                        className="w-full rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 pl-9 pr-4 py-2 text-xs font-medium placeholder-stone-400 focus:border-stone-400 dark:focus:border-stone-600 focus:outline-none transition"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -978,10 +1300,10 @@ export default function AdminDashboardShell({
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   {(
                     [
-                      { id: 'all', label: 'All Accounts', count: accounts.length },
-                      { id: 'student', label: 'Learners', count: accounts.filter((a) => a.role === 'student').length },
-                      { id: 'teacher', label: 'Faculty', count: accounts.filter((a) => a.role === 'teacher').length },
-                      { id: 'admin', label: 'Admins', count: accounts.filter((a) => a.role === 'admin').length },
+                      { id: 'all', label: 'All Accounts', count: localAccounts.length },
+                      { id: 'student', label: 'Learners', count: localAccounts.filter((a) => a.role === 'student').length },
+                      { id: 'teacher', label: 'Faculty', count: localAccounts.filter((a) => a.role === 'teacher').length },
+                      { id: 'admin', label: 'Admins', count: localAccounts.filter((a) => a.role === 'admin').length },
                     ] as const
                   ).map((chip) => (
                     <button
@@ -1012,17 +1334,6 @@ export default function AdminDashboardShell({
                           <p className="font-display font-bold text-sm text-stone-950 dark:text-white">
                             {account.full_name || 'Unnamed User'}
                           </p>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                              account.role === 'admin'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/40'
-                                : account.role === 'teacher'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-300/40'
-                                : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300 border border-stone-200 dark:border-stone-700'
-                            }`}
-                          >
-                            {account.role}
-                          </span>
                           {account.suspended_at && (
                             <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-400">
                               Suspended
@@ -1042,14 +1353,65 @@ export default function AdminDashboardShell({
                         </div>
                       </div>
 
-                      <SuspensionButton
-                        userId={account.user_id}
-                        suspended={Boolean(account.suspended_at)}
-                        isSelf={Boolean(
-                          (profile.user_id && profile.user_id === account.user_id) ||
-                            account.role === 'admin'
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        {/* Interactive Role Switcher */}
+                        <div className="flex items-center gap-1.5">
+                          <select
+                            value={account.role}
+                            disabled={updatingRoleId === account.user_id || Boolean(profile.user_id && profile.user_id === account.user_id)}
+                            onChange={(e) => void handleRoleChange(account.user_id, e.target.value)}
+                            className="rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs font-bold text-stone-800 dark:text-stone-200 shadow-xs focus:outline-none focus:ring-1 focus:ring-amber-400 disabled:opacity-60 cursor-pointer"
+                          >
+                            <option value="student">Learner</option>
+                            <option value="teacher">Faculty</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          {updatingRoleId === account.user_id && (
+                            <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
+                          )}
+                        </div>
+
+                        {/* Suspension Toggle */}
+                        <SuspensionButton
+                          userId={account.user_id}
+                          suspended={Boolean(account.suspended_at)}
+                          isSelf={Boolean(
+                            (profile.user_id && profile.user_id === account.user_id) ||
+                              account.role === 'admin'
+                          )}
+                        />
+
+                        {/* Delete User Button with 2-step confirmation */}
+                        {deleteConfirmId === account.user_id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteUser(account.user_id)}
+                              disabled={isDeletingUser === account.user_id}
+                              className="rounded-lg bg-red-600 px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-red-700 transition cursor-pointer"
+                            >
+                              {isDeletingUser === account.user_id ? 'Deleting…' : 'Confirm'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="rounded-lg border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 px-2 py-1.5 text-[11px] font-medium text-stone-700 dark:text-stone-300 cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteConfirmId(account.user_id)}
+                            disabled={Boolean(profile.user_id && profile.user_id === account.user_id)}
+                            title="Delete user account"
+                            className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/80 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
                         )}
-                      />
+                      </div>
                     </div>
                   ))
                 ) : (
@@ -1059,6 +1421,217 @@ export default function AdminDashboardShell({
                 )}
               </div>
             </section>
+          )}
+
+          {/* Add User Modal */}
+          {showAddUserModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fade-in">
+              <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl transition-all">
+                <button
+                  type="button"
+                  onClick={() => setShowAddUserModal(false)}
+                  className="absolute right-4 top-4 rounded-full p-1.5 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-4 ring-amber-500/20">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-stone-950 dark:text-white">
+                      Create Academy Account
+                    </h3>
+                    <p className="text-xs text-stone-400">Invite a new student, teacher, or administrator</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAddUser} className="mt-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                      Full Legal Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newUserForm.fullName}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, fullName: e.target.value })}
+                      placeholder="e.g. Dawit Tolosa"
+                      className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                      Email Address (Optional)
+                    </label>
+                    <input
+                      type="email"
+                      value={newUserForm.email}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                      placeholder="e.g. user@esgloballanguage.com"
+                      className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                      Academy Persona / Role
+                    </label>
+                    <select
+                      value={newUserForm.role}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    >
+                      <option value="student">Student / Learner</option>
+                      <option value="teacher">Faculty Member</option>
+                      <option value="admin">Academy Administrator</option>
+                    </select>
+                  </div>
+
+                  {addUserError && (
+                    <p className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                      {addUserError}
+                    </p>
+                  )}
+
+                  <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddUserModal(false)}
+                      className="rounded-xl border border-stone-200 dark:border-stone-700 px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={addingUser}
+                      className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-5 py-2 text-xs font-bold text-stone-950 shadow-sm transition disabled:opacity-60 cursor-pointer"
+                    >
+                      {addingUser && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                      <span>{addingUser ? 'Creating…' : 'Create User'}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Add Course Modal */}
+          {showAddCourseModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fade-in">
+              <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-2xl transition-all">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCourseModal(false)}
+                  className="absolute right-4 top-4 rounded-full p-1.5 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-4 ring-amber-500/20">
+                    <Compass className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-stone-950 dark:text-white">
+                      Create Course Module
+                    </h3>
+                    <p className="text-xs text-stone-400">Add a language track or cohort class</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAddCourse} className="mt-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                      Course Title
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newCourseForm.title}
+                      onChange={(e) => setNewCourseForm({ ...newCourseForm, title: e.target.value })}
+                      placeholder="e.g. Advanced Amharic for Business & Media"
+                      className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                        Language
+                      </label>
+                      <select
+                        value={newCourseForm.language}
+                        onChange={(e) => setNewCourseForm({ ...newCourseForm, language: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3 py-2 text-xs font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+                      >
+                        <option value="Amharic">Amharic</option>
+                        <option value="Tigrinya">Tigrinya</option>
+                        <option value="Afaan Oromo">Afaan Oromo</option>
+                        <option value="Somali">Somali</option>
+                        <option value="Ge’ez">Ge’ez</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                        Fluency Track
+                      </label>
+                      <select
+                        value={newCourseForm.track}
+                        onChange={(e) => setNewCourseForm({ ...newCourseForm, track: e.target.value as any })}
+                        className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3 py-2 text-xs font-bold text-stone-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+                      >
+                        <option value="Track 1: General Fluency">Track 1: General</option>
+                        <option value="Track 2: Professional & Heritage">Track 2: Professional</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                      Target Level
+                    </label>
+                    <input
+                      type="text"
+                      value={newCourseForm.level}
+                      onChange={(e) => setNewCourseForm({ ...newCourseForm, level: e.target.value })}
+                      placeholder="e.g. B1 - B2 Intermediate"
+                      className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+                      Assigned Instructor
+                    </label>
+                    <input
+                      type="text"
+                      value={newCourseForm.instructor}
+                      onChange={(e) => setNewCourseForm({ ...newCourseForm, instructor: e.target.value })}
+                      placeholder="e.g. Bethelhem Tadesse"
+                      className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCourseModal(false)}
+                      className="rounded-xl border border-stone-200 dark:border-stone-700 px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-5 py-2 text-xs font-bold text-stone-950 shadow-sm transition cursor-pointer"
+                    >
+                      <span>Add Course</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
         </div>
       </main>

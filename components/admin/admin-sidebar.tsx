@@ -26,6 +26,7 @@ export type AdminTab =
   | 'pending_track2'
   | 'educators'
   | 'learners'
+  | 'courses'
   | 'payments'
   | 'reviews'
   | 'accounts';
@@ -94,6 +95,11 @@ export default function AdminSidebar({
       id: 'learners',
       label: 'Learners Directory',
       icon: BookOpen,
+    },
+    {
+      id: 'courses',
+      label: 'Courses & Curriculum',
+      icon: Compass,
     },
     {
       id: 'payments',

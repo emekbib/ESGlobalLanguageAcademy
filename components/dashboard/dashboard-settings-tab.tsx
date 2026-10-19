@@ -32,7 +32,7 @@ export default function DashboardSettingsTab({
     if (!l) return 'Amharic';
     const lower = l.toLowerCase();
     if (lower.includes('somali')) return 'Somali';
-    if (lower.includes('tigrigna') || lower.includes('tigrinya')) return 'Tigrigna';
+    if (lower.includes('tigrigna') || lower.includes('tigrinya')) return 'Tigrinya';
     if (lower.includes('oromo') || lower.includes('qubee')) return 'Afaan Oromo';
     return 'Amharic';
   };
@@ -115,7 +115,10 @@ export default function DashboardSettingsTab({
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (onNameUpdate) onNameUpdate(e.target.value);
+              }}
               required
               className="w-full rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-sm font-medium text-stone-900 dark:text-stone-100 shadow-sm transition focus:border-stone-950 dark:focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-950 dark:focus:ring-stone-500"
             />
@@ -160,7 +163,7 @@ export default function DashboardSettingsTab({
               className="w-full rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-sm font-medium text-stone-900 dark:text-stone-100 shadow-sm transition focus:border-stone-950 dark:focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-950 dark:focus:ring-stone-500"
             >
               <option value="Amharic">Amharic (Fidel Script &amp; Conversational)</option>
-              <option value="Tigrigna">Tigrigna (Ge&apos;ez Script &amp; Conversational)</option>
+              <option value="Tigrinya">Tigrinya (Ge&apos;ez Script &amp; Conversational)</option>
               <option value="Afaan Oromo">Afaan Oromo (Qubee &amp; Conversational)</option>
               <option value="Somali">Somali (Conversational &amp; Grammar)</option>
             </select>

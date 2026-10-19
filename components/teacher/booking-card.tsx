@@ -180,6 +180,19 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
         return;
       }
 
+      if (data.booking) {
+        try {
+          const storageKey = `es_student_bookings_${user.id}`;
+          const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+          const existingList: any[] = raw ? JSON.parse(raw) : [];
+          const filtered = existingList.filter((b: any) => b.id !== data.booking.id);
+          filtered.push(data.booking);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(storageKey, JSON.stringify(filtered));
+          }
+        } catch {}
+      }
+
       window.location.assign(data.checkoutUrl);
     } catch {
       setBookingError('An unexpected error occurred while starting checkout.');

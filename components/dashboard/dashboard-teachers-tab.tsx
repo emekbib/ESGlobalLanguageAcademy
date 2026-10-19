@@ -209,11 +209,19 @@ export default function DashboardTeachersTab() {
                     {/* Rating & Sessions */}
                     <div className="mt-3 flex items-center justify-between border-t border-stone-100 dark:border-stone-800 pt-3 text-xs">
                       <div className="flex items-center gap-1 font-bold text-stone-900 dark:text-stone-100">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        <span>{avgRating}</span>
-                        <span className="text-[11px] font-normal text-stone-400">
-                          ({teacher.lessonsTaught ?? 0} sessions)
-                        </span>
+                        {(teacher.lessonsTaught ?? 0) > 0 ? (
+                          <>
+                            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                            <span>{avgRating}</span>
+                            <span className="text-[11px] font-normal text-stone-400">
+                              ({teacher.lessonsTaught} sessions)
+                            </span>
+                          </>
+                        ) : (
+                          <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+                            New Educator
+                          </span>
+                        )}
                       </div>
 
                       <Link

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CheckCircle2,
@@ -9,8 +9,6 @@ import {
   ArrowRight,
   Sparkles,
   RefreshCw,
-  ExternalLink,
-  ShieldCheck,
   AlertCircle,
 } from 'lucide-react';
 
@@ -20,11 +18,22 @@ type ConnectPayoutButtonProps = {
 
 export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonProps) {
   const router = useRouter();
+  const [isConnected, setIsConnected] = useState(connected);
   const [loading, setLoading] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [canSimulate, setCanSimulate] = useState(false);
+
+  useEffect(() => {
+    setIsConnected(connected);
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('es_teacher_payout_simulated');
+      if (stored === 'true') {
+        setIsConnected(true);
+      }
+    }
+  }, [connected]);
 
   async function startOnboarding() {
     setLoading(true);
@@ -41,9 +50,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
 
       if (!res.ok || !data) {
         setError(data?.error || 'We couldn’t open payout setup. Please try again.');
-        if (data?.canSimulate || data?.permissionRequired) {
-          setCanSimulate(true);
-        }
+        setCanSimulate(true);
         setLoading(false);
         return;
       }
@@ -51,6 +58,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
       if (data.onboardingUrl) {
         window.location.assign(data.onboardingUrl);
       } else if (data.success) {
+        setIsConnected(true);
         router.refresh();
       }
     } catch (err: any) {
@@ -75,7 +83,12 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
       const data = await res.json();
 
       if (res.ok && data.success) {
+        setIsConnected(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('es_teacher_payout_simulated', 'true');
+        }
         setSuccessMsg('Stripe Connect payout account simulated and linked successfully! Payout status is now active.');
+        setTimeout(() => setSuccessMsg(''), 4000);
         router.refresh();
       } else {
         setError(data?.error || 'Failed to simulate connection.');
@@ -88,9 +101,12 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
   }
 
   async function handleDisconnect() {
-    if (!confirm('Disconnect your payout account for testing?')) return;
     setLoading(true);
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('es_teacher_payout_simulated');
+      }
+      setIsConnected(false);
       const res = await fetch('/api/teacher/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -112,17 +128,17 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
             Escrow &amp; Banking
           </span>
           <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-stone-950 dark:text-white">
-            {connected ? 'Payout Account Active' : 'Set Up Direct Stripe Payouts'}
+            {isConnected ? 'Payout Account Active' : 'Set Up Direct Stripe Payouts'}
           </h2>
           <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-stone-500 dark:text-stone-400 font-medium">
-            {connected
+            {isConnected
               ? 'Your bank account is securely linked via Stripe Express. Earnings from each completed 1-on-1 language lesson are automatically transferred to your account.'
               : 'Connect your bank account via Stripe Express to receive direct payouts after each 1-on-1 session is completed.'}
           </p>
         </div>
 
         <div className="shrink-0 self-start">
-          {connected ? (
+          {isConnected ? (
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 ring-1 ring-emerald-500/20 shadow-sm">
               <CheckCircle2 className="h-6 w-6" />
             </div>
@@ -134,7 +150,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
         </div>
       </div>
 
-      {connected ? (
+      {isConnected ? (
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
             <span className="relative flex h-2 w-2">
@@ -148,7 +164,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
             type="button"
             onClick={handleDisconnect}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800 px-3.5 py-1.5 text-xs font-semibold text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition"
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800 px-3.5 py-1.5 text-xs font-semibold text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition cursor-pointer"
           >
             <RefreshCw className="h-3 w-3" />
             <span>Reset Connection</span>
@@ -193,14 +209,14 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
       )}
 
       {successMsg && (
-        <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+        <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-fade-in">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <p className="font-semibold">{successMsg}</p>
         </div>
       )}
 
       {error && (
-        <div className="mt-5 rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 p-4 text-xs font-medium text-red-800 dark:text-red-300 space-y-2">
+        <div className="mt-5 rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 p-4 text-xs font-medium text-red-800 dark:text-red-300 space-y-2 animate-fade-in">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
             <div className="space-y-1">

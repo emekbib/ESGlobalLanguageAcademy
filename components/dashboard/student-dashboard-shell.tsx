@@ -108,65 +108,92 @@ export default function StudentDashboardShell({
         .eq('student_id', profile.user_id)
         .order('start_time_utc', { ascending: true });
 
-      if (bks) {
-        const tIds = Array.from(new Set(bks.map((b) => b.teacher_id)));
-        let { data: tProfiles } = tIds.length
-          ? await supabase
-              .from('teacher_profiles')
-              .select('id, user_id, languages_taught, hourly_rate')
-              .in('id', tIds)
-          : { data: [] };
+      const tIds = Array.from(new Set((bks ?? []).map((b) => b.teacher_id)));
+      let { data: tProfiles } = tIds.length
+        ? await supabase
+            .from('teacher_profiles')
+            .select('id, user_id, languages_taught, hourly_rate')
+            .in('id', tIds)
+        : { data: [] };
 
-        const uIds = (tProfiles ?? []).map((tp) => tp.user_id);
-        const { data: uProfiles } = uIds.length
-          ? await supabase
-              .from('profiles')
-              .select('user_id, full_name, avatar_url')
-              .in('user_id', uIds)
-          : { data: [] };
+      const uIds = (tProfiles ?? []).map((tp) => tp.user_id);
+      const { data: uProfiles } = uIds.length
+        ? await supabase
+            .from('profiles')
+            .select('user_id, full_name, avatar_url')
+            .in('user_id', uIds)
+        : { data: [] };
 
-        const tpMap = new Map((tProfiles ?? []).map((tp) => [tp.id, tp]));
-        const upMap = new Map((uProfiles ?? []).map((up) => [up.user_id, up]));
+      const tpMap = new Map((tProfiles ?? []).map((tp) => [tp.id, tp]));
+      const upMap = new Map((uProfiles ?? []).map((up) => [up.user_id, up]));
 
-        const enriched: BookingItem[] = bks.map((b) => {
-          const tp = tpMap.get(b.teacher_id);
-          const up = tp ? upMap.get(tp.user_id) : null;
+      const enriched: BookingItem[] = (bks ?? []).map((b) => {
+        const tp = tpMap.get(b.teacher_id);
+        const up = tp ? upMap.get(tp.user_id) : null;
+        return {
+          ...b,
+          status: b.status as any,
+          teacher_name: up?.full_name ?? 'Teacher',
+          teacher_avatar: up?.avatar_url ?? null,
+        };
+      });
+
+      // Load local storage bookings (handles client-confirmed & sample bookings)
+      const localKey = `es_student_bookings_${profile.user_id}`;
+      let localBookings: any[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(localKey);
+          if (raw) localBookings = JSON.parse(raw);
+        } catch {}
+      }
+
+      const existingIds = new Set(enriched.map((b) => b.id));
+      const merged: BookingItem[] = [...enriched];
+      for (const lb of localBookings) {
+        if (!existingIds.has(lb.id)) {
+          existingIds.add(lb.id);
+          merged.push({
+            id: lb.id,
+            student_id: profile.user_id,
+            teacher_id: lb.teacher_id,
+            start_time_utc: lb.start_time_utc,
+            end_time_utc: lb.end_time_utc,
+            status: lb.status || 'confirmed',
+            created_at: lb.created_at || new Date().toISOString(),
+            teacher_name: lb.teacher_name || 'Native Educator',
+            teacher_avatar: lb.teacher_avatar || null,
+          });
+        }
+      }
+
+      const now = new Date();
+      const nextUpcoming = merged.filter(
+        (b) => new Date(b.start_time_utc) >= now && b.status !== 'cancelled'
+      );
+      const nextPast = merged.filter(
+        (b) => new Date(b.start_time_utc) < now || b.status === 'cancelled'
+      );
+
+      setLiveUpcoming(nextUpcoming);
+      setLivePast(nextPast);
+
+      if (tProfiles && tProfiles.length > 0) {
+        const updatedTutors = tProfiles.map((t) => {
+          const up = upMap.get(t.user_id);
           return {
-            ...b,
-            status: b.status as any,
-            teacher_name: up?.full_name ?? 'Teacher',
-            teacher_avatar: up?.avatar_url ?? null,
+            id: t.id,
+            userId: t.user_id,
+            name: up?.full_name ?? 'Native Educator',
+            avatarUrl: up?.avatar_url ?? null,
+            languages: t.languages_taught ?? [],
+            hourlyRate: t.hourly_rate ?? 25,
+            rating: 5.0,
+            lessonsTaught: (bks ?? []).filter((b) => b.teacher_id === t.id && b.status === 'completed')
+              .length,
           };
         });
-
-        const now = new Date();
-        const nextUpcoming = enriched.filter(
-          (b) => new Date(b.start_time_utc) >= now && b.status !== 'cancelled'
-        );
-        const nextPast = enriched.filter(
-          (b) => new Date(b.start_time_utc) < now || b.status === 'cancelled'
-        );
-
-        setLiveUpcoming(nextUpcoming);
-        setLivePast(nextPast);
-
-        if (tProfiles && tProfiles.length > 0) {
-          const updatedTutors = tProfiles.map((t) => {
-            const up = upMap.get(t.user_id);
-            return {
-              id: t.id,
-              userId: t.user_id,
-              name: up?.full_name ?? 'Native Educator',
-              avatarUrl: up?.avatar_url ?? null,
-              languages: t.languages_taught ?? [],
-              hourlyRate: t.hourly_rate ?? 25,
-              rating: 5.0,
-              lessonsTaught: bks.filter((b) => b.teacher_id === t.id && b.status === 'completed')
-                .length,
-            };
-          });
-          setLiveTutors(updatedTutors);
-        }
+        setLiveTutors(updatedTutors);
       }
     } catch (err) {
       console.warn('Live bookings sync notice:', err);
@@ -174,11 +201,50 @@ export default function StudentDashboardShell({
   }, [profile.user_id, supabase]);
 
   useEffect(() => {
-    setLiveUpcoming(upcoming);
-    setLivePast(past);
+    // Initial local storage hydration
+    const localKey = `es_student_bookings_${profile.user_id}`;
+    let localBookings: any[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(localKey);
+        if (raw) localBookings = JSON.parse(raw);
+        const savedName = localStorage.getItem(`es_student_name_${profile.user_id}`);
+        if (savedName) setCurrentFullName(savedName);
+      } catch {}
+    }
+
+    const existingIds = new Set((upcoming ?? []).map((b) => b.id));
+    const mergedUpcoming = [...(upcoming ?? [])];
+    const mergedPast = [...(past ?? [])];
+    const now = new Date();
+
+    for (const lb of localBookings) {
+      if (!existingIds.has(lb.id)) {
+        existingIds.add(lb.id);
+        const item: BookingItem = {
+          id: lb.id,
+          student_id: profile.user_id,
+          teacher_id: lb.teacher_id,
+          start_time_utc: lb.start_time_utc,
+          end_time_utc: lb.end_time_utc,
+          status: lb.status || 'confirmed',
+          created_at: lb.created_at || new Date().toISOString(),
+          teacher_name: lb.teacher_name || 'Native Educator',
+          teacher_avatar: lb.teacher_avatar || null,
+        };
+        if (new Date(item.start_time_utc) >= now && item.status !== 'cancelled') {
+          mergedUpcoming.push(item);
+        } else {
+          mergedPast.push(item);
+        }
+      }
+    }
+
+    setLiveUpcoming(mergedUpcoming);
+    setLivePast(mergedPast);
     setLiveTutors(tutors);
     void fetchLiveBookings();
-  }, [upcoming, past, tutors, fetchLiveBookings]);
+  }, [upcoming, past, tutors, profile.user_id, fetchLiveBookings]);
 
   useEffect(() => {
     const tabParam = searchParams?.get('tab');

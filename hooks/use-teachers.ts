@@ -10,13 +10,13 @@ type RawTeacher = TeacherProfile & {
   profile: Pick<Profile, 'full_name' | 'avatar_url'> | null;
 };
 
-export const APPROVED_LANGUAGES = ['Amharic', 'Tigrigna', 'Afaan Oromo', 'Somali'] as const;
+export const APPROVED_LANGUAGES = ['Amharic', 'Tigrinya', 'Afaan Oromo', 'Somali'] as const;
 
 export function normalizeLanguageName(lang: string): string {
   if (!lang) return '';
   const l = lang.trim().toLowerCase();
   if (l.includes('amharic')) return 'Amharic';
-  if (l.includes('tigrigna') || l.includes('tigrinya')) return 'Tigrigna';
+  if (l.includes('tigrigna') || l.includes('tigrinya')) return 'Tigrinya';
   if (l.includes('oromo') || l.includes('afaan')) return 'Afaan Oromo';
   if (l.includes('somali')) return 'Somali';
   return lang.trim();

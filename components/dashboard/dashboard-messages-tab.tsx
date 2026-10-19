@@ -17,6 +17,7 @@ import {
   X,
   GraduationCap,
   User,
+  Trash2,
 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
@@ -632,24 +633,25 @@ export default function DashboardMessagesTab({
     async function loadConversationMessages() {
       if (!selectedContact) return;
 
+      const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+      let localMsgs: Message[] = [];
+      try {
+        const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+        if (raw) localMsgs = JSON.parse(raw);
+      } catch (err) {
+        console.warn('Error reading local messages:', err);
+      }
+
       // For non-UUID recipients (e.g. sample educator or demo contact), retrieve from local storage
       if (!UUID_REGEX.test(selectedContact.id)) {
-        try {
-          const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
-          const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
-          const localMsgs: Message[] = raw ? JSON.parse(raw) : [];
-          setMessages((prev) => {
-            const temps = prev.filter((m) => m.id.startsWith('temp-'));
-            return deduplicateMessages([...localMsgs, ...temps]);
-          });
-          requestAnimationFrame(() => {
-            scrollToBottom(true);
-          });
-        } catch (err) {
-          console.warn('Error loading local conversation:', err);
-        } finally {
-          setLoadingMessages(false);
-        }
+        setMessages((prev) => {
+          const temps = prev.filter((m) => m.id.startsWith('temp-'));
+          return deduplicateMessages([...localMsgs, ...temps]);
+        });
+        setLoadingMessages(false);
+        requestAnimationFrame(() => {
+          scrollToBottom(true);
+        });
         return;
       }
 
@@ -662,20 +664,34 @@ export default function DashboardMessagesTab({
           )
           .order('created_at', { ascending: true });
 
-        if (!error && data) {
-          setMessages((prev) => {
-            const temps = prev.filter((m) => m.id.startsWith('temp-'));
-            return deduplicateMessages([...data, ...temps]);
-          });
-          // Instantly jump to the bottom without animating through all messages
-          requestAnimationFrame(() => {
-            scrollToBottom(true);
-          });
+        const serverData: Message[] = (!error && data) ? (data as Message[]) : [];
 
-          void markContactMessagesAsRead(selectedContact.id);
-        }
+        setMessages((prev) => {
+          const temps = prev.filter((m) => m.id.startsWith('temp-'));
+          // Merge server messages, existing messages from previous state, and local storage messages
+          const combined = deduplicateMessages([...serverData, ...localMsgs, ...temps]);
+          // Sync back clean non-temp messages to local storage
+          try {
+            if (typeof window !== 'undefined' && combined.length > 0) {
+              const nonTemp = combined.filter((m) => !m.id.startsWith('temp-'));
+              localStorage.setItem(storageKey, JSON.stringify(nonTemp));
+            }
+          } catch {}
+          return combined;
+        });
+
+        // Instantly jump to the bottom without animating through all messages
+        requestAnimationFrame(() => {
+          scrollToBottom(true);
+        });
+
+        void markContactMessagesAsRead(selectedContact.id);
       } catch (err) {
         console.warn('Error loading conversation:', err);
+        setMessages((prev) => {
+          const temps = prev.filter((m) => m.id.startsWith('temp-'));
+          return deduplicateMessages([...localMsgs, ...temps]);
+        });
       } finally {
         setLoadingMessages(false);
       }
@@ -692,6 +708,38 @@ export default function DashboardMessagesTab({
       clearInterval(interval);
     };
   }, [selectedContact?.id, currentUser.id, supabase, markContactMessagesAsRead]);
+
+  // Delete Message Handler
+  const handleDeleteMessage = async (msgId: string) => {
+    if (!selectedContact) return;
+    const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+
+    // Optimistically remove from state
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+
+    // Remove from local storage
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const list: Message[] = JSON.parse(raw);
+          const filtered = list.filter((m) => m.id !== msgId);
+          localStorage.setItem(storageKey, JSON.stringify(filtered));
+        }
+      }
+    } catch {}
+
+    // Call server delete API
+    try {
+      await fetch('/api/messages/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId: msgId }),
+      });
+    } catch (err) {
+      console.warn('Error deleting message on server:', err);
+    }
+  };
 
   // 4. Send Message Handler
   const handleSendMessage = async (e?: React.FormEvent) => {
@@ -715,6 +763,17 @@ export default function DashboardMessagesTab({
     setMessages((prev) => [...prev, optimisticMsg]);
     requestAnimationFrame(() => scrollToBottom(false));
 
+    // Persist to local storage immediately
+    const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem(storageKey);
+        const existingList: Message[] = raw ? JSON.parse(raw) : [];
+        existingList.push(optimisticMsg);
+        localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(existingList)));
+      }
+    } catch {}
+
     // Keep textarea focused and ready for immediate subsequent message
     textareaRef.current?.focus();
 
@@ -735,6 +794,18 @@ export default function DashboardMessagesTab({
       return prevContacts;
     });
 
+    const persistConfirmedMsg = (msg: Message) => {
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem(storageKey);
+          let list: Message[] = raw ? JSON.parse(raw) : [];
+          list = list.filter((m) => m.id !== tempId && m.id !== msg.id);
+          list.push(msg);
+          localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(list)));
+        }
+      } catch {}
+    };
+
     // 3. Fast background delivery
     try {
       // Direct browser client insertion (fastest path: ~50-150ms roundtrip)
@@ -749,10 +820,12 @@ export default function DashboardMessagesTab({
         .single();
 
       if (!error && data) {
+        const confirmed = data as Message;
         setMessages((prev) => {
           const filtered = prev.filter((m) => m.id !== tempId);
-          return deduplicateMessages([...filtered, data as Message]);
+          return deduplicateMessages([...filtered, confirmed]);
         });
+        persistConfirmedMsg(confirmed);
         return;
       }
 
@@ -773,23 +846,12 @@ export default function DashboardMessagesTab({
       }
 
       if (result.message) {
+        const confirmed = result.message as Message;
         setMessages((prev) => {
           const filtered = prev.filter((m) => m.id !== tempId);
-          return deduplicateMessages([...filtered, result.message as Message]);
+          return deduplicateMessages([...filtered, confirmed]);
         });
-
-        // Persist to local storage if non-UUID contact
-        if (!UUID_REGEX.test(selectedContact.id)) {
-          try {
-            const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
-            const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
-            const existingList: Message[] = raw ? JSON.parse(raw) : [];
-            existingList.push(result.message as Message);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(existingList)));
-            }
-          } catch {}
-        }
+        persistConfirmedMsg(confirmed);
       }
 
       // If sending to a simulated recipient, trigger auto-reply
@@ -806,16 +868,7 @@ export default function DashboardMessagesTab({
           setMessages((prev) => deduplicateMessages([...prev, replyMsg]));
           requestAnimationFrame(() => scrollToBottom(false));
           playNotificationChime();
-
-          try {
-            const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
-            const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
-            const existingList: Message[] = raw ? JSON.parse(raw) : [];
-            existingList.push(replyMsg);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(existingList)));
-            }
-          } catch {}
+          persistConfirmedMsg(replyMsg);
         }, 800);
       }
     } catch (err: any) {
@@ -1213,7 +1266,7 @@ export default function DashboardMessagesTab({
 
                         {/* Message Bubble Row */}
                         <div
-                          className={`flex items-end gap-2.5 ${
+                          className={`flex items-end gap-2.5 group ${
                             isMine ? 'justify-end' : 'justify-start'
                           }`}
                         >
@@ -1245,7 +1298,7 @@ export default function DashboardMessagesTab({
                             </div>
 
                             <div
-                              className={`flex items-center gap-1 px-1 text-[10px] font-medium text-stone-400 dark:text-stone-500 ${
+                              className={`flex items-center gap-1.5 px-1 text-[10px] font-medium text-stone-400 dark:text-stone-500 ${
                                 isMine ? 'justify-end' : 'justify-start'
                               }`}
                             >
@@ -1253,13 +1306,23 @@ export default function DashboardMessagesTab({
                                 {format(new Date(msg.created_at), 'h:mm a')}
                               </span>
                               {isMine && (
-                                <CheckCheck
-                                  className={`h-3.5 w-3.5 ${
-                                    msg.id.startsWith('temp-')
-                                      ? 'text-stone-400 opacity-50'
-                                      : 'text-amber-500 dark:text-stone-900'
-                                  }`}
-                                />
+                                <>
+                                  <CheckCheck
+                                    className={`h-3.5 w-3.5 ${
+                                      msg.id.startsWith('temp-')
+                                        ? 'text-stone-400 opacity-50'
+                                        : 'text-amber-500 dark:text-stone-900'
+                                    }`}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteMessage(msg.id)}
+                                    title="Delete message"
+                                    className="opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 text-stone-400 transition-opacity p-0.5 rounded cursor-pointer"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                </>
                               )}
                             </div>
                           </div>

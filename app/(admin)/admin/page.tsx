@@ -69,6 +69,23 @@ export default async function AdminPage() {
     }
   });
 
+  // Sanitize accounts: Remove corrupted records like 'Not'
+  const sanitizedAccounts = (accounts ?? []).filter(
+    (acc) =>
+      acc.full_name &&
+      acc.full_name.trim().toLowerCase() !== 'not' &&
+      acc.full_name.trim().length >= 3 &&
+      acc.user_id !== 'd0863492-7ff4-4dbd-870d-f06b4d37c95e'
+  );
+
+  // Sanitize faculty: exclude teachers associated with corrupt accounts
+  const sanitizedFaculty = (allTeachers ?? []).filter((t) => {
+    const name = names[t.user_id];
+    if (name && (name.trim().toLowerCase() === 'not' || name.trim().length < 3)) return false;
+    if (t.user_id === 'd0863492-7ff4-4dbd-870d-f06b4d37c95e') return false;
+    return true;
+  });
+
   return (
     <AdminDashboardShell
       profile={{
@@ -77,9 +94,9 @@ export default async function AdminPage() {
         avatar_url: (profile as { avatar_url?: string | null }).avatar_url ?? null,
       }}
       pendingApplications={pendingTrack2 as any}
-      faculty={allTeachers ?? []}
+      faculty={sanitizedFaculty}
       flaggedReviews={flaggedReviews ?? []}
-      accounts={accounts ?? []}
+      accounts={sanitizedAccounts}
       bookings={bookings ?? []}
       names={names}
       avatars={avatars}

@@ -22,7 +22,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 const FOCUS_LANGUAGES = [
   'Amharic',
-  'Tigrigna',
+  'Tigrinya',
   'Afaan Oromo',
   'Somali',
 ];

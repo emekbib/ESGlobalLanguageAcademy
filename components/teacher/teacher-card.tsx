@@ -56,15 +56,23 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
             </h3>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-xs font-bold text-stone-900 dark:text-stone-200">{avg}</span>
+            {teacher.lessonsTaught > 0 ? (
+              <>
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-xs font-bold text-stone-900 dark:text-stone-200">{avg}</span>
+              </>
+            ) : (
+              <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+                New Educator
+              </span>
+            )}
           </div>
         </div>
 
         {/* Price */}
         <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-medium">
-          <span className="font-bold text-stone-900 dark:text-white text-sm">${teacher.hourlyRate}</span>
-          {' '}· 50 min session
+          <span className="font-bold text-stone-950 dark:text-white text-sm">${teacher.hourlyRate}</span>
+          {' '} / 50 min
         </p>
 
         {/* Headline / bio */}
