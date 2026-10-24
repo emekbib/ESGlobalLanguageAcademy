@@ -51,7 +51,7 @@ export default async function DashboardPage({
 
   const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
-    .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, created_at')
+    .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, amount_cents, created_at')
     .eq('student_id', user.id)
     .order('start_time_utc', { ascending: true });
 
@@ -137,6 +137,7 @@ export default async function DashboardPage({
     const up = tp ? userProfileMap.get(tp.user_id) : null;
     return {
       ...b,
+      amount_cents: b.amount_cents,
       teacher_name: up?.full_name ?? 'Teacher',
       teacher_avatar: up?.avatar_url ?? null,
     };
@@ -146,23 +147,35 @@ export default async function DashboardPage({
   const upcoming = enriched.filter((b) => new Date(b.start_time_utc) >= now && b.status !== 'cancelled');
   const past = enriched.filter((b) => new Date(b.start_time_utc) < now || b.status === 'cancelled');
 
-  const myTutors = (teacherProfiles ?? []).map((t) => {
+  const cleanName = (n: string) =>
+    (n || '').toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/[^a-z0-9]/g, '').trim();
+
+  const seenTutorNames = new Set<string>();
+  const myTutors: any[] = [];
+
+  (teacherProfiles ?? []).forEach((t) => {
     const up = userProfileMap.get(t.user_id);
+    const rawName = up?.full_name ?? 'Native Educator';
+    const key = cleanName(rawName);
+    if (!key || key === 'not' || key.length < 3 || seenTutorNames.has(key)) return;
+    seenTutorNames.add(key);
+
     const ratingData = teacherRatingMap.get(t.id);
     const avgRating = ratingData && ratingData.count > 0
       ? Math.round((ratingData.sum / ratingData.count) * 10) / 10
       : null;
-    return {
+
+    myTutors.push({
       id: t.id,
       userId: t.user_id,
-      name: up?.full_name ?? 'Native Educator',
+      name: rawName,
       avatarUrl: up?.avatar_url ?? null,
       languages: t.languages_taught ?? [],
-      hourlyRate: t.hourly_rate ?? 25,
+      hourlyRate: t.hourly_rate ?? 35,
       rating: avgRating,
       lessonsTaught: teacherLessonMap.get(t.id) ?? 0,
       hasBooked: !isAllFaculty,
-    };
+    });
   });
 
   return (

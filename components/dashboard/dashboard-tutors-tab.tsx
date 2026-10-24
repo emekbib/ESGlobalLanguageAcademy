@@ -15,9 +15,11 @@ import BookingCard from '@/components/teacher/booking-card';
 export default function DashboardTutorsTab({
   tutors,
   onFindMore,
+  onMessage,
 }: {
   tutors: any[];
   onFindMore: () => void;
+  onMessage?: (tutor: any) => void;
 }) {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
 
@@ -93,15 +95,15 @@ export default function DashboardTutorsTab({
                   {tutor.languages.join(' & ')}{' '}Instructor · ${tutor.hourlyRate} / 50 min
                 </p>
                 <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold">
-                  {tutor.rating !== null && tutor.rating !== undefined ? (
+                  {tutor.lessonsTaught > 0 && tutor.rating !== null && tutor.rating !== undefined ? (
                     <>
                       <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                       <span className="text-amber-600 dark:text-amber-400">{tutor.rating}</span>
                       <span className="text-stone-400 dark:text-stone-500">{` (${tutor.lessonsTaught} sessions)`}</span>
                     </>
                   ) : (
-                    <span className="rounded-full bg-stone-100 dark:bg-stone-800 px-2 py-0.5 text-[10px] font-bold text-stone-500 dark:text-stone-400">
-                      {tutor.lessonsTaught > 0 ? `${tutor.lessonsTaught} sessions` : 'New Educator'}
+                    <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+                      New Educator
                     </span>
                   )}
                 </div>
@@ -109,13 +111,24 @@ export default function DashboardTutorsTab({
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              <Link
-                href={`/dashboard?tab=messages&contactId=${tutor.userId || tutor.id}`}
-                className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-xs font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 transition"
-              >
-                <MessageSquare className="h-3.5 w-3.5 text-stone-500" />
-                Message
-              </Link>
+              {onMessage ? (
+                <button
+                  type="button"
+                  onClick={() => onMessage(tutor)}
+                  className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-xs font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 transition cursor-pointer"
+                >
+                  <MessageSquare className="h-3.5 w-3.5 text-stone-500" />
+                  Message
+                </button>
+              ) : (
+                <Link
+                  href={`/dashboard?tab=messages&contactId=${tutor.userId || tutor.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-xs font-bold text-stone-800 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 transition"
+                >
+                  <MessageSquare className="h-3.5 w-3.5 text-stone-500" />
+                  Message
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedTeacherId(tutor.id)}

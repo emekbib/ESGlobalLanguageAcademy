@@ -122,7 +122,40 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
     [availability, viewerTz, lessonMinutes, existingBookings],
   );
 
-  const grouped = useMemo(() => groupByDay(slots), [slots]);
+  const grouped = useMemo(() => {
+    const map = new Map<string, Slot[]>();
+    for (const slot of slots) {
+      const list = map.get(slot.dayLocal);
+      if (list) list.push(slot);
+      else map.set(slot.dayLocal, [slot]);
+    }
+
+    const result: { day: string; slots: Slot[] }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + i);
+      const dayLabel = d.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        timeZone: viewerTz,
+      });
+
+      const matchedKey = Array.from(map.keys()).find(
+        (k) =>
+          k.toLowerCase().includes(dayLabel.toLowerCase()) ||
+          dayLabel.toLowerCase().includes(k.toLowerCase())
+      );
+      result.push({
+        day: dayLabel,
+        slots: matchedKey ? map.get(matchedKey) ?? [] : [],
+      });
+    }
+
+    return result;
+  }, [slots, viewerTz]);
+
   const visibleDays = grouped.slice(dayOffset, dayOffset + DAYS_PER_PAGE);
 
   const pricePerLesson = useMemo(() => {
@@ -351,25 +384,29 @@ export default function BookingCard({ teacherId, hourlyRate, teacherType = 'prof
                   <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">
                     {day}
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {daySlots.map((slot) => {
-                      const isSelected = selectedSlot?.startUtc === slot.startUtc;
-                      return (
-                        <button
-                          key={slot.startUtc}
-                          type="button"
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
-                            isSelected
-                              ? 'border-stone-950 bg-stone-950 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-950 shadow-sm'
-                              : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700'
-                          }`}
-                        >
-                          {slot.startLocal}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {daySlots.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {daySlots.map((slot) => {
+                        const isSelected = selectedSlot?.startUtc === slot.startUtc;
+                        return (
+                          <button
+                            key={slot.startUtc}
+                            type="button"
+                            onClick={() => setSelectedSlot(slot)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
+                              isSelected
+                                ? 'border-stone-950 bg-stone-950 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-950 shadow-sm'
+                                : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700'
+                            }`}
+                          >
+                            {slot.startLocal}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-stone-400 dark:text-stone-500 italic">No open slots</p>
+                  )}
                 </div>
               ))}
             </div>

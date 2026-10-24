@@ -137,7 +137,7 @@ export default function DashboardMetrics({
             Focus Languages
           </p>
           <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
-            <span>Amharic, Tigrigna, Oromo, Somali</span>
+            <span>Amharic, Tigrinya, Afaan Oromo, Somali</span>
             <ArrowUpRight className="h-3 w-3 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
           </div>
         </div>

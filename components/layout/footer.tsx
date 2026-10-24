@@ -71,7 +71,7 @@ export default function Footer() {
           </div>
 
           <p className="text-xs text-stone-400 dark:text-stone-500">
-            {'© '}{new Date().getFullYear()}{' ESGlobal Language Academy. All rights reserved.'}
+            {`© ${new Date().getFullYear()} ESGlobal Language Academy. All rights reserved.`}
           </p>
         </div>
       </div>

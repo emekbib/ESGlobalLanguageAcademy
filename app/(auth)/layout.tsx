@@ -39,7 +39,7 @@ export default function AuthLayout({
       {/* Auth footer */}
       <footer className="relative z-10 py-6 text-center text-xs text-stone-400 dark:text-stone-500">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 sm:flex-row">
-          <p>© {new Date().getFullYear()} ESGlobal Language Academy. All rights reserved.</p>
+          <p>{`© ${new Date().getFullYear()} ESGlobal Language Academy. All rights reserved.`}</p>
           <div className="flex gap-4">
             <Link href="/" className="transition hover:text-stone-700 dark:hover:text-stone-300">Privacy Policy</Link>
             <Link href="/" className="transition hover:text-stone-700 dark:hover:text-stone-300">Terms of Service</Link>

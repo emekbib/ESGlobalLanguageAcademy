@@ -418,9 +418,9 @@ export default function DashboardMessagesTab({
 
         if (!active) return;
 
-        // Filter out corrupted test records like 'Not'
+        // Filter out corrupted test records like 'Not' and current user
         loadedContacts = loadedContacts.filter(
-          (c) => c.full_name && c.full_name.trim().toLowerCase() !== 'not'
+          (c) => c.full_name && c.full_name.trim().toLowerCase() !== 'not' && c.id !== currentUser.id
         );
 
         // Deduplicate contacts by clean name to eliminate duplicate entries (e.g. Selamawit Bekele)
@@ -741,6 +741,28 @@ export default function DashboardMessagesTab({
     }
   };
 
+  // Clear Whole Conversation
+  const handleClearConversation = async () => {
+    if (!selectedContact) return;
+    const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
+    const toDelete = [...messages];
+    setMessages([]);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {}
+    }
+    for (const msg of toDelete) {
+      try {
+        await fetch('/api/messages/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messageId: msg.id }),
+        });
+      } catch {}
+    }
+  };
+
   // 4. Send Message Handler
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -830,11 +852,16 @@ export default function DashboardMessagesTab({
       }
 
       // If client direct insert fails (e.g. sample educator or teacher profile resolution needed), use optimized server route
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/messages/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({
           receiver_id: selectedContact.id,
+          sender_id: currentUser.id,
           content: msgContent,
         }),
       });
@@ -1172,6 +1199,15 @@ export default function DashboardMessagesTab({
 
               {/* Right Quick Actions */}
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleClearConversation}
+                  title="Clear conversation messages"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-bold text-stone-500 hover:text-red-600 dark:hover:text-red-400 shadow-xs transition hover:bg-stone-50 dark:hover:bg-stone-700 cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Clear Thread</span>
+                </button>
                 {selectedContact.role === 'teacher' && (
                   <Link
                     href={`/teachers/${selectedContact.id}`}
@@ -1318,7 +1354,7 @@ export default function DashboardMessagesTab({
                                     type="button"
                                     onClick={() => handleDeleteMessage(msg.id)}
                                     title="Delete message"
-                                    className="opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 text-stone-400 transition-opacity p-0.5 rounded cursor-pointer"
+                                    className="opacity-70 hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 text-stone-400 transition-opacity p-0.5 rounded cursor-pointer ml-1"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>

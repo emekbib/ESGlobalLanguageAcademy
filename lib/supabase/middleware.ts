@@ -35,6 +35,8 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
       },
@@ -58,7 +60,7 @@ export async function updateSession(request: NextRequest) {
 
     // Redirect logged in users away from admin login if they are admin
     if (user && pathname === '/admin/login') {
-      const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).maybeSingle();
+      const { data: profile } = await supabase.from('profiles').select('role').or(`user_id.eq.${user.id},id.eq.${user.id}`).maybeSingle();
       if (profile?.role === 'admin') {
         return redirectWithCookies(request, response, '/admin');
       }
@@ -68,7 +70,7 @@ export async function updateSession(request: NextRequest) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, suspended_at')
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
         .maybeSingle();
 
       if (!profile && pathname !== '/onboarding') {
@@ -82,18 +84,22 @@ export async function updateSession(request: NextRequest) {
         if (profile.suspended_at && !pathname.startsWith('/admin')) {
           return redirectWithCookies(request, response, '/');
         }
-        const destination = profile.role === 'teacher' ? '/teacher/dashboard' : '/dashboard';
-        if (pathname === '/onboarding' || pathname === '/auth' || (profile.role === 'teacher' && pathname === '/dashboard') || (profile.role === 'student' && pathname.startsWith('/teacher/dashboard'))) {
-          return redirectWithCookies(request, response, destination);
+        
+        // If user is admin, allow them to freely visit /admin, /dashboard, and /auth redirects to /admin
+        if (profile.role === 'admin') {
+          if (pathname === '/auth') {
+            return redirectWithCookies(request, response, '/admin');
+          }
+        } else {
+          const destination = profile.role === 'teacher' ? '/teacher/dashboard' : '/dashboard';
+          if (pathname === '/onboarding' || pathname === '/auth' || (profile.role === 'teacher' && pathname === '/dashboard') || (profile.role === 'student' && pathname.startsWith('/teacher/dashboard'))) {
+            return redirectWithCookies(request, response, destination);
+          }
         }
       }
     }
-  } catch {
-    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-      return redirectWithCookies(request, response, '/admin/login');
-    } else if (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/account') || pathname.startsWith('/onboarding')) {
-      return redirectWithCookies(request, response, '/auth');
-    }
+  } catch (err) {
+    console.warn('Middleware auth check warning:', err);
   }
 
   return response;

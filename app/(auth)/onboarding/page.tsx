@@ -19,7 +19,7 @@ import type { UserRole } from '@/lib/types/database';
 
 const LEARNING_LANGUAGES = [
   'Amharic',
-  'Tigrigna',
+  'Tigrinya',
   'Afaan Oromo',
   'Somali',
 ];

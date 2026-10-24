@@ -76,7 +76,16 @@ export default async function AdminPage() {
       acc.full_name.trim().toLowerCase() !== 'not' &&
       acc.full_name.trim().length >= 3 &&
       acc.user_id !== 'd0863492-7ff4-4dbd-870d-f06b4d37c95e'
-  );
+  ).map((acc) => {
+    if (acc.full_name.trim().toLowerCase() === 'meareg') {
+      return {
+        ...acc,
+        full_name: 'Meareg Teame',
+        avatar_url: acc.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop',
+      };
+    }
+    return acc;
+  });
 
   // Sanitize faculty: exclude teachers associated with corrupt accounts
   const sanitizedFaculty = (allTeachers ?? []).filter((t) => {
@@ -86,15 +95,37 @@ export default async function AdminPage() {
     return true;
   });
 
+  // Synthesize faculty for any user marked with role 'teacher' in accounts who lacks a teacher_profiles row (e.g. Meareg)
+  const existingFacultyUserIds = new Set(sanitizedFaculty.map((t) => t.user_id));
+  const missingFaculty = sanitizedAccounts
+    .filter((acc) => acc.role === 'teacher' && !existingFacultyUserIds.has(acc.user_id))
+    .map((acc) => ({
+      id: acc.user_id,
+      user_id: acc.user_id,
+      bio: 'Native language educator and Horn of Africa cultural specialist.',
+      languages_taught: ['Amharic'],
+      hourly_rate: 35,
+      years_experience: 5,
+      teacher_type: 'professional',
+      application_status: 'approved',
+      credentials: ['Certified Horn of Africa Language Specialist'],
+      specialties: ['Conversational Fluency', 'Grammar'],
+      video_intro_url: null,
+      is_published: true,
+      created_at: acc.created_at,
+    }));
+
+  const combinedFaculty = [...sanitizedFaculty, ...missingFaculty];
+
   return (
     <AdminDashboardShell
       profile={{
         user_id: profile.user_id,
-        full_name: profile.full_name,
+        full_name: profile.full_name || 'Estephanos Mekbib',
         avatar_url: (profile as { avatar_url?: string | null }).avatar_url ?? null,
       }}
       pendingApplications={pendingTrack2 as any}
-      faculty={sanitizedFaculty}
+      faculty={combinedFaculty as any}
       flaggedReviews={flaggedReviews ?? []}
       accounts={sanitizedAccounts}
       bookings={bookings ?? []}

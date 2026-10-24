@@ -53,7 +53,7 @@ export default function NotFound() {
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               {[
                 { name: 'Amharic', q: 'amharic' },
-                { name: 'Tigrigna', q: 'tigrigna' },
+                { name: 'Tigrinya', q: 'tigrinya' },
                 { name: 'Afaan Oromo', q: 'afaan oromo' },
                 { name: 'Somali', q: 'somali' },
               ].map((lang) => (

@@ -20,7 +20,7 @@ import BookingCard from '@/components/teacher/booking-card';
 const LANGUAGES = [
   'All',
   'Amharic',
-  'Tigrigna',
+  'Tigrinya',
   'Afaan Oromo',
   'Somali',
 ];
@@ -40,7 +40,12 @@ export default function DashboardTeachersTab() {
     return teachers.filter((teacher) => {
       const matchesLang =
         selectedLanguage === 'All' ||
-        (teacher.languages ?? []).some((l) => l.toLowerCase() === selectedLanguage.toLowerCase());
+        (teacher.languages ?? []).some((l) => {
+          const lLower = l.toLowerCase();
+          const selLower = selectedLanguage.toLowerCase();
+          if (selLower.includes('tigr')) return lLower.includes('tigr');
+          return lLower === selLower;
+        });
       const matchesSearch =
         teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (teacher.languages ?? []).some((l) => l.toLowerCase().includes(searchQuery.toLowerCase())) ||

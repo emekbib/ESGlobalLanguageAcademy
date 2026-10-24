@@ -11,7 +11,7 @@ import type { TeacherType } from '@/lib/types/database';
 
 const AVAILABLE_LANGUAGES = [
   'Amharic',
-  'Tigrigna',
+  'Tigrinya',
   'Afaan Oromo',
   'Somali',
 ];

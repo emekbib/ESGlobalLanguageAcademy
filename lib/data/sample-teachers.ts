@@ -22,7 +22,7 @@ export const SAMPLE_TEACHERS: SampleTeacherDetail[] = [
     languages: ['Amharic'],
     rating: 4.99,
     lessonsTaught: 1850,
-    hourlyRate: 28,
+    hourlyRate: 35,
     teacherType: 'professional',
     headline: 'Addis Ababa University Alum · Fidel Script & Conversational Amharic',
     bio: `Selam! I am Bethelhem, a native Amharic educator born and raised in Addis Ababa. I hold a Bachelor's Degree in Linguistics from Addis Ababa University and have spent the last 6 years teaching Amharic to diaspora Ethiopians, expats, diplomatic professionals, and language enthusiasts worldwide.
@@ -98,7 +98,7 @@ From mastering the Ge’ez alphabet to holding lively everyday conversations wit
   },
   {
     id: 'sample-3',
-    name: 'Dawit Kebede',
+    name: 'Dawit Tolosa',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop',
     languages: ['Afaan Oromo', 'Amharic'],
     rating: 4.97,
@@ -111,7 +111,7 @@ From mastering the Ge’ez alphabet to holding lively everyday conversations wit
 My lessons emphasize grammatical precision, cultural context, proverbs (Mammaaksa), and conversational fluency for work, family, or travel in the Horn of Africa.`,
     languages_spoken: ['Afaan Oromo (Native)', 'Amharic (Fluent)', 'English (Fluent)'],
     specialties: ['Qubee Writing System', 'Everyday Conversational Oromo', 'Oromo Proverbs & Culture', 'Bilingual Oromo/Amharic'],
-    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-young-man-teacher-giving-an-online-class-43527-large.mp4',
+    video_intro_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     education: [
       'BA in Afaan Oromo & Literature — Jimma University',
       'Professional Certification in Horn of Africa Bilingual Pedagogy',
@@ -172,28 +172,28 @@ Whether you are connecting with family, preparing for humanitarian work, or expl
   },
   {
     id: 'sample-5',
-    name: 'Juma Mwangi',
+    name: 'Jemal Abdi',
     avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop',
-    languages: ['Swahili'],
+    languages: ['Somali', 'Amharic'],
     rating: 4.98,
     lessonsTaught: 1650,
-    hourlyRate: 25,
-    teacherType: 'community_tutor',
-    headline: 'Native Kiswahili Specialist · East African Fluency for Travelers & Expats',
-    bio: `Jambo! I am Juma, born in Mombasa and raised along the Swahili coast. I have over 7 years of experience teaching Kiswahili to diplomats, travelers, volunteers, and heritage learners.
+    hourlyRate: 28,
+    teacherType: 'professional',
+    headline: 'Bilingual Horn of Africa Faculty · Somali & Conversational Amharic Specialist',
+    bio: `Soo dhowow and Selam! I am Jemal, born and raised in the Horn of Africa. I hold a degree from Addis Ababa University and have over 7 years of experience teaching both Somali and Amharic to diaspora youth, professionals, and heritage learners.
 
-My method blends conversational immersion with clear grammar breakdowns, noun class mastery, and real-life East African etiquette.`,
-    languages_spoken: ['Swahili (Native)', 'English (Fluent)'],
-    specialties: ['Kiswahili Sanifu', 'Noun Classes & Grammar', 'East African Travel', 'Business Swahili'],
+My interactive method focuses on pronunciation accuracy, everyday conversation, and the shared cultural proverbs of the Horn of Africa.`,
+    languages_spoken: ['Somali (Native)', 'Amharic (Native)', 'English (Fluent)'],
+    specialties: ['Conversational Somali', 'Everyday Amharic', 'Horn of Africa Cultural Fluency', 'Grammar Fundamentals'],
     education: [
-      'BA in Kiswahili and Education — University of Dar es Salaam',
-      'Certificate in Teaching Swahili as a Foreign Language (BAKITA)',
+      'BA in Linguistics & Horn of Africa Languages — Addis Ababa University',
+      'Certificate in Horn of Africa Bilingual Pedagogy',
     ],
     reviews: [
       {
         id: 'rev-501',
         rating: 5,
-        comment: 'Juma is an exceptional Swahili educator. He simplified the noun class system which always confused me before!',
+        comment: 'Jemal is an exceptional educator. He made learning both Somali and Amharic intuitive and culturally rich!',
         createdAt: '2026-07-22T10:30:00Z',
         studentName: 'Alexander Hayes',
       },

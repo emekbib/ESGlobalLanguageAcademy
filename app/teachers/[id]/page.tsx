@@ -225,7 +225,7 @@ export default async function TeacherProfilePage({
                           {rating.toFixed(1)}
                         </div>
                         <span className="text-stone-300 dark:text-stone-700">·</span>
-                        <span>{totalLessons.toLocaleString()} 1-on-1 sessions taught</span>
+                        <span>{`${totalLessons.toLocaleString()} 1-on-1 sessions taught`}</span>
                       </>
                     ) : (
                       <>

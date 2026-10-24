@@ -72,7 +72,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
         {/* Price */}
         <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-medium">
           <span className="font-bold text-stone-950 dark:text-white text-sm">${teacher.hourlyRate}</span>
-          {' '} / 50 min
+          {' / 50 min'}
         </p>
 
         {/* Headline / bio */}

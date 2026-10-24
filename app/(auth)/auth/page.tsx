@@ -219,7 +219,7 @@ export default function AuthPage() {
               <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
                 {mode === 'signin'
                   ? 'Access your lessons, calendar, and teachers.'
-                  : 'Connect with native educators across Amharic, Tigrigna, Afaan Oromo & Somali.'}
+                  : 'Connect with native educators across Amharic, Tigrinya, Afaan Oromo & Somali.'}
               </p>
             </div>
 

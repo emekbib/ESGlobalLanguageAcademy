@@ -481,6 +481,17 @@ export default function StudentDashboardShell({
             <DashboardTutorsTab
               tutors={liveTutors}
               onFindMore={() => setActiveTab('teachers')}
+              onMessage={(tutor) => {
+                const targetId = tutor.userId || tutor.id;
+                setActiveMessageContactId(targetId);
+                setActiveTab('messages');
+                if (typeof window !== 'undefined') {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('tab', 'messages');
+                  url.searchParams.set('contactId', targetId);
+                  window.history.pushState({}, '', url.toString());
+                }
+              }}
             />
           )}
 
@@ -511,7 +522,7 @@ export default function StudentDashboardShell({
               payments={livePast.map((b) => ({
                 id: b.id,
                 date: b.created_at,
-                amount: (b as any).amount_cents ? (b as any).amount_cents / 100 : 25,
+                amount: (b as any).amount_cents ? (b as any).amount_cents / 100 : ((b as any).hourlyRate || 35),
                 status: b.status === 'cancelled' ? 'refunded' : 'paid',
                 description: `Lesson with ${b.teacher_name}`,
               }))}

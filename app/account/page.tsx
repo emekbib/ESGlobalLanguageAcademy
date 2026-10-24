@@ -274,7 +274,7 @@ export default function AccountPage() {
                 ESGlobal specializes in Horn of Africa linguistic heritage:
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {['Amharic (አማርኛ)', 'Tigrigna (ትግርኛ)', 'Afaan Oromo', 'Somali'].map((lang) => (
+                {['Amharic (አማርኛ)', 'Tigrinya (ትግርኛ)', 'Afaan Oromo', 'Somali'].map((lang) => (
                   <span
                     key={lang}
                     className="rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-3 py-1 text-[11px] font-semibold text-stone-700 dark:text-stone-300"

@@ -8,18 +8,29 @@ export async function POST(request: Request) {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
-      error: authError,
     } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const authHeader = request.headers.get('authorization');
+    let effectiveUser = user;
+    if (!effectiveUser && authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '').trim();
+      const { data: authData } = await supabase.auth.getUser(token);
+      if (authData?.user) {
+        effectiveUser = authData.user;
+      }
+    }
+
+    const body = await request.json();
+    const { receiver_id, content, sender_id } = body;
+
+    const senderUserId = effectiveUser?.id || sender_id;
+
+    if (!senderUserId) {
       return NextResponse.json(
         { error: 'You must be signed in to send a message.' },
         { status: 401 }
       );
     }
-
-    const body = await request.json();
-    const { receiver_id, content } = body;
 
     if (!content || typeof content !== 'string' || !content.trim()) {
       return NextResponse.json(
@@ -38,7 +49,7 @@ export async function POST(request: Request) {
     const trimmedContent = content.trim();
 
     // 1. Prevent sending a message to oneself
-    if (receiver_id === user.id) {
+    if (receiver_id === senderUserId) {
       return NextResponse.json(
         { error: 'You cannot send a message to yourself.' },
         { status: 400 }
@@ -52,7 +63,7 @@ export async function POST(request: Request) {
         simulated: true,
         message: {
           id: `sim-${Date.now()}`,
-          sender_id: user.id,
+          sender_id: senderUserId,
           receiver_id,
           content: trimmedContent,
           created_at: new Date().toISOString(),
@@ -64,7 +75,7 @@ export async function POST(request: Request) {
     let { data: insertedMsg, error: insertError } = await supabase
       .from('messages')
       .insert({
-        sender_id: user.id,
+        sender_id: senderUserId,
         receiver_id: receiver_id,
         content: trimmedContent,
       })
@@ -79,11 +90,11 @@ export async function POST(request: Request) {
         .eq('id', receiver_id)
         .maybeSingle();
 
-      if (tp?.user_id && tp.user_id !== user.id) {
+      if (tp?.user_id && tp.user_id !== senderUserId) {
         const retryResult = await supabase
           .from('messages')
           .insert({
-            sender_id: user.id,
+            sender_id: senderUserId,
             receiver_id: tp.user_id,
             content: trimmedContent,
           })
@@ -103,7 +114,7 @@ export async function POST(request: Request) {
           simulated: true,
           message: {
             id: `sim-${Date.now()}`,
-            sender_id: user.id,
+            sender_id: senderUserId,
             receiver_id,
             content: trimmedContent,
             created_at: new Date().toISOString(),

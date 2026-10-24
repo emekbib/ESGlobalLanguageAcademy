@@ -9,7 +9,7 @@ import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 const CATEGORIES = [
   { id: 'all', label: 'All Faculty' },
   { id: 'amharic', label: 'Amharic' },
-  { id: 'tigrigna', label: 'Tigrigna' },
+  { id: 'tigrinya', label: 'Tigrinya' },
   { id: 'oromo', label: 'Afaan Oromo' },
   { id: 'somali', label: 'Somali' },
 ];
@@ -23,9 +23,14 @@ export default function FeaturedTeachers() {
 
   const filteredTeachers = sourceTeachers.filter((teacher) => {
     if (selectedCategory === 'all') return true;
-    return teacher.languages.some((lang) =>
-      lang.toLowerCase().includes(selectedCategory.toLowerCase())
-    );
+    return teacher.languages.some((lang) => {
+      const l = lang.toLowerCase();
+      const target = selectedCategory.toLowerCase();
+      if (target === 'tigrinya' || target === 'tigrigna') {
+        return l.includes('tigr');
+      }
+      return l.includes(target);
+    });
   });
 
   const scroll = (direction: 'left' | 'right') => {

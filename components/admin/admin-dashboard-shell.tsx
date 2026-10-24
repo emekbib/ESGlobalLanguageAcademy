@@ -1375,10 +1375,7 @@ export default function AdminDashboardShell({
                         <SuspensionButton
                           userId={account.user_id}
                           suspended={Boolean(account.suspended_at)}
-                          isSelf={Boolean(
-                            (profile.user_id && profile.user_id === account.user_id) ||
-                              account.role === 'admin'
-                          )}
+                          isSelf={Boolean(profile.user_id && profile.user_id === account.user_id)}
                         />
 
                         {/* Delete User Button with 2-step confirmation */}
