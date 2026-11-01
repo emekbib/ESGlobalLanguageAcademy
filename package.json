@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ping:supabase": "node scripts/ping-supabase.js"
   },
   "dependencies": {
     "@daily-co/daily-js": "^0.91.0",

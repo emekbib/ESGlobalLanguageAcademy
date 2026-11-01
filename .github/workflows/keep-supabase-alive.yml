@@ -1,0 +1,30 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Runs every 3 days at 00:00 UTC (Supabase pauses free tier projects after 7 days of inactivity)
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+  push:
+    branches:
+      - main
+      - vercel/react-server-components-cve-vu-hmku5g
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Ping Supabase PostgREST
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://xavkprxarmlfdqulyhgd.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'sb_publishable_JLFsW2kTkmC4SCZcCGT0kA_UXo1FWDA' }}
+        run: node scripts/ping-supabase.js
