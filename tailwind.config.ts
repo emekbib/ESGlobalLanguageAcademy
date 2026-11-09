@@ -1,7 +1,5 @@
 import type { Config } from 'tailwindcss';
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
+import tailwindcssAnimate from 'tailwindcss-animate';
 
 const config: Config = {
   darkMode: ['class'],
@@ -112,6 +110,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [tailwindcssAnimate],
 };
 export default config;

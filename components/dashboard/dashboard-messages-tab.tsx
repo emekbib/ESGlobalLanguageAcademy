@@ -676,7 +676,7 @@ export default function DashboardMessagesTab({
               const nonTemp = combined.filter((m) => !m.id.startsWith('temp-'));
               localStorage.setItem(storageKey, JSON.stringify(nonTemp));
             }
-          } catch {}
+          } catch { }
           return combined;
         });
 
@@ -727,7 +727,7 @@ export default function DashboardMessagesTab({
           localStorage.setItem(storageKey, JSON.stringify(filtered));
         }
       }
-    } catch {}
+    } catch { }
 
     // Call server delete API
     try {
@@ -750,7 +750,7 @@ export default function DashboardMessagesTab({
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(storageKey);
-      } catch {}
+      } catch { }
     }
     for (const msg of toDelete) {
       try {
@@ -759,7 +759,7 @@ export default function DashboardMessagesTab({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messageId: msg.id }),
         });
-      } catch {}
+      } catch { }
     }
   };
 
@@ -794,7 +794,7 @@ export default function DashboardMessagesTab({
         existingList.push(optimisticMsg);
         localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(existingList)));
       }
-    } catch {}
+    } catch { }
 
     // Keep textarea focused and ready for immediate subsequent message
     textareaRef.current?.focus();
@@ -825,7 +825,7 @@ export default function DashboardMessagesTab({
           list.push(msg);
           localStorage.setItem(storageKey, JSON.stringify(deduplicateMessages(list)));
         }
-      } catch {}
+      } catch { }
     };
 
     // 3. Fast background delivery
@@ -919,15 +919,15 @@ export default function DashboardMessagesTab({
   const starterPrompts =
     currentUser.role === 'teacher'
       ? [
-          'Hello! Welcome to the academy. How can I assist you with your language learning goals?',
-          'Hi! Which language and level would you like to start practicing with?',
-          'Looking forward to our upcoming lesson! Feel free to share any topics or questions you have.',
-        ]
+        'Hello! Welcome to the academy. How can I assist you with your language learning goals?',
+        'Hi! Which language and level would you like to start practicing with?',
+        'Looking forward to our upcoming lesson! Feel free to share any topics or questions you have.',
+      ]
       : [
-          'Hello! I would like to introduce myself and inquire about your availability.',
-          'Hi! Which days and time slots work best for our scheduled lesson?',
-          'I am eager to practice conversational fluency and vocabulary with you.',
-        ];
+        'Hello! I would like to introduce myself and inquire about your availability.',
+        'Hi! Which days and time slots work best for our scheduled lesson?',
+        'I am eager to practice conversational fluency and vocabulary with you.',
+      ];
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-white dark:bg-[#101012]">
@@ -935,9 +935,8 @@ export default function DashboardMessagesTab({
       {/* CONTACTS SIDEBAR */}
       {/* ========================================================================= */}
       <div
-        className={`w-full sm:w-80 md:w-84 lg:w-96 flex flex-col h-full border-r border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#151518] shrink-0 transition-all ${
-          selectedContact ? 'hidden sm:flex' : 'flex'
-        }`}
+        className={`w-full sm:w-80 md:w-84 lg:w-96 flex flex-col h-full border-r border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#151518] shrink-0 transition-all ${selectedContact ? 'hidden sm:flex' : 'flex'
+          }`}
       >
         {/* Sidebar Header */}
         <div className="p-4 sm:p-5 border-b border-stone-100 dark:border-stone-800/80 shrink-0 bg-stone-50/50 dark:bg-[#121215]">
@@ -1009,8 +1008,8 @@ export default function DashboardMessagesTab({
                 {searchQuery
                   ? 'Try searching with a different name or clear your search.'
                   : currentUser.role === 'student'
-                  ? 'Message educators from the Teachers page to start a consultation.'
-                  : 'Student inquiries will appear here.'}
+                    ? 'Message educators from the Teachers page to start a consultation.'
+                    : 'Student inquiries will appear here.'}
               </p>
             </div>
           ) : (
@@ -1027,11 +1026,10 @@ export default function DashboardMessagesTab({
                     setSendError(null);
                     void markContactMessagesAsRead(contact.id);
                   }}
-                  className={`w-full text-left flex items-center gap-3.5 p-3.5 sm:p-4 transition-all cursor-pointer ${
-                    isSelected
+                  className={`w-full text-left flex items-center gap-3.5 p-3.5 sm:p-4 transition-all cursor-pointer ${isSelected
                       ? 'bg-amber-50/70 dark:bg-stone-800/90 border-l-[3.5px] border-amber-500 shadow-xs'
                       : 'border-l-[3.5px] border-transparent hover:bg-stone-50/80 dark:hover:bg-stone-800/40'
-                  }`}
+                    }`}
                 >
                   {/* Avatar + Status Indicator */}
                   <div className="relative shrink-0">
@@ -1056,11 +1054,10 @@ export default function DashboardMessagesTab({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
                       <p
-                        className={`truncate text-sm ${
-                          hasUnread
+                        className={`truncate text-sm ${hasUnread
                             ? 'font-black text-stone-950 dark:text-white'
                             : 'font-bold text-stone-900 dark:text-stone-100'
-                        }`}
+                          }`}
                       >
                         {contact.full_name}
                       </p>
@@ -1081,11 +1078,10 @@ export default function DashboardMessagesTab({
                     {/* Last message preview snippet */}
                     <div className="mt-1 flex items-center justify-between gap-2">
                       <p
-                        className={`truncate text-xs ${
-                          hasUnread
+                        className={`truncate text-xs ${hasUnread
                             ? 'font-bold text-stone-900 dark:text-stone-100'
                             : 'text-stone-500 dark:text-stone-400'
-                        }`}
+                          }`}
                       >
                         {contact.lastMessage ? (
                           <>
@@ -1103,11 +1099,10 @@ export default function DashboardMessagesTab({
                         )}
                       </p>
                       <span
-                        className={`shrink-0 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
-                          isTeacher
+                        className={`shrink-0 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${isTeacher
                             ? 'bg-amber-100/90 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300'
                             : 'bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300'
-                        }`}
+                          }`}
                       >
                         {isTeacher ? (
                           <>
@@ -1134,9 +1129,8 @@ export default function DashboardMessagesTab({
       {/* CHAT MAIN CONVERSATION PANE */}
       {/* ========================================================================= */}
       <div
-        className={`flex-1 flex flex-col h-full overflow-hidden bg-[#faf9f6] dark:bg-[#0f0f11] ${
-          !selectedContact ? 'hidden sm:flex items-center justify-center' : 'flex'
-        }`}
+        className={`flex-1 flex flex-col h-full overflow-hidden bg-[#faf9f6] dark:bg-[#0f0f11] ${!selectedContact ? 'hidden sm:flex items-center justify-center' : 'flex'
+          }`}
       >
         {!selectedContact ? (
           <div className="text-center p-8 max-w-md mx-auto">
@@ -1187,11 +1181,10 @@ export default function DashboardMessagesTab({
                       {selectedContact.full_name}
                     </h3>
                     <span
-                      className={`hidden sm:inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
-                        selectedContact.role === 'teacher'
+                      className={`hidden sm:inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-bold ${selectedContact.role === 'teacher'
                           ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300'
                           : 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300'
-                      }`}
+                        }`}
                     >
                       {selectedContact.role === 'teacher' ? 'Native Educator' : 'Learner'}
                     </span>
@@ -1293,7 +1286,7 @@ export default function DashboardMessagesTab({
                     const showDate =
                       i === 0 ||
                       formatMessageDate(msg.created_at) !==
-                        formatMessageDate(messages[i - 1].created_at);
+                      formatMessageDate(messages[i - 1].created_at);
 
                     return (
                       <div key={msg.id} className="space-y-3">
@@ -1308,9 +1301,8 @@ export default function DashboardMessagesTab({
 
                         {/* Message Bubble Row */}
                         <div
-                          className={`flex items-end gap-2.5 group ${
-                            isMine ? 'justify-end' : 'justify-start'
-                          }`}
+                          className={`flex items-end gap-2.5 group ${isMine ? 'justify-end' : 'justify-start'
+                            }`}
                         >
                           {!isMine && (
                             <div className="shrink-0 mb-1">
@@ -1330,19 +1322,17 @@ export default function DashboardMessagesTab({
 
                           <div className="max-w-[85%] sm:max-w-[70%] space-y-1">
                             <div
-                              className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                                isMine
+                              className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isMine
                                   ? 'bg-stone-900 text-white dark:bg-amber-400 dark:text-stone-950 rounded-br-xs shadow-sm font-medium'
                                   : 'bg-white dark:bg-stone-800/90 text-stone-900 dark:text-stone-100 border border-stone-200/80 dark:border-stone-700/80 rounded-bl-xs shadow-xs'
-                              }`}
+                                }`}
                             >
                               <p className="whitespace-pre-wrap break-words">{renderMessageContent(msg.content)}</p>
                             </div>
 
                             <div
-                              className={`flex items-center gap-1.5 px-1 text-[10px] font-medium text-stone-400 dark:text-stone-500 ${
-                                isMine ? 'justify-end' : 'justify-start'
-                              }`}
+                              className={`flex items-center gap-1.5 px-1 text-[10px] font-medium text-stone-400 dark:text-stone-500 ${isMine ? 'justify-end' : 'justify-start'
+                                }`}
                             >
                               <span>
                                 {format(new Date(msg.created_at), 'h:mm a')}
@@ -1350,11 +1340,10 @@ export default function DashboardMessagesTab({
                               {isMine && (
                                 <>
                                   <CheckCheck
-                                    className={`h-3.5 w-3.5 ${
-                                      msg.id.startsWith('temp-')
+                                    className={`h-3.5 w-3.5 ${msg.id.startsWith('temp-')
                                         ? 'text-stone-400 opacity-50'
                                         : 'text-amber-500 dark:text-stone-900'
-                                    }`}
+                                      }`}
                                   />
                                   <button
                                     type="button"

@@ -53,3 +53,4 @@ FROM public.teacher_profiles tp
 JOIN public.profiles p ON p.user_id = tp.user_id
 WHERE p.role = 'admin' AND tp.is_published = true;
 -- Expected: 0 rows
+
