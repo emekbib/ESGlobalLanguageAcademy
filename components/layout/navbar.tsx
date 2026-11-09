@@ -45,8 +45,14 @@ export default function Navbar({
           .or(`user_id.eq.${user.id},id.eq.${user.id}`)
           .maybeSingle();
         if (profile) {
+          const isEstephanos =
+            user.id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
+            user.id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
+            (profile.role === 'admin' && profile.full_name?.includes('Teacher Demo'));
+          const cleanName = isEstephanos ? 'Estephanos Mekbib' : profile.full_name;
+
           setUserRole(profile.role);
-          setUserProfile({ full_name: profile.full_name, avatar_url: profile.avatar_url });
+          setUserProfile({ full_name: cleanName, avatar_url: profile.avatar_url });
         }
       } else {
         const { data: { user: directUser } } = await supabase.auth.getUser();
@@ -58,8 +64,14 @@ export default function Navbar({
             .or(`user_id.eq.${directUser.id},id.eq.${directUser.id}`)
             .maybeSingle();
           if (profile) {
+            const isEstephanos =
+              directUser.id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
+              directUser.id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
+              (profile.role === 'admin' && profile.full_name?.includes('Teacher Demo'));
+            const cleanName = isEstephanos ? 'Estephanos Mekbib' : profile.full_name;
+
             setUserRole(profile.role);
-            setUserProfile({ full_name: profile.full_name, avatar_url: profile.avatar_url });
+            setUserProfile({ full_name: cleanName, avatar_url: profile.avatar_url });
           }
         } else {
           setIsLoggedIn(false);

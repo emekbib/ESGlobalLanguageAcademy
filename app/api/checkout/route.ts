@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { teacherId, startUtc, endUtc, track } = body;
+    const { teacherId, startUtc, endUtc, track, quotedPrice } = body;
 
     if (!teacherId || !startUtc || !endUtc) {
       return NextResponse.json(
@@ -45,11 +45,13 @@ export async function POST(req: Request) {
       const teacherName = sampleTeacher ? sampleTeacher.name : 'Native Educator';
       const teacherAvatar = sampleTeacher ? sampleTeacher.avatarUrl : null;
       const hourlyRate = sampleTeacher ? sampleTeacher.hourlyRate : 28;
-      const amountCents = Math.round(((hourlyRate * durationMinutes) / 60) * 100);
+      const amountCents = quotedPrice
+        ? Math.round(Number(quotedPrice) * 100)
+        : Math.round(((hourlyRate * durationMinutes) / 50) * 100);
       const platformFeeCents = Math.round(amountCents * 0.2);
       const teacherPayoutCents = amountCents - platformFeeCents;
 
-      // Find an existing teacher_profile in Supabase to satisfy foreign key if possible
+      // Find matching teacher_profile in Supabase ONLY if the educator genuinely matches by name
       let targetTeacherProfileId: string | null = null;
       if (sampleTeacher) {
         const firstName = sampleTeacher.name.split(' ')[0];
@@ -70,14 +72,7 @@ export async function POST(req: Request) {
         }
       }
 
-      if (!targetTeacherProfileId) {
-        const { data: anyTp } = await supabase
-          .from('teacher_profiles')
-          .select('id')
-          .limit(1)
-          .maybeSingle();
-        if (anyTp) targetTeacherProfileId = anyTp.id;
-      }
+      // DO NOT fallback to arbitrary teachers like Dawit to prevent phantom bookings!
 
       const generatedId = `bk_sample_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       let bookingId: string = generatedId;
@@ -180,13 +175,22 @@ export async function POST(req: Request) {
     }
 
     // 2. Real Database Teacher
-    const { data: teacher, error: teacherError } = await supabase
+    let { data: teacher, error: teacherError } = await supabase
       .from('teacher_profiles')
       .select('id, user_id, hourly_rate, stripe_account_id, stripe_onboarding_complete')
       .eq('id', teacherId)
       .maybeSingle();
 
-    if (teacherError || !teacher) {
+    if (!teacher) {
+      const { data: tByUserId } = await supabase
+        .from('teacher_profiles')
+        .select('id, user_id, hourly_rate, stripe_account_id, stripe_onboarding_complete')
+        .eq('user_id', teacherId)
+        .maybeSingle();
+      teacher = tByUserId;
+    }
+
+    if (!teacher) {
       return NextResponse.json(
         { error: 'Teacher profile not found.' },
         { status: 404 }
@@ -204,7 +208,9 @@ export async function POST(req: Request) {
     const teacherAvatar = teacherUser?.avatar_url || null;
 
     const hourlyRate = Number(teacher.hourly_rate) || 35;
-    const amountCents = Math.round(((hourlyRate * durationMinutes) / 60) * 100);
+    const amountCents = quotedPrice
+      ? Math.round(Number(quotedPrice) * 100)
+      : Math.round(((hourlyRate * durationMinutes) / 50) * 100);
     const platformFeeCents = Math.round(amountCents * 0.2);
     const teacherPayoutCents = amountCents - platformFeeCents;
     const holdExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();

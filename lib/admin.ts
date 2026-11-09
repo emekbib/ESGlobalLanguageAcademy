@@ -3,23 +3,45 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 /**
  * Used by React Server Component pages (e.g. app/(admin)/admin/page.tsx).
- * Redirects unauthenticated or non-admin visitors via Next.js navigation.
+ * Strictly redirects unauthenticated or non-admin visitors.
  */
 export async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) redirect('/admin/login');
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('user_id, role, full_name')
-    .eq('user_id', user.id)
+    .select('user_id, role, full_name, avatar_url')
+    .or(`user_id.eq.${user.id},id.eq.${user.id}`)
     .maybeSingle();
 
-  if (!profile || profile.role !== 'admin') redirect('/');
-  return { supabase, user, profile };
+  // Strict role check: ONLY admin role is permitted. Students and teachers are immediately redirected.
+  if (!profile || profile.role !== 'admin') {
+    redirect('/');
+  }
+
+  // Ensure Estephanos's name is properly displayed and never masked with demo titles
+  const isEstephanos =
+    user.id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
+    user.id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
+    (profile.full_name && (profile.full_name.includes('Teacher Demo') || profile.full_name.toLowerCase().includes('estephanos')));
+
+  const displayName = isEstephanos
+    ? 'Estephanos Mekbib'
+    : profile.full_name || 'Estephanos Mekbib';
+
+  return {
+    supabase,
+    user,
+    profile: {
+      ...profile,
+      full_name: displayName,
+    },
+  };
 }
 
 /**
@@ -44,8 +66,8 @@ export async function requireAdminApi() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('user_id, role, full_name')
-    .eq('user_id', user.id)
+    .select('user_id, role, full_name, avatar_url')
+    .or(`user_id.eq.${user.id},id.eq.${user.id}`)
     .maybeSingle();
 
   if (!profile || profile.role !== 'admin') {
@@ -58,5 +80,23 @@ export async function requireAdminApi() {
     };
   }
 
-  return { supabase, user, profile, error: null, status: 200 as const };
+  const isEstephanos =
+    user.id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
+    user.id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
+    (profile.full_name && (profile.full_name.includes('Teacher Demo') || profile.full_name.toLowerCase().includes('estephanos')));
+
+  const displayName = isEstephanos
+    ? 'Estephanos Mekbib'
+    : profile.full_name || 'Estephanos Mekbib';
+
+  return {
+    supabase,
+    user,
+    profile: {
+      ...profile,
+      full_name: displayName,
+    },
+    error: null,
+    status: 200 as const,
+  };
 }

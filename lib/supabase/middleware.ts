@@ -12,7 +12,6 @@ function redirectWithCookies(request: NextRequest, response: NextResponse, path:
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
-  const requiresAuth = pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/account') || pathname.startsWith('/onboarding') || pathname.startsWith('/admin');
 
   if (pathname === '/' && request.nextUrl.searchParams.has('code')) {
     return redirectWithCookies(request, response, `/auth/callback${request.nextUrl.search}`);
@@ -46,60 +45,76 @@ export async function updateSession(request: NextRequest) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // If trying to access admin routes (except login) without auth, redirect to admin login
+    // 1. Strict admin unauthenticated guard
     if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !user) {
       return redirectWithCookies(request, response, '/admin/login');
     }
 
-    // Standard auth requirement check
-    const isStandardRequiresAuth = pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/account') || pathname.startsWith('/onboarding');
-    
+    // 2. Standard auth requirements
+    const isStandardRequiresAuth =
+      pathname === '/dashboard' ||
+      pathname.startsWith('/teacher/dashboard') ||
+      pathname.startsWith('/account') ||
+      pathname.startsWith('/onboarding');
+
     if (isStandardRequiresAuth && !user) {
       return redirectWithCookies(request, response, '/auth');
     }
 
-    // Redirect logged in users away from admin login if they are admin
-    if (user && pathname === '/admin/login') {
-      const { data: profile } = await supabase.from('profiles').select('role').or(`user_id.eq.${user.id},id.eq.${user.id}`).maybeSingle();
-      if (profile?.role === 'admin') {
-        return redirectWithCookies(request, response, '/admin');
-      }
-    }
-
-    if (user && (pathname === '/dashboard' || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/onboarding') || pathname.startsWith('/admin') || pathname === '/auth')) {
+    if (user) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, suspended_at')
         .or(`user_id.eq.${user.id},id.eq.${user.id}`)
         .maybeSingle();
 
-      if (!profile && pathname !== '/onboarding') {
-        return redirectWithCookies(request, response, '/onboarding');
+      // If user is suspended, block access
+      if (profile?.suspended_at && !pathname.startsWith('/admin')) {
+        return redirectWithCookies(request, response, '/');
+      }
+
+      // CRITICAL: Block any non-admin from accessing /admin routes
+      if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+        if (!profile || profile.role !== 'admin') {
+          return redirectWithCookies(request, response, '/');
+        }
+      }
+
+      // Redirect away from admin login if already an admin
+      if (pathname === '/admin/login') {
+        if (profile?.role === 'admin') {
+          return redirectWithCookies(request, response, '/admin');
+        }
       }
 
       if (profile) {
-        if (pathname.startsWith('/admin') && pathname !== '/admin/login' && profile.role !== 'admin') {
-          return redirectWithCookies(request, response, '/');
-        }
-        if (profile.suspended_at && !pathname.startsWith('/admin')) {
-          return redirectWithCookies(request, response, '/');
-        }
-        
-        // If user is admin, allow them to freely visit /admin, /dashboard, and /auth redirects to /admin
         if (profile.role === 'admin') {
           if (pathname === '/auth') {
             return redirectWithCookies(request, response, '/admin');
           }
         } else {
-          const destination = profile.role === 'teacher' ? '/teacher/dashboard' : '/dashboard';
-          if (pathname === '/onboarding' || pathname === '/auth' || (profile.role === 'teacher' && pathname === '/dashboard') || (profile.role === 'student' && pathname.startsWith('/teacher/dashboard'))) {
-            return redirectWithCookies(request, response, destination);
+          // If a student tries to access teacher dashboard, or vice-versa
+          if (profile.role === 'student' && pathname.startsWith('/teacher/dashboard')) {
+            return redirectWithCookies(request, response, '/dashboard');
+          }
+          if (profile.role === 'teacher' && pathname === '/dashboard') {
+            return redirectWithCookies(request, response, '/teacher/dashboard');
+          }
+          if (pathname === '/auth' || pathname === '/onboarding') {
+            const dest = profile.role === 'teacher' ? '/teacher/dashboard' : '/dashboard';
+            return redirectWithCookies(request, response, dest);
           }
         }
+      } else if (pathname !== '/onboarding' && isStandardRequiresAuth) {
+        return redirectWithCookies(request, response, '/onboarding');
       }
     }
   } catch (err) {
     console.warn('Middleware auth check warning:', err);
+    // Security fail-safe: never allow uncaught errors to leak /admin
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+      return redirectWithCookies(request, response, '/admin/login');
+    }
   }
 
   return response;

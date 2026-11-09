@@ -21,6 +21,7 @@ import type { TeacherType } from '@/lib/types/database';
 import { getSampleTeacherById } from '@/lib/data/sample-teachers';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const BADGE_LABEL: Record<TeacherType, string> = {
   professional: 'Certified Professional Teacher',
@@ -65,7 +66,32 @@ export default async function TeacherProfilePage({
   }
 
   // Check sample teachers fallback if not found in database
-  const sample = !teacher && !fallbackUserProfile ? getSampleTeacherById(id) : null;
+  let sample = !teacher && !fallbackUserProfile ? getSampleTeacherById(id) : null;
+
+  // If viewing a sample teacher, check if a live registered educator matches this educator (e.g. Bethelhem Mengistu)
+  // to ensure bio edits in teacher dashboard seamlessly sync with the public profile
+  if (sample && !teacher) {
+    const firstName = sample.name.split(' ')[0];
+    const { data: matchedProfile } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, avatar_url')
+      .ilike('full_name', `%${firstName}%`)
+      .limit(1)
+      .maybeSingle();
+
+    if (matchedProfile) {
+      const { data: matchedTeacherProfile } = await supabase
+        .from('teacher_profiles')
+        .select('*')
+        .eq('user_id', matchedProfile.user_id)
+        .maybeSingle();
+
+      if (matchedTeacherProfile) {
+        teacher = matchedTeacherProfile;
+        fallbackUserProfile = matchedProfile;
+      }
+    }
+  }
 
   if (!teacher && !fallbackUserProfile && !sample) {
     notFound();
@@ -372,7 +398,13 @@ export default async function TeacherProfilePage({
           {/* Right Column: Sticky Booking Card */}
           <aside id="booking-section" className="lg:w-[380px] lg:shrink-0 scroll-mt-24">
             <div className="lg:sticky lg:top-28">
-              <BookingCard teacherId={id} hourlyRate={hourlyRate} teacherType={teacherType} />
+              <BookingCard
+                teacherId={id}
+                hourlyRate={hourlyRate}
+                teacherType={teacherType}
+                teacherName={fullName}
+                teacherAvatar={avatarUrl}
+              />
             </div>
           </aside>
         </div>

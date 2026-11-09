@@ -1,22 +1,47 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_SUPABASE_ANON_KEY || '';
+
+    // 1. Get session from cookies or Authorization header
+    const serverClient = await createSupabaseServerClient();
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { user: cookieUser },
+    } = await serverClient.auth.getUser();
 
     const authHeader = request.headers.get('authorization');
-    let effectiveUser = user;
-    if (!effectiveUser && authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '').trim();
-      const { data: authData } = await supabase.auth.getUser(token);
+    const bearerToken = authHeader?.startsWith('Bearer ')
+      ? authHeader.replace('Bearer ', '').trim()
+      : null;
+
+    let effectiveUser = cookieUser;
+    let authenticatedClient = serverClient;
+
+    if (bearerToken) {
+      // Create a direct client with the user's JWT bearer token so that Supabase PostgREST RLS
+      // properly evaluates auth.uid() === sender_id
+      const bearerClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: {
+          headers: {
+            Authorization: `Bearer ${bearerToken}`,
+          },
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      });
+
+      const { data: authData } = await bearerClient.auth.getUser(bearerToken);
       if (authData?.user) {
         effectiveUser = authData.user;
+        authenticatedClient = bearerClient as any;
       }
     }
 
@@ -48,7 +73,7 @@ export async function POST(request: Request) {
 
     const trimmedContent = content.trim();
 
-    // 1. Prevent sending a message to oneself
+    // 2. Prevent sending a message to oneself
     if (receiver_id === senderUserId) {
       return NextResponse.json(
         { error: 'You cannot send a message to yourself.' },
@@ -56,7 +81,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. If receiver is not a valid UUID (e.g. sample educator), return instant simulated delivery
+    // 3. Simulated delivery for non-UUID recipients (e.g. sample educators)
     if (!UUID_REGEX.test(receiver_id)) {
       return NextResponse.json({
         success: true,
@@ -71,66 +96,48 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Fast direct insertion (single database trip, no redundant pre-flight SELECTs)
-    let { data: insertedMsg, error: insertError } = await supabase
+    // 4. Resolve receiver_id: If receiver_id is a teacher_profiles.id, map to their user_id
+    let targetReceiverId = receiver_id;
+    const { data: tp } = await authenticatedClient
+      .from('teacher_profiles')
+      .select('user_id')
+      .eq('id', receiver_id)
+      .maybeSingle();
+
+    if (tp?.user_id) {
+      targetReceiverId = tp.user_id;
+    }
+
+    if (targetReceiverId === senderUserId) {
+      return NextResponse.json(
+        { error: 'You cannot send a message to yourself.' },
+        { status: 400 }
+      );
+    }
+
+    // 5. Insert message with authenticated client
+    const { data: insertedMsg, error: insertError } = await authenticatedClient
       .from('messages')
       .insert({
         sender_id: senderUserId,
-        receiver_id: receiver_id,
+        receiver_id: targetReceiverId,
         content: trimmedContent,
       })
       .select()
       .single();
 
-    // 4. If foreign key error (23503), receiver_id might be a teacher_profile.id instead of user_id
-    if (insertError && insertError.code === '23503') {
-      const { data: tp } = await supabase
-        .from('teacher_profiles')
-        .select('user_id')
-        .eq('id', receiver_id)
-        .maybeSingle();
-
-      if (tp?.user_id && tp.user_id !== senderUserId) {
-        const retryResult = await supabase
-          .from('messages')
-          .insert({
-            sender_id: senderUserId,
-            receiver_id: tp.user_id,
-            content: trimmedContent,
-          })
-          .select()
-          .single();
-
-        insertedMsg = retryResult.data;
-        insertError = retryResult.error;
-      }
-    }
-
     if (insertError) {
-      // If still error, check if recipient simply doesn't exist in auth.users
-      if (insertError.code === '23503') {
-        return NextResponse.json({
-          success: true,
-          simulated: true,
-          message: {
-            id: `sim-${Date.now()}`,
-            sender_id: senderUserId,
-            receiver_id,
-            content: trimmedContent,
-            created_at: new Date().toISOString(),
-          },
-        });
-      }
+      console.error('Message insertion error:', insertError);
 
-      console.error('Error inserting message to Supabase:', insertError);
+      // If RLS fails because of session state, return clean error
       return NextResponse.json(
         {
           error:
-            insertError.code === 'PGRST205'
-              ? 'The messages database table is being initialized.'
+            insertError.code === '42501'
+              ? 'Security check failed. Please refresh your session and try again.'
               : insertError.message || 'Failed to send message.',
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
@@ -139,9 +146,9 @@ export async function POST(request: Request) {
       message: insertedMsg,
     });
   } catch (err: any) {
-    console.error('Unexpected error in /api/messages/send:', err);
+    console.error('Error in send message API:', err);
     return NextResponse.json(
-      { error: err?.message || 'Internal server error while sending message.' },
+      { error: err?.message || 'Internal server error.' },
       { status: 500 }
     );
   }

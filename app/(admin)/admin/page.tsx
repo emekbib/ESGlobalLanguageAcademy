@@ -69,7 +69,7 @@ export default async function AdminPage() {
     }
   });
 
-  // Sanitize accounts: Remove corrupted records like 'Not'
+  // Sanitize accounts: Remove corrupted records like 'Not' and ensure Estephanos is properly classified as Admin
   const sanitizedAccounts = (accounts ?? []).filter(
     (acc) =>
       acc.full_name &&
@@ -77,6 +77,19 @@ export default async function AdminPage() {
       acc.full_name.trim().length >= 3 &&
       acc.user_id !== 'd0863492-7ff4-4dbd-870d-f06b4d37c95e'
   ).map((acc) => {
+    const isEstephanos =
+      acc.user_id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
+      acc.user_id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
+      acc.full_name?.toLowerCase().includes('estephanos');
+
+    if (isEstephanos) {
+      return {
+        ...acc,
+        full_name: 'Estephanos Mekbib',
+        role: 'admin',
+      };
+    }
+
     if (acc.full_name.trim().toLowerCase() === 'meareg') {
       return {
         ...acc,
@@ -87,11 +100,11 @@ export default async function AdminPage() {
     return acc;
   });
 
-  // Sanitize faculty: exclude teachers associated with corrupt accounts
+  // Sanitize faculty: exclude teachers associated with corrupt accounts or the admin account
   const sanitizedFaculty = (allTeachers ?? []).filter((t) => {
     const name = names[t.user_id];
     if (name && (name.trim().toLowerCase() === 'not' || name.trim().length < 3)) return false;
-    if (t.user_id === 'd0863492-7ff4-4dbd-870d-f06b4d37c95e') return false;
+    if (t.user_id === 'd0863492-7ff4-4dbd-870d-f06b4d37c95e' || t.user_id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f') return false;
     return true;
   });
 
@@ -117,11 +130,16 @@ export default async function AdminPage() {
 
   const combinedFaculty = [...sanitizedFaculty, ...missingFaculty];
 
+  const adminFullName =
+    profile.full_name && !profile.full_name.includes('Teacher Demo') && !profile.full_name.includes('Demo')
+      ? profile.full_name
+      : 'Estephanos Mekbib';
+
   return (
     <AdminDashboardShell
       profile={{
         user_id: profile.user_id,
-        full_name: profile.full_name || 'Estephanos Mekbib',
+        full_name: adminFullName,
         avatar_url: (profile as { avatar_url?: string | null }).avatar_url ?? null,
       }}
       pendingApplications={pendingTrack2 as any}

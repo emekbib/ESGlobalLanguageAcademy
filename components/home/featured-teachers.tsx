@@ -19,7 +19,10 @@ export default function FeaturedTeachers() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const sourceTeachers = dbTeachers && dbTeachers.length > 0 ? dbTeachers : SAMPLE_TEACHERS;
+  const sourceTeachers =
+    dbTeachers && dbTeachers.length > 0
+      ? dbTeachers.slice(0, 8)
+      : SAMPLE_TEACHERS.slice(0, 8);
 
   const filteredTeachers = sourceTeachers.filter((teacher) => {
     if (selectedCategory === 'all') return true;

@@ -48,6 +48,15 @@ export default async function TeacherDashboardPage({
     return <ErrorDisplay message="We couldn’t load your teacher profile. Please try again." />;
   }
 
+  // Handle return from Stripe Connect onboarding flow
+  if (resolvedParams.connect === 'complete' && teacherProfile && !teacherProfile.stripe_onboarding_complete) {
+    await supabase
+      .from('teacher_profiles')
+      .update({ stripe_onboarding_complete: true })
+      .eq('id', teacherProfile.id);
+    teacherProfile.stripe_onboarding_complete = true;
+  }
+
   // Provide a fallback profile so admins can preview the dashboard without crashing
   const safeTeacherProfile = teacherProfile || {
     id: 'admin-preview-id',

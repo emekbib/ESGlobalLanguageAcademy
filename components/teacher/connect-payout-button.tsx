@@ -27,12 +27,6 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
 
   useEffect(() => {
     setIsConnected(connected);
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('es_teacher_payout_simulated');
-      if (stored === 'true') {
-        setIsConnected(true);
-      }
-    }
   }, [connected]);
 
   async function startOnboarding() {

@@ -263,6 +263,31 @@ export default function StudentDashboardShell({
     }
   }, [searchParams, fetchLiveBookings]);
 
+  const handleDeletePayment = async (id: string) => {
+    setLivePast((prev) => prev.filter((b) => b.id !== id));
+    setLiveUpcoming((prev) => prev.filter((b) => b.id !== id));
+
+    if (typeof window !== 'undefined') {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('es_student_bookings_')) {
+          try {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const list: any[] = JSON.parse(raw);
+              const filtered = list.filter((b: any) => b.id !== id);
+              localStorage.setItem(k, JSON.stringify(filtered));
+            }
+          } catch {}
+        }
+      }
+    }
+
+    try {
+      await supabase.from('bookings').delete().eq('id', id);
+    } catch {}
+  };
+
   // Realtime subscription for instant booking updates
   useEffect(() => {
     const channel = supabase
@@ -519,6 +544,7 @@ export default function StudentDashboardShell({
           {activeTab === 'payments' && (
             <DashboardPaymentsTab
               role="student"
+              onDeletePayment={handleDeletePayment}
               payments={livePast.map((b) => ({
                 id: b.id,
                 date: b.created_at,
