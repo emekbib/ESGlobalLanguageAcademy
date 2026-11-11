@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
-  Sparkles,
   ArrowRight,
   Loader2,
   AlertCircle,

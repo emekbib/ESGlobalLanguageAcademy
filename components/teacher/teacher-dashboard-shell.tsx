@@ -13,7 +13,6 @@ import {
   Eye,
   Pencil,
   GraduationCap,
-  Sparkles,
   CheckCircle2,
   Menu,
   X,
@@ -631,7 +630,7 @@ export default function TeacherDashboardShell({
           ) : !teacherProfile ? (
             <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm">
-                <Sparkles className="h-6 w-6" />
+                <GraduationCap className="h-6 w-6 text-amber-300" />
               </div>
               <h2 className="mt-5 font-display text-2xl font-black text-stone-950 dark:text-white">
                 Your educator profile is waiting for you

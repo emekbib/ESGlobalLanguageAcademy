@@ -9,7 +9,6 @@ import {
   User,
   Mail,
   ShieldCheck,
-  Sparkles,
   ArrowLeft,
   Check,
   Loader2,

@@ -9,7 +9,6 @@ import {
   Play,
   Trophy,
   BookOpen,
-  Sparkles,
   Users,
   MessageSquare,
   X,
@@ -113,7 +112,7 @@ export default function LearningPath() {
                 Unit 1 · Foundation
               </span>
               <span className="flex items-center gap-1 text-xs font-semibold text-emerald-100">
-                <Sparkles className="h-3.5 w-3.5" /> 80% Complete
+                <Check className="h-3.5 w-3.5" /> 80% Complete
               </span>
             </div>
             <h2 className="mt-2 font-display text-xl font-bold tracking-tight sm:text-2xl">

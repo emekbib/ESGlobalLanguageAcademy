@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   GraduationCap,
   Loader2,
-  Sparkles,
   UserRound,
   ShieldCheck,
   Globe2,
@@ -162,7 +161,7 @@ export default function OnboardingPage() {
             {/* Middle Quote & Story */}
             <div className="relative z-10 my-12">
               <div className="flex items-center gap-1.5 text-amber-300">
-                <Sparkles className="h-4 w-4" />
+                <ShieldCheck className="h-4 w-4" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-amber-300">
                   The Fluency Standard
                 </span>

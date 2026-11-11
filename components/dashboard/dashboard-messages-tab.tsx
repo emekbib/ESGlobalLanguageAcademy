@@ -11,7 +11,6 @@ import {
   MessageSquare,
   Search,
   CheckCheck,
-  Sparkles,
   ExternalLink,
   ShieldCheck,
   X,
@@ -1260,7 +1259,7 @@ export default function DashboardMessagesTab({
                     {/* Starter Chips */}
                     <div className="mt-6 space-y-2.5 max-w-md mx-auto">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 flex items-center justify-center gap-1.5">
-                        <Sparkles className="h-3 w-3 text-amber-500" />
+                        <MessageSquare className="h-3 w-3 text-amber-500" />
                         <span>Quick Starters</span>
                       </p>
                       <div className="flex flex-col gap-2">

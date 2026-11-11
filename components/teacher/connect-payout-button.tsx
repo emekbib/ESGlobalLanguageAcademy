@@ -7,7 +7,6 @@ import {
   CreditCard,
   Loader2,
   ArrowRight,
-  Sparkles,
   RefreshCw,
   AlertCircle,
 } from 'lucide-react';
@@ -195,7 +194,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
             {simulating ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <CreditCard className="h-3.5 w-3.5 text-amber-500" />
             )}
             <span>Simulate Connect (Demo Test)</span>
           </button>

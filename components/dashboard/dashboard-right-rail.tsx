@@ -8,7 +8,6 @@ import {
   Clock,
   ArrowRight,
   Flame,
-  Sparkles,
   CheckCircle2,
   Video,
   Users,

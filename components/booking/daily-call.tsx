@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Video, VideoOff, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
+import { Loader2, Video, VideoOff, ShieldCheck, AlertCircle } from 'lucide-react';
 
 export default function DailyCall({
   roomUrl,

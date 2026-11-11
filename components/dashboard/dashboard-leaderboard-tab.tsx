@@ -1,6 +1,6 @@
 'use client';
 
-import { Trophy, Flame, Sparkles, ArrowUp, Medal } from 'lucide-react';
+import { Trophy, Flame, ArrowUp, Medal } from 'lucide-react';
 
 export default function DashboardLeaderboardTab({ userName }: { userName?: string }) {
   const displayName = userName ? `You (${userName})` : 'You';

@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Video,
   BookOpen,
-  Sparkles,
   Users,
   CheckCircle2,
   Building2,
@@ -135,7 +134,7 @@ export default function Home() {
 
           {/* Subtle trust line */}
           <p className="mt-4 text-xs text-white/90 font-medium" style={{ textShadow: '0 1px 12px rgba(0,0,0,0.9)' }}>
-            <Sparkles className="inline h-3 w-3 text-amber-400 mr-1" />
+            <ShieldCheck className="inline h-3.5 w-3.5 text-amber-400 mr-1.5 align-text-bottom" />
             First 15 min free · $25-30/lesson · Escrow-protected · No subscriptions
           </p>
         </div>
@@ -407,7 +406,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="relative overflow-hidden rounded-3xl bg-stone-950 px-8 py-20 text-center text-white shadow-2xl sm:px-16">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold text-amber-300 backdrop-blur-sm border border-white/15 mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
+              <ShieldCheck className="h-3.5 w-3.5 text-amber-300" />
               100% Satisfaction Guarantee · Zero Subscriptions
             </span>
             <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">

@@ -11,7 +11,6 @@ import {
   Clock,
   Check,
   Loader2,
-  Sparkles,
   Sun,
   Moon,
   Monitor,

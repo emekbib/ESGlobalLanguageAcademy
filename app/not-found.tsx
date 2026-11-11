@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, Compass, GraduationCap, Sparkles } from 'lucide-react';
+import { ArrowLeft, Compass, GraduationCap } from 'lucide-react';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 
@@ -12,7 +12,7 @@ export default function NotFound() {
         <div className="mx-auto max-w-xl text-center">
           {/* Brand Eyebrow Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 dark:border-stone-800 bg-white/80 dark:bg-stone-900/80 px-4 py-1.5 shadow-sm backdrop-blur-md">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
+            <Compass className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
             <span className="text-xs font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400">
               404 · Page Not Found
             </span>

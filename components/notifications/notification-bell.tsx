@@ -9,7 +9,6 @@ import {
   Calendar,
   Loader2,
   MessageSquare,
-  Sparkles,
 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { playNotificationChime } from '@/lib/audio';
