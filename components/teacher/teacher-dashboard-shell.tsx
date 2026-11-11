@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import {
   Calendar,
   Clock,
@@ -80,11 +81,58 @@ export default function TeacherDashboardShell({
   readOnly = false,
 }: TeacherDashboardShellProps) {
   const searchParams = useSearchParams();
+  const supabase = createSupabaseBrowserClient();
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'bookings' | 'payouts' | 'messages' | 'profile'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  const [liveUpcoming, setLiveUpcoming] = useState<BookingItem[]>(upcomingBookings);
+  const [livePast, setLivePast] = useState<BookingItem[]>(pastBookings);
+
+  const fetchLiveBookings = useCallback(async () => {
+    if (!teacherProfile) return;
+    try {
+      const { data: bks } = await supabase
+        .from('bookings')
+        .select('id, teacher_id, student_id, start_time_utc, end_time_utc, status, created_at')
+        .or(`teacher_id.eq.${teacherProfile.id},teacher_id.eq.${profile.user_id}`)
+        .order('start_time_utc', { ascending: true });
+
+      if (bks) {
+        const studentIds = Array.from(new Set(bks.map((b) => b.student_id)));
+        const { data: students } = studentIds.length
+          ? await supabase.from('profiles').select('user_id, full_name, avatar_url').in('user_id', studentIds)
+          : { data: [] };
+        const studentMap = new Map((students ?? []).map((s) => [s.user_id, s]));
+
+        const enriched: BookingItem[] = bks.map((b) => {
+          const s = studentMap.get(b.student_id);
+          return {
+            ...b,
+            teacher_name: s?.full_name ?? 'Student',
+            teacher_avatar: s?.avatar_url ?? null,
+          };
+        });
+
+        const now = new Date();
+        setLiveUpcoming(enriched.filter((b) => new Date(b.start_time_utc) >= now && b.status !== 'cancelled'));
+        setLivePast(enriched.filter((b) => new Date(b.start_time_utc) < now || b.status === 'cancelled'));
+      }
+    } catch (e) {
+      console.warn('Teacher live bookings notice:', e);
+    }
+  }, [supabase, teacherProfile, profile.user_id]);
+
+  useEffect(() => {
+    setLiveUpcoming(upcomingBookings);
+    setLivePast(pastBookings);
+  }, [upcomingBookings, pastBookings]);
+
+  useEffect(() => {
+    void fetchLiveBookings();
+  }, [activeTab, fetchLiveBookings]);
 
   useEffect(() => {
     const tabParam = searchParams?.get('tab');
@@ -668,7 +716,7 @@ export default function TeacherDashboardShell({
                       <div className="mt-4">
                         <div className="flex items-baseline gap-1.5">
                           <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
-                            {upcomingBookings?.length ?? 0}
+                            {liveUpcoming?.length ?? 0}
                           </span>
                           <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">Sessions</span>
                         </div>
@@ -786,16 +834,16 @@ export default function TeacherDashboardShell({
                   </div>
 
                   {/* Bookings Section */}
-                  {(upcomingBookings.length > 0 || pastBookings.length > 0) && (
+                  {(liveUpcoming.length > 0 || livePast.length > 0) && (
                     <div className="space-y-6 pt-2">
                       <BookingsList
-                        bookings={upcomingBookings}
+                        bookings={liveUpcoming}
                         title="Upcoming Student Lessons"
                         emptyMessage="No upcoming student lessons scheduled."
                         viewerRole="teacher"
                       />
                       <BookingsList
-                        bookings={pastBookings}
+                        bookings={livePast}
                         title="Lesson History"
                         emptyMessage="Your past lesson history will appear here."
                         viewerRole="teacher"
@@ -832,13 +880,13 @@ export default function TeacherDashboardShell({
                     </p>
                   </div>
                   <BookingsList
-                    bookings={upcomingBookings}
+                    bookings={liveUpcoming}
                     title="Upcoming Student Lessons"
                     emptyMessage="No upcoming student lessons scheduled."
                     viewerRole="teacher"
                   />
                   <BookingsList
-                    bookings={pastBookings}
+                    bookings={livePast}
                     title="Lesson History"
                     emptyMessage="Your past lesson history will appear here."
                     viewerRole="teacher"

@@ -85,7 +85,7 @@ export default async function TeacherDashboardPage({
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select('id, teacher_id, student_id, start_time_utc, end_time_utc, status, created_at')
-      .eq('teacher_id', teacherProfile.id)
+      .or(`teacher_id.eq.${teacherProfile.id},teacher_id.eq.${user.id}`)
       .order('start_time_utc', { ascending: true });
 
     if (bookingsError) {

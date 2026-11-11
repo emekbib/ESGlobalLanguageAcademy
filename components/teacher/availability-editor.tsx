@@ -48,6 +48,16 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
     return () => { active = false; };
   }, [supabase, teacherId]);
 
+  async function getAuthHeader(): Promise<Record<string, string>> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        return { Authorization: `Bearer ${session.access_token}` };
+      }
+    } catch {}
+    return {};
+  }
+
   async function addWindow() {
     setError('');
     if (teacherId === 'admin-preview-id') {
@@ -72,18 +82,40 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
     }
 
     setSaving(true);
-    const { data, error: insertError } = await supabase.from('teacher_availability').insert({
-      teacher_id: teacherId,
-      weekday: draft.weekday,
-      start_time: draft.start_time,
-      end_time: draft.end_time,
-      timezone,
-    }).select().single();
-    setSaving(false);
-    if (insertError) { setError(insertError.message); return; }
-    if (data) setWindows((prev) => [...prev, data].sort((a, b) => a.weekday - b.weekday));
-    setMessage('Availability window added successfully.');
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      const authHeader = await getAuthHeader();
+      const res = await fetch('/api/teacher/availability', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeader,
+        },
+        body: JSON.stringify({
+          teacherId,
+          weekday: draft.weekday,
+          start_time: draft.start_time,
+          end_time: draft.end_time,
+          timezone,
+        }),
+      });
+
+      const resData = await res.json();
+      setSaving(false);
+
+      if (!res.ok || !resData.success) {
+        setError(resData.error || 'Failed to save availability window.');
+        return;
+      }
+
+      if (resData.data) {
+        setWindows((prev) => [...prev, resData.data].sort((a, b) => a.weekday - b.weekday));
+      }
+      setMessage('Availability window saved successfully.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err: any) {
+      setSaving(false);
+      setError(err?.message || 'Network error while saving availability.');
+    }
   }
 
   async function deleteWindow(id: string) {
@@ -93,16 +125,32 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
       return;
     }
     setSaving(true);
-    const { error: deleteError } = await supabase.from('teacher_availability').delete().eq('id', id);
-    setSaving(false);
-    setDeleteConfirmId(null);
-    if (deleteError) {
-      setError(deleteError.message);
-      return;
+    try {
+      const authHeader = await getAuthHeader();
+      const res = await fetch(`/api/teacher/availability?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: {
+          ...authHeader,
+        },
+      });
+
+      const resData = await res.json();
+      setSaving(false);
+      setDeleteConfirmId(null);
+
+      if (!res.ok || !resData.success) {
+        setError(resData.error || 'Failed to remove availability window.');
+        return;
+      }
+
+      setWindows((prev) => prev.filter((w) => w.id !== id));
+      setMessage('Availability window removed.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err: any) {
+      setSaving(false);
+      setDeleteConfirmId(null);
+      setError(err?.message || 'Network error while deleting availability.');
     }
-    setWindows((prev) => prev.filter((w) => w.id !== id));
-    setMessage('Availability window removed.');
-    setTimeout(() => setMessage(''), 3000);
   }
 
   async function updateTimezone(newTz: string) {
@@ -113,12 +161,26 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
     }
     if (windows.length === 0) return;
     setSaving(true);
-    const { error: updateError } = await supabase.from('teacher_availability').update({ timezone: newTz }).eq('teacher_id', teacherId);
-    setSaving(false);
-    if (updateError) { setError(updateError.message); return; }
-    setWindows((prev) => prev.map((w) => ({ ...w, timezone: newTz })));
-    setMessage('Timezone updated for all windows.');
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      const authHeader = await getAuthHeader();
+      await fetch('/api/teacher/availability', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeader,
+        },
+        body: JSON.stringify({
+          teacherId,
+          timezone: newTz,
+        }),
+      });
+      setSaving(false);
+      setWindows((prev) => prev.map((w) => ({ ...w, timezone: newTz })));
+      setMessage('Timezone updated for all windows.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch {
+      setSaving(false);
+    }
   }
 
   if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;

@@ -38,6 +38,7 @@ type BookingItem = {
   created_at: string;
   teacher_name: string;
   teacher_avatar: string | null;
+  amount_cents?: number | null;
 };
 
 type StudentDashboardShellProps = {
@@ -104,7 +105,7 @@ export default function StudentDashboardShell({
     try {
       const { data: bks } = await supabase
         .from('bookings')
-        .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, created_at')
+        .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, amount_cents, created_at')
         .eq('student_id', profile.user_id)
         .order('start_time_utc', { ascending: true });
 
@@ -132,6 +133,7 @@ export default function StudentDashboardShell({
         const up = tp ? upMap.get(tp.user_id) : null;
         return {
           ...b,
+          amount_cents: b.amount_cents,
           status: b.status as any,
           teacher_name: up?.full_name ?? 'Teacher',
           teacher_avatar: up?.avatar_url ?? null,
@@ -160,6 +162,7 @@ export default function StudentDashboardShell({
             start_time_utc: lb.start_time_utc,
             end_time_utc: lb.end_time_utc,
             status: lb.status || 'confirmed',
+            amount_cents: lb.amount_cents != null ? lb.amount_cents : undefined,
             created_at: lb.created_at || new Date().toISOString(),
             teacher_name: lb.teacher_name || 'Native Educator',
             teacher_avatar: lb.teacher_avatar || null,
@@ -228,6 +231,7 @@ export default function StudentDashboardShell({
           start_time_utc: lb.start_time_utc,
           end_time_utc: lb.end_time_utc,
           status: lb.status || 'confirmed',
+          amount_cents: lb.amount_cents != null ? lb.amount_cents : undefined,
           created_at: lb.created_at || new Date().toISOString(),
           teacher_name: lb.teacher_name || 'Native Educator',
           teacher_avatar: lb.teacher_avatar || null,
@@ -548,7 +552,7 @@ export default function StudentDashboardShell({
               payments={livePast.map((b) => ({
                 id: b.id,
                 date: b.created_at,
-                amount: (b as any).amount_cents ? (b as any).amount_cents / 100 : ((b as any).hourlyRate || 35),
+                amount: b.amount_cents != null ? b.amount_cents / 100 : ((b as any).hourlyRate || 35),
                 status: b.status === 'cancelled' ? 'refunded' : 'paid',
                 description: `Lesson with ${b.teacher_name}`,
               }))}

@@ -68,19 +68,49 @@ export function generateSlots(
           updated_at: new Date().toISOString(),
         }));
 
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
+  const WEEKDAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 
-  for (let offset = 0; offset < daysAhead; offset++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + offset);
+  for (const window of effectiveAvail) {
+    const windowTz = window.timezone || safeViewerTz || 'UTC';
 
-    for (const window of effectiveAvail) {
-      const windowTz = window.timezone || safeViewerTz || 'UTC';
-      const windowWeekdayInTz = getWeekdayInTimezone(date, windowTz);
-      if (windowWeekdayInTz !== window.weekday) continue;
+    // Get current calendar date in the teacher's timezone
+    const nowParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: windowTz,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    }).formatToParts(now);
 
-      const { startUtc, endUtc } = windowToUtc(date, window, windowTz);
+    const baseYear = Number(nowParts.find((p) => p.type === 'year')?.value);
+    const baseMonth = Number(nowParts.find((p) => p.type === 'month')?.value);
+    const baseDay = Number(nowParts.find((p) => p.type === 'day')?.value);
+
+    for (let offset = 0; offset < daysAhead; offset++) {
+      // Advance by offset calendar days in teacher timezone
+      const refDate = new Date(Date.UTC(baseYear, baseMonth - 1, baseDay + offset, 12, 0, 0));
+      const refParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: windowTz,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        weekday: 'short',
+      }).formatToParts(refDate);
+
+      const weekdayStr = refParts.find((p) => p.type === 'weekday')?.value ?? '';
+      const weekdayInTz = WEEKDAY_MAP[weekdayStr] ?? -1;
+
+      if (weekdayInTz !== window.weekday) continue;
+
+      const curYear = Number(refParts.find((p) => p.type === 'year')?.value);
+      const curMonth = Number(refParts.find((p) => p.type === 'month')?.value);
+      const curDay = Number(refParts.find((p) => p.type === 'day')?.value);
+
+      const [sh, sm] = (window.start_time || '09:00').split(':').map(Number);
+      const [eh, em] = (window.end_time || '17:00').split(':').map(Number);
+
+      const startUtc = toUtcFromParts(curYear, curMonth, curDay, sh, sm, windowTz);
+      const endUtc = toUtcFromParts(curYear, curMonth, curDay, eh, em, windowTz);
+
       if (!startUtc || !endUtc) continue;
 
       let cursor = new Date(startUtc);
@@ -114,41 +144,22 @@ export function generateSlots(
     }
   }
 
+  // Sort chronologically by startUtc
+  slots.sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
+
   return slots;
 }
 
-function getWeekdayInTimezone(date: Date, timezone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: timezone || 'UTC' }).formatToParts(date);
-  const weekdayStr = parts.find((p) => p.type === 'weekday')?.value ?? '';
-  const map: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-  return map[weekdayStr] ?? -1;
-}
-
-function windowToUtc(date: Date, window: TeacherAvailability, timezone: string): { startUtc: Date | null; endUtc: Date | null } {
+function toUtcFromParts(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  timezone: string,
+): Date | null {
   try {
-    const y = date.getFullYear();
-    const m = date.getMonth();
-    const d = date.getDate();
-    const [sh, sm] = (window.start_time || '09:00').split(':').map(Number);
-    const [eh, em] = (window.end_time || '17:00').split(':').map(Number);
-
-    const startStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00`;
-    const endStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00`;
-
-    const startUtc = toUtcFromTimezone(startStr, timezone);
-    const endUtc = toUtcFromTimezone(endStr, timezone);
-    return { startUtc, endUtc };
-  } catch {
-    return { startUtc: null, endUtc: null };
-  }
-}
-
-function toUtcFromTimezone(dateStr: string, timezone: string): Date | null {
-  try {
-    const [datePart, timePart] = dateStr.split('T');
-    const [y, m, d] = datePart.split('-').map(Number);
-    const [h, min] = timePart.split(':').map(Number);
-    const assumedUtc = Date.UTC(y, m - 1, d, h, min, 0);
+    const assumedUtc = Date.UTC(year, month - 1, day, hour, minute, 0);
     const invDate = new Date(assumedUtc);
     const tzParts = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone || 'UTC',

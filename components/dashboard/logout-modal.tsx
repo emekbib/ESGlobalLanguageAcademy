@@ -19,11 +19,30 @@ export default function LogoutModal({
   const handleConfirmLogout = async () => {
     setLoading(true);
     try {
+      // 1. Client-side sign out
       await supabase.auth.signOut();
-      window.location.href = '/auth';
-    } catch {
-      window.location.href = '/auth';
-    }
+    } catch {}
+
+    try {
+      // 2. Server-side cookie clear
+      await fetch('/api/auth/signout', { method: 'POST' });
+    } catch {}
+
+    try {
+      // 3. Clear all user-specific local storage items
+      if (typeof window !== 'undefined') {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('es_') || k.startsWith('sb-'))) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+      }
+    } catch {}
+
+    window.location.href = '/auth';
   };
 
   return (

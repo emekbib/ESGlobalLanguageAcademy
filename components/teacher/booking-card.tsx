@@ -96,13 +96,30 @@ export default function BookingCard({
         queryIds = Array.from(new Set([tp.id, tp.user_id, teacherId]));
       }
 
-      const { data: avail, error: availError } = await supabase
-        .from('teacher_availability')
-        .select('*')
-        .in('teacher_id', queryIds);
+      // Fetch availability from server API first for optimal reliability
+      let avail: any[] | null = null;
+      try {
+        const apiRes = await fetch(`/api/teacher/availability?teacherId=${encodeURIComponent(teacherId)}`);
+        if (apiRes.ok) {
+          const apiJson = await apiRes.json();
+          if (Array.isArray(apiJson?.data)) {
+            avail = apiJson.data;
+          }
+        }
+      } catch (e) {
+        console.warn('Availability API fetch notice:', e);
+      }
 
-      if (availError) {
-        console.warn('Availability query notice:', availError.message);
+      if (!avail) {
+        const { data: directAvail, error: availError } = await supabase
+          .from('teacher_availability')
+          .select('*')
+          .in('teacher_id', queryIds);
+
+        if (availError) {
+          console.warn('Availability query notice:', availError.message);
+        }
+        avail = directAvail ?? [];
       }
 
       const { data: bks, error: bksError } = await supabase
@@ -237,9 +254,13 @@ export default function BookingCard({
     setBookingInProgress(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({
           teacherId,
           startUtc: slotToBook.startUtc,

@@ -4,7 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 function redirectWithCookies(request: NextRequest, response: NextResponse, path: string) {
   const redirectResponse = NextResponse.redirect(new URL(path, request.url));
   response.cookies.getAll().forEach((cookie) => {
-    redirectResponse.cookies.set(cookie);
+    redirectResponse.cookies.set(cookie.name, cookie.value, {
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 7 days persistent session
+    });
   });
   return redirectResponse;
 }
@@ -36,7 +41,14 @@ export async function updateSession(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, {
+              ...options,
+              path: options?.path || '/',
+              sameSite: options?.sameSite || 'lax',
+              secure: process.env.NODE_ENV === 'production',
+            });
+          });
         },
       },
     },
