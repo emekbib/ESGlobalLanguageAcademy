@@ -233,7 +233,7 @@ export default function DashboardMessagesTab({
             .or(`student_id.eq.${currentUser.id},teacher_id.eq.${teacherProfileId}`);
 
           if (bookings) {
-            bookings.forEach((b) => {
+            bookings.forEach((b: any) => {
               if (b.student_id && b.student_id !== currentUser.id) {
                 uniqueUserIds.add(b.student_id);
               }
@@ -249,7 +249,7 @@ export default function DashboardMessagesTab({
             .eq('student_id', currentUser.id);
 
           if (bookings) {
-            bookings.forEach((b) => {
+            bookings.forEach((b: any) => {
               if (b.teacher_id) bookingTeacherProfileIds.push(b.teacher_id);
             });
           }

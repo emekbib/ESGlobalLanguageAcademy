@@ -11,3 +11,4 @@ export async function POST() {
     return NextResponse.json({ success: true }); // Always return success so client can redirect
   }
 }
+

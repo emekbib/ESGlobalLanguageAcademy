@@ -54,3 +54,4 @@ WHERE user_id = '5ad9014e-1d98-4780-a1e5-c365314fbdf2';
 
 -- 5. Verification queries
 SELECT user_id, full_name, role FROM public.profiles WHERE user_id = '5ad9014e-1d98-4780-a1e5-c365314fbdf2';
+
