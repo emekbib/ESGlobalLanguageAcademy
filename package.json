@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test:e2e": "node tests/run_full_platform_playwright.js",
     "ping:supabase": "node scripts/ping-supabase.js"
   },
   "dependencies": {
@@ -76,6 +77,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "puppeteer-core": "^25.17.0"
   }
 }
