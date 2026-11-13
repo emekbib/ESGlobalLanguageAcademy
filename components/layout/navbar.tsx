@@ -42,7 +42,7 @@ export default function Navbar({
         const { data: profile } = await supabase
           .from('profiles')
           .select('role, full_name, avatar_url')
-          .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+          .eq('user_id', user.id)
           .maybeSingle();
         if (profile) {
           const isEstephanos =
@@ -61,7 +61,7 @@ export default function Navbar({
           const { data: profile } = await supabase
             .from('profiles')
             .select('role, full_name, avatar_url')
-            .or(`user_id.eq.${directUser.id},id.eq.${directUser.id}`)
+            .eq('user_id', directUser.id)
             .maybeSingle();
           if (profile) {
             const isEstephanos =

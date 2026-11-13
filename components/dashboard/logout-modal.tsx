@@ -3,6 +3,7 @@
 import { LogOut, X, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { markIntentionalAuthChange } from '@/components/auth/session-guard';
 
 export default function LogoutModal({
   isOpen,
@@ -19,8 +20,10 @@ export default function LogoutModal({
   const handleConfirmLogout = async () => {
     setLoading(true);
     try {
-      // 1. Client-side sign out
-      await supabase.auth.signOut();
+      // 1. Client-side sign out. 'local' scope only ends THIS browser's session; the
+      // default 'global' scope also revokes the user's sessions on every other device.
+      markIntentionalAuthChange();
+      await supabase.auth.signOut({ scope: 'local' });
     } catch {}
 
     try {

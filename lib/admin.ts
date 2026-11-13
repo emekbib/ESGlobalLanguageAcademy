@@ -16,7 +16,7 @@ export async function requireAdmin() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('user_id, role, full_name, avatar_url')
-    .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+    .eq('user_id', user.id)
     .maybeSingle();
 
   // Strict role check: ONLY admin role is permitted. Students and teachers are immediately redirected.
@@ -67,7 +67,7 @@ export async function requireAdminApi() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('user_id, role, full_name, avatar_url')
-    .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+    .eq('user_id', user.id)
     .maybeSingle();
 
   if (!profile || profile.role !== 'admin') {

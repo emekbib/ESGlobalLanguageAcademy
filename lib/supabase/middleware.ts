@@ -3,13 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 function redirectWithCookies(request: NextRequest, response: NextResponse, path: string) {
   const redirectResponse = NextResponse.redirect(new URL(path, request.url));
+  // Copy refreshed auth cookies onto the redirect with their ORIGINAL attributes.
+  // Overriding maxAge here used to turn Supabase's cookie deletions (maxAge 0) into
+  // 7-day cookies, leaving a corrupted half-session that later signed the user out.
   response.cookies.getAll().forEach((cookie) => {
-    redirectResponse.cookies.set(cookie.name, cookie.value, {
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 7 days persistent session
-    });
+    redirectResponse.cookies.set(cookie);
   });
   return redirectResponse;
 }
@@ -55,7 +53,11 @@ export async function updateSession(request: NextRequest) {
   );
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const hasAuthCookie = request.cookies.getAll().some((c) => c.name.includes('-auth-token'));
+    if (!user && hasAuthCookie) {
+      console.warn('[auth] auth cookie present but no valid user', pathname, authError?.name, authError?.status, authError?.message);
+    }
 
     // 1. Strict admin unauthenticated guard
     if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !user) {
@@ -77,7 +79,7 @@ export async function updateSession(request: NextRequest) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, suspended_at')
-        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       // If user is suspended, block access

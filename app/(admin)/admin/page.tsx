@@ -108,23 +108,24 @@ export default async function AdminPage() {
     return true;
   });
 
-  // Synthesize faculty for any user marked with role 'teacher' in accounts who lacks a teacher_profiles row (e.g. Meareg)
+  // Teacher accounts that never finished teacher setup (no teacher_profiles row).
   const existingFacultyUserIds = new Set(sanitizedFaculty.map((t) => t.user_id));
   const missingFaculty = sanitizedAccounts
     .filter((acc) => acc.role === 'teacher' && !existingFacultyUserIds.has(acc.user_id))
+    // Shown honestly as "setup incomplete" — no invented bio, rate, or credentials.
     .map((acc) => ({
       id: acc.user_id,
       user_id: acc.user_id,
-      bio: 'Native language educator and Horn of Africa cultural specialist.',
-      languages_taught: ['Amharic'],
-      hourly_rate: 35,
-      years_experience: 5,
-      teacher_type: 'professional',
-      application_status: 'approved',
-      credentials: ['Certified Horn of Africa Language Specialist'],
-      specialties: ['Conversational Fluency', 'Grammar'],
+      bio: '',
+      languages_taught: [] as string[],
+      hourly_rate: null,
+      years_experience: 0,
+      teacher_type: 'community_tutor',
+      application_status: 'incomplete',
+      credentials: [] as string[],
+      specialties: [] as string[],
       video_intro_url: null,
-      is_published: true,
+      is_published: false,
       created_at: acc.created_at,
     }));
 

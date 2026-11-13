@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ErrorDisplay } from '@/components/ui/page-states';
 import StudentDashboardShell from '@/components/dashboard/student-dashboard-shell';
+import { confirmPaidBooking, releaseUnpaidHold } from '@/lib/payments/confirm-booking';
+import { lookupRefunds } from '@/lib/payments/refund-status';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,7 +15,7 @@ export default async function DashboardPage({
 }) {
   const resolvedParams = searchParams ? await searchParams : {};
   const bookingId = typeof resolvedParams.booking_id === 'string' ? resolvedParams.booking_id : null;
-  const isPaymentSuccess = resolvedParams.payment === 'success' || resolvedParams.booking === 'confirmed';
+  const sessionId = typeof resolvedParams.session_id === 'string' ? resolvedParams.session_id : null;
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -21,13 +23,14 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
   if (!user) redirect('/auth');
 
-  // If returning from checkout, ensure the booking is marked confirmed in database immediately
-  if (bookingId && isPaymentSuccess) {
-    await supabase
-      .from('bookings')
-      .update({ status: 'confirmed' })
-      .eq('id', bookingId)
-      .eq('student_id', user.id);
+  // Returning from Stripe: confirm only if Stripe says this exact booking was paid.
+  let paymentNotice: 'confirmed' | 'not_paid' | 'cancelled' | null = null;
+  if (bookingId && resolvedParams.payment === 'success' && sessionId) {
+    const result = await confirmPaidBooking(supabase, user.id, bookingId, sessionId);
+    paymentNotice = result.ok ? 'confirmed' : 'not_paid';
+  } else if (bookingId && resolvedParams.payment === 'cancelled') {
+    await releaseUnpaidHold(supabase, user.id, bookingId);
+    paymentNotice = 'cancelled';
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -54,7 +57,7 @@ export default async function DashboardPage({
 
   const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
-    .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, amount_cents, created_at')
+    .select('*')
     .eq('student_id', user.id)
     .order('start_time_utc', { ascending: true });
 
@@ -79,25 +82,9 @@ export default async function DashboardPage({
     const { data: allTeachers } = await supabase
       .from('teacher_profiles')
       .select('id, user_id, languages_taught, hourly_rate')
+      .eq('is_published', true)
       .limit(10);
     teacherProfiles = allTeachers ?? [];
-
-    if (teacherProfiles.length === 0) {
-      const { data: teacherUsers } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url')
-        .eq('role', 'teacher')
-        .limit(10);
-
-      if (teacherUsers && teacherUsers.length > 0) {
-        teacherProfiles = teacherUsers.map((tu) => ({
-          id: tu.user_id,
-          user_id: tu.user_id,
-          languages_taught: ['Amharic'],
-          hourly_rate: 35,
-        }));
-      }
-    }
 
     teacherIds = (teacherProfiles ?? []).map((t) => t.id);
   }
@@ -135,11 +122,18 @@ export default async function DashboardPage({
   const teacherMap = new Map((teacherProfiles ?? []).map((t) => [t.id, t]));
   const userProfileMap = new Map((teacherUserProfiles ?? []).map((p) => [p.user_id, p]));
 
-  const enriched = (bookings ?? []).map((b) => {
+  const nowMs = Date.now();
+  const isLiveBooking = (b: { status: string; hold_expires_at?: string | null }) =>
+    !(b.status === 'pending' && (!b.hold_expires_at || new Date(b.hold_expires_at).getTime() < nowMs));
+
+  const refunds = await lookupRefunds(bookings ?? []);
+
+  const enriched = (bookings ?? []).filter(isLiveBooking).map((b) => {
     const tp = teacherMap.get(b.teacher_id);
     const up = tp ? userProfileMap.get(tp.user_id) : null;
     return {
       ...b,
+      ...(refunds.get(b.id) ?? {}),
       amount_cents: b.amount_cents,
       teacher_name: up?.full_name ?? 'Teacher',
       teacher_avatar: up?.avatar_url ?? null,
@@ -174,7 +168,7 @@ export default async function DashboardPage({
       name: rawName,
       avatarUrl: up?.avatar_url ?? null,
       languages: t.languages_taught ?? [],
-      hourlyRate: t.hourly_rate ?? 35,
+      hourlyRate: Number(t.hourly_rate),
       rating: avgRating,
       lessonsTaught: teacherLessonMap.get(t.id) ?? 0,
       hasBooked: !isAllFaculty,
@@ -187,6 +181,7 @@ export default async function DashboardPage({
       upcoming={upcoming as any}
       past={past as any}
       tutors={myTutors as any}
+      paymentNotice={paymentNotice}
     />
   );
 }

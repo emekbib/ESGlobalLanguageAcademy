@@ -46,6 +46,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from '@/components/ui/toaster';
+import SessionGuard from '@/components/auth/session-guard';
 
 export default function RootLayout({
   children,
@@ -62,6 +63,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <SessionGuard />
           <Toaster />
         </ThemeProvider>
       </body>

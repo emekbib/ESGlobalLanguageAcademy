@@ -30,6 +30,7 @@ import {
 import AdminSidebar, { type AdminTab } from './admin-sidebar';
 import { ApplicationActions, SuspensionButton, ReviewModerationActions } from './admin-controls';
 import LogoutModal from '@/components/dashboard/logout-modal';
+import { formatRate } from '@/lib/pricing';
 
 type TeacherProfile = {
   id: string;
@@ -374,6 +375,16 @@ export default function AdminDashboardShell({
       }
     }
   });
+
+  // Accounts that share a display name (e.g. a demo account and a real one). Flagged so
+  // the admin can tell them apart by ID / join date before suspending or deleting.
+  const nameKey = (n?: string | null) =>
+    (n || '').toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/[^a-z0-9]/g, '');
+  const duplicateNameCounts = localAccounts.reduce<Record<string, number>>((acc, a) => {
+    const k = nameKey(a.full_name);
+    if (k) acc[k] = (acc[k] || 0) + 1;
+    return acc;
+  }, {});
 
   const filteredAccounts = localAccounts.filter((acc) => {
     if (accountRoleFilter !== 'all' && acc.role !== accountRoleFilter) return false;
@@ -725,7 +736,7 @@ export default function AdminDashboardShell({
                                 {educatorName}
                               </h3>
                               <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                                {(app.languages_taught || []).join(' • ')} · ${app.hourly_rate}/hr · {app.years_experience} yrs exp
+                                {(app.languages_taught || []).join(' • ')} · {formatRate(app.hourly_rate)} / 50 min · {app.years_experience} yrs exp
                               </p>
                             </div>
                           </div>
@@ -879,9 +890,18 @@ export default function AdminDashboardShell({
                                   Suspended
                                 </span>
                               )}
+                              {teacher.application_status === 'incomplete' ? (
+                                <span className="rounded-full bg-stone-500/10 text-stone-700 dark:text-stone-300 border border-stone-500/20 px-2 py-0.2 text-[9px] font-bold uppercase tracking-wider">
+                                  Setup incomplete · not bookable
+                                </span>
+                              ) : !teacher.is_published ? (
+                                <span className="rounded-full bg-stone-500/10 text-stone-700 dark:text-stone-300 border border-stone-500/20 px-2 py-0.2 text-[9px] font-bold uppercase tracking-wider">
+                                  Not published
+                                </span>
+                              ) : null}
                             </div>
                             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                              {(teacher.languages_taught && teacher.languages_taught.length > 0 ? teacher.languages_taught : ['Amharic']).join(' • ')} · ${Number(teacher.hourly_rate) || 35} / 50 min
+                              {(teacher.languages_taught ?? []).join(' • ') || 'No languages set'} · {formatRate(teacher.hourly_rate)} / 50 min
                             </p>
                           </div>
                         </div>
@@ -1064,7 +1084,7 @@ export default function AdminDashboardShell({
                             {name}
                           </td>
                           <td className="py-3.5 text-stone-600 dark:text-stone-300 font-medium">
-                            ${teacher.hourly_rate}/hr
+                            {formatRate(teacher.hourly_rate)} / 50 min
                           </td>
                           <td className="py-3.5 font-bold text-stone-950 dark:text-white">
                             {stat.completed} sessions
@@ -1337,6 +1357,14 @@ export default function AdminDashboardShell({
                           {account.suspended_at && (
                             <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-400">
                               Suspended
+                            </span>
+                          )}
+                          {(duplicateNameCounts[nameKey(account.full_name)] ?? 0) > 1 && (
+                            <span
+                              title="Another account has the same name. Check the ID and join date before suspending or deleting."
+                              className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300"
+                            >
+                              Same name as another account
                             </span>
                           )}
                         </div>

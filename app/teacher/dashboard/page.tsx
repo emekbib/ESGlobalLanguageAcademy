@@ -48,6 +48,12 @@ export default async function TeacherDashboardPage({
     return <ErrorDisplay message="We couldn’t load your teacher profile. Please try again." />;
   }
 
+  // A teacher without a teacher profile can't save availability or receive bookings.
+  // Send them to finish setup instead of showing a read-only placeholder dashboard.
+  if (!teacherProfile && profile.role === 'teacher') {
+    redirect('/teacher/onboarding');
+  }
+
   // Handle return from Stripe Connect onboarding flow
   if (resolvedParams.connect === 'complete' && teacherProfile && !teacherProfile.stripe_onboarding_complete) {
     await supabase
@@ -76,6 +82,8 @@ export default async function TeacherDashboardPage({
     start_time_utc: string;
     end_time_utc: string;
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+    amount_cents?: number | null;
+    payment_intent_id?: string | null;
     created_at: string;
     teacher_name: string;
     teacher_avatar: string | null;
@@ -84,8 +92,8 @@ export default async function TeacherDashboardPage({
   if (teacherProfile) {
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
-      .select('id, teacher_id, student_id, start_time_utc, end_time_utc, status, created_at')
-      .or(`teacher_id.eq.${teacherProfile.id},teacher_id.eq.${user.id}`)
+      .select('id, teacher_id, student_id, start_time_utc, end_time_utc, status, created_at, hold_expires_at, amount_cents, payment_intent_id')
+      .eq('teacher_id', teacherProfile.id)
       .order('start_time_utc', { ascending: true });
 
     if (bookingsError) {
@@ -105,7 +113,11 @@ export default async function TeacherDashboardPage({
     }
 
     const studentMap = new Map((studentProfiles ?? []).map((p) => [p.user_id, p]));
-    enrichedBookings = (bookings ?? []).map((b) => {
+    const nowMs = Date.now();
+    enrichedBookings = (bookings ?? [])
+      // Unpaid holds whose checkout was abandoned are not lessons.
+      .filter((b) => !(b.status === 'pending' && (!b.hold_expires_at || new Date(b.hold_expires_at).getTime() < nowMs)))
+      .map(({ hold_expires_at: _hold, ...b }) => {
       const sp = studentMap.get(b.student_id);
       return {
         ...b,

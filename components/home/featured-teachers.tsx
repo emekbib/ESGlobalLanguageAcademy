@@ -15,14 +15,19 @@ const CATEGORIES = [
 ];
 
 export default function FeaturedTeachers() {
-  const { teachers: dbTeachers } = useTeachers();
+  const { teachers: dbTeachers, loading, error } = useTeachers();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const sourceTeachers =
-    dbTeachers && dbTeachers.length > 0
-      ? dbTeachers.slice(0, 8)
-      : SAMPLE_TEACHERS.slice(0, 8);
+  // Render the final list once. Previously sample teachers were shown while loading and
+  // then swapped for the real list, so the carousel visibly changed (e.g. 8 → 9 cards).
+  const sourceTeachers = loading
+    ? []
+    : dbTeachers && dbTeachers.length > 0
+    ? dbTeachers.slice(0, 8)
+    : error
+    ? SAMPLE_TEACHERS.slice(0, 8)
+    : [];
 
   const filteredTeachers = sourceTeachers.filter((teacher) => {
     if (selectedCategory === 'all') return true;
@@ -42,9 +47,6 @@ export default function FeaturedTeachers() {
       scrollContainerRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
-
-  const isMarquee = selectedCategory === 'all';
-  const marqueeList = [...filteredTeachers, ...filteredTeachers];
 
   return (
     <section className="mx-auto w-full max-w-6xl px-6 py-20">
@@ -112,6 +114,10 @@ export default function FeaturedTeachers() {
           ref={scrollContainerRef}
           className="no-scrollbar flex gap-6 overflow-x-auto pb-4 scroll-smooth"
         >
+          {loading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skeleton-${i}`} className="h-[380px] w-[270px] shrink-0 animate-pulse rounded-3xl bg-stone-100" />
+            ))}
           {filteredTeachers.map((teacher, index) => (
             <div key={`${teacher.id}-${index}`} className="w-[270px] shrink-0">
               <TeacherCard teacher={teacher} />

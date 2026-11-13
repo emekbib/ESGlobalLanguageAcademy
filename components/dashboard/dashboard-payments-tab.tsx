@@ -1,38 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { DollarSign, FileText, Printer, X, CheckCircle2, ShieldCheck, Trash2 } from 'lucide-react';
+import { DollarSign, FileText, Printer, X, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export type PaymentRecord = {
   id: string;
   date: string;
   amount: number;
-  status: 'paid' | 'pending' | 'refunded';
+  status: 'paid' | 'pending' | 'refunded' | 'refund_due' | 'not_refunded';
   description: string;
 };
 
 export default function DashboardPaymentsTab({
   role,
   payments = [],
-  onDeletePayment,
 }: {
   role: 'student' | 'teacher';
   payments?: PaymentRecord[];
-  onDeletePayment?: (id: string) => void;
 }) {
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentRecord | null>(null);
-  const [localPayments, setLocalPayments] = useState<PaymentRecord[]>(payments);
 
-  // Sync if prop updates
-  const displayPayments = onDeletePayment ? payments : localPayments;
+  // Payment records mirror the database and cannot be deleted from the UI.
+  const displayPayments = payments;
   const totalAmount = displayPayments.reduce((sum, p) => sum + (p.status === 'paid' ? p.amount : 0), 0);
-
-  const handleDelete = (id: string) => {
-    if (onDeletePayment) {
-      onDeletePayment(id);
-    } else {
-      setLocalPayments((prev) => prev.filter((p) => p.id !== id));
-    }
+  const STATUS_LABEL: Record<PaymentRecord['status'], string> = {
+    paid: 'Paid',
+    pending: 'Awaiting payment',
+    refunded: 'Refunded',
+    refund_due: 'Cancelled · refund due',
+    not_refunded: 'Cancelled < 24h · not refundable',
   };
 
   return (
@@ -43,7 +39,7 @@ export default function DashboardPaymentsTab({
         </h2>
         <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
           {role === 'student'
-            ? 'View your payment history, manage lesson receipts, and dismiss past transactions.'
+            ? 'Every lesson payment, with the exact amount charged by Stripe.'
             : 'Track your earnings and payout history for completed lessons.'}
         </p>
       </div>
@@ -111,7 +107,7 @@ export default function DashboardPaymentsTab({
                             : 'bg-stone-100 text-stone-800 dark:bg-stone-800 dark:text-stone-300'
                         }`}
                       >
-                        {payment.status}
+                        {STATUS_LABEL[payment.status]}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right font-display font-bold text-stone-950 dark:text-white">
@@ -129,15 +125,7 @@ export default function DashboardPaymentsTab({
                             Receipt
                           </button>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(payment.id)}
-                          title="Delete / Dismiss Record"
-                          className="inline-flex items-center gap-1 p-1 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          <span className="text-[11px] font-medium hidden sm:inline">Dismiss</span>
-                        </button>
+
                       </div>
                     </td>
                   </tr>

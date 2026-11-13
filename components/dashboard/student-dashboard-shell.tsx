@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search,
   Star,
@@ -27,6 +27,7 @@ import BookingCard from '@/components/teacher/booking-card';
 import { SAMPLE_TEACHERS, type SampleTeacherDetail } from '@/lib/data/sample-teachers';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useMessageNotifications } from '@/hooks/use-message-notifications';
+import { formatRate } from '@/lib/pricing';
 
 type BookingItem = {
   id: string;
@@ -39,6 +40,11 @@ type BookingItem = {
   teacher_name: string;
   teacher_avatar: string | null;
   amount_cents?: number | null;
+  hold_expires_at?: string | null;
+  payment_intent_id?: string | null;
+  refunded_at?: string | null;
+  refund_amount_cents?: number | null;
+  cancelled_by?: string | null;
 };
 
 type StudentDashboardShellProps = {
@@ -52,6 +58,7 @@ type StudentDashboardShellProps = {
   upcoming: BookingItem[];
   past: BookingItem[];
   tutors: any[];
+  paymentNotice?: 'confirmed' | 'not_paid' | 'cancelled' | null;
 };
 
 export default function StudentDashboardShell({
@@ -59,6 +66,7 @@ export default function StudentDashboardShell({
   upcoming,
   past,
   tutors,
+  paymentNotice = null,
 }: StudentDashboardShellProps) {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<
@@ -100,12 +108,22 @@ export default function StudentDashboardShell({
   });
 
   const supabase = createSupabaseBrowserClient();
+  const router = useRouter();
+
+  // Refund details the server looked up from Stripe (see lib/payments/refund-status.ts).
+  const serverRefunds = useMemo(() => {
+    const m = new Map<string, { refunded_at?: string | null; refund_amount_cents?: number | null }>();
+    [...(upcoming ?? []), ...(past ?? [])].forEach((b) => {
+      if (b.refunded_at) m.set(b.id, { refunded_at: b.refunded_at, refund_amount_cents: b.refund_amount_cents });
+    });
+    return m;
+  }, [upcoming, past]);
 
   const fetchLiveBookings = useCallback(async () => {
     try {
       const { data: bks } = await supabase
         .from('bookings')
-        .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, amount_cents, created_at')
+        .select('*')
         .eq('student_id', profile.user_id)
         .order('start_time_utc', { ascending: true });
 
@@ -128,7 +146,11 @@ export default function StudentDashboardShell({
       const tpMap = new Map((tProfiles ?? []).map((tp) => [tp.id, tp]));
       const upMap = new Map((uProfiles ?? []).map((up) => [up.user_id, up]));
 
-      const enriched: BookingItem[] = (bks ?? []).map((b) => {
+      const nowMs = Date.now();
+      const enriched: BookingItem[] = (bks ?? [])
+        // Hide unpaid holds that expired (checkout abandoned) — they were never real bookings.
+        .filter((b) => !(b.status === 'pending' && (!b.hold_expires_at || new Date(b.hold_expires_at).getTime() < nowMs)))
+        .map((b) => {
         const tp = tpMap.get(b.teacher_id);
         const up = tp ? upMap.get(tp.user_id) : null;
         return {
@@ -137,38 +159,13 @@ export default function StudentDashboardShell({
           status: b.status as any,
           teacher_name: up?.full_name ?? 'Teacher',
           teacher_avatar: up?.avatar_url ?? null,
+          ...(!b.refunded_at ? serverRefunds.get(b.id) ?? {} : {}),
         };
       });
 
-      // Load local storage bookings (handles client-confirmed & sample bookings)
-      const localKey = `es_student_bookings_${profile.user_id}`;
-      let localBookings: any[] = [];
-      if (typeof window !== 'undefined') {
-        try {
-          const raw = localStorage.getItem(localKey);
-          if (raw) localBookings = JSON.parse(raw);
-        } catch {}
-      }
-
-      const existingIds = new Set(enriched.map((b) => b.id));
+      // The database is the only source of truth for bookings. (Merging a localStorage
+      // cache here is what produced phantom bookings and undeletable payment entries.)
       const merged: BookingItem[] = [...enriched];
-      for (const lb of localBookings) {
-        if (!existingIds.has(lb.id)) {
-          existingIds.add(lb.id);
-          merged.push({
-            id: lb.id,
-            student_id: profile.user_id,
-            teacher_id: lb.teacher_id,
-            start_time_utc: lb.start_time_utc,
-            end_time_utc: lb.end_time_utc,
-            status: lb.status || 'confirmed',
-            amount_cents: lb.amount_cents != null ? lb.amount_cents : undefined,
-            created_at: lb.created_at || new Date().toISOString(),
-            teacher_name: lb.teacher_name || 'Native Educator',
-            teacher_avatar: lb.teacher_avatar || null,
-          });
-        }
-      }
 
       const now = new Date();
       const nextUpcoming = merged.filter(
@@ -201,54 +198,14 @@ export default function StudentDashboardShell({
     } catch (err) {
       console.warn('Live bookings sync notice:', err);
     }
-  }, [profile.user_id, supabase]);
+  }, [profile.user_id, supabase, serverRefunds]);
 
   useEffect(() => {
-    // Initial local storage hydration
-    const localKey = `es_student_bookings_${profile.user_id}`;
-    let localBookings: any[] = [];
-    if (typeof window !== 'undefined') {
-      try {
-        const raw = localStorage.getItem(localKey);
-        if (raw) localBookings = JSON.parse(raw);
-        const savedName = localStorage.getItem(`es_student_name_${profile.user_id}`);
-        if (savedName) setCurrentFullName(savedName);
-      } catch {}
-    }
-
-    const existingIds = new Set((upcoming ?? []).map((b) => b.id));
-    const mergedUpcoming = [...(upcoming ?? [])];
-    const mergedPast = [...(past ?? [])];
-    const now = new Date();
-
-    for (const lb of localBookings) {
-      if (!existingIds.has(lb.id)) {
-        existingIds.add(lb.id);
-        const item: BookingItem = {
-          id: lb.id,
-          student_id: profile.user_id,
-          teacher_id: lb.teacher_id,
-          start_time_utc: lb.start_time_utc,
-          end_time_utc: lb.end_time_utc,
-          status: lb.status || 'confirmed',
-          amount_cents: lb.amount_cents != null ? lb.amount_cents : undefined,
-          created_at: lb.created_at || new Date().toISOString(),
-          teacher_name: lb.teacher_name || 'Native Educator',
-          teacher_avatar: lb.teacher_avatar || null,
-        };
-        if (new Date(item.start_time_utc) >= now && item.status !== 'cancelled') {
-          mergedUpcoming.push(item);
-        } else {
-          mergedPast.push(item);
-        }
-      }
-    }
-
-    setLiveUpcoming(mergedUpcoming);
-    setLivePast(mergedPast);
+    setLiveUpcoming(upcoming ?? []);
+    setLivePast(past ?? []);
     setLiveTutors(tutors);
     void fetchLiveBookings();
-  }, [upcoming, past, tutors, profile.user_id, fetchLiveBookings]);
+  }, [upcoming, past, tutors, fetchLiveBookings]);
 
   useEffect(() => {
     const tabParam = searchParams?.get('tab');
@@ -258,39 +215,18 @@ export default function StudentDashboardShell({
     ) {
       setActiveTab(tabParam as any);
     }
-    if (searchParams?.get('payment') === 'success' || searchParams?.get('booking') === 'confirmed') {
-      const teacherName = searchParams?.get('teacher') || 'your educator';
-      setSuccessBanner(
-        `Booking confirmed with ${teacherName}! Your 1-on-1 speaking session is scheduled.`
-      );
-      void fetchLiveBookings();
+  }, [searchParams]);
+
+  // Banner reflects what the SERVER verified with Stripe, not what the URL claims.
+  useEffect(() => {
+    if (paymentNotice === 'confirmed') {
+      setSuccessBanner('Payment received — your lesson is confirmed and your teacher can see it.');
+    } else if (paymentNotice === 'not_paid') {
+      setSuccessBanner('We could not confirm your payment yet. If you were charged, your lesson will appear as confirmed shortly.');
+    } else if (paymentNotice === 'cancelled') {
+      setSuccessBanner('Checkout cancelled. You were not charged and the time slot was released.');
     }
-  }, [searchParams, fetchLiveBookings]);
-
-  const handleDeletePayment = async (id: string) => {
-    setLivePast((prev) => prev.filter((b) => b.id !== id));
-    setLiveUpcoming((prev) => prev.filter((b) => b.id !== id));
-
-    if (typeof window !== 'undefined') {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('es_student_bookings_')) {
-          try {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-              const list: any[] = JSON.parse(raw);
-              const filtered = list.filter((b: any) => b.id !== id);
-              localStorage.setItem(k, JSON.stringify(filtered));
-            }
-          } catch {}
-        }
-      }
-    }
-
-    try {
-      await supabase.from('bookings').delete().eq('id', id);
-    } catch {}
-  };
+  }, [paymentNotice]);
 
   // Realtime subscription for instant booking updates
   useEffect(() => {
@@ -462,7 +398,7 @@ export default function StudentDashboardShell({
                       {/* Bottom Pricing & Action Bar */}
                       <div className="mt-4 flex items-center justify-between border-t border-stone-100 dark:border-stone-800/80 pt-3.5">
                         <span className="font-display text-base font-black text-stone-950 dark:text-white">
-                          ${teacher.hourlyRate}
+                          {formatRate(teacher.hourlyRate)}
                           <span className="text-xs font-normal text-stone-400 dark:text-stone-500">
                             /hr
                           </span>
@@ -487,7 +423,11 @@ export default function StudentDashboardShell({
                   title="Upcoming 1-on-1 Lessons"
                   emptyMessage="You have no upcoming lessons scheduled. Book a session with a native tutor above."
                   viewerRole="student"
-                  onBookingCancelled={fetchLiveBookings}
+                  onBookingCancelled={() => {
+                    // Re-run the server page so refund details from Stripe are included.
+                    router.refresh();
+                    void fetchLiveBookings();
+                  }}
                 />
 
                 {livePast.length > 0 && (
@@ -527,6 +467,7 @@ export default function StudentDashboardShell({
           {/* TAB 4: PROFILE & SETTINGS */}
           {activeTab === 'settings' && (
             <DashboardSettingsTab
+              userId={profile.user_id}
               fullName={currentFullName}
               avatarUrl={profile.avatar_url}
               role={profile.role}
@@ -548,14 +489,31 @@ export default function StudentDashboardShell({
           {activeTab === 'payments' && (
             <DashboardPaymentsTab
               role="student"
-              onDeletePayment={handleDeletePayment}
-              payments={livePast.map((b) => ({
-                id: b.id,
-                date: b.created_at,
-                amount: b.amount_cents != null ? b.amount_cents / 100 : ((b as any).hourlyRate || 35),
-                status: b.status === 'cancelled' ? 'refunded' : 'paid',
-                description: `Lesson with ${b.teacher_name}`,
-              }))}
+              payments={[...liveUpcoming, ...livePast]
+                // Only bookings that actually went through payment are payment records.
+                .filter((b) => b.amount_cents != null && (b.payment_intent_id || b.status === 'pending'))
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .map((b) => {
+                  const status =
+                    b.status === 'pending'
+                      ? ('pending' as const)
+                      : b.status !== 'cancelled'
+                      ? ('paid' as const)
+                      : b.refunded_at
+                      ? ('refunded' as const)
+                      : b.cancelled_by && !b.refund_amount_cents
+                      ? ('not_refunded' as const)
+                      : ('refund_due' as const);
+                  const cents =
+                    status === 'refunded' && b.refund_amount_cents ? b.refund_amount_cents : (b.amount_cents as number);
+                  return {
+                    id: b.id,
+                    date: b.created_at,
+                    amount: cents / 100,
+                    status,
+                    description: `Lesson with ${b.teacher_name}`,
+                  };
+                })}
             />
           )}
         </main>

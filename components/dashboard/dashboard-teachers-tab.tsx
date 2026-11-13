@@ -16,6 +16,7 @@ import {
 import { useTeachers } from '@/hooks/use-teachers';
 import type { TeacherCardData } from '@/components/teacher/teacher-card';
 import BookingCard from '@/components/teacher/booking-card';
+import { formatRate } from '@/lib/pricing';
 
 const LANGUAGES = [
   'All',
@@ -171,7 +172,7 @@ export default function DashboardTeachersTab() {
                     {/* Rate */}
                     <div className="absolute bottom-3 left-3 text-white">
                       <span className="font-display text-xl font-black tracking-tight">
-                        ${teacher.hourlyRate}
+                        {formatRate(teacher.hourlyRate)}
                       </span>
                       <span className="text-xs text-stone-300 font-medium"> / 50 min</span>
                     </div>
@@ -291,7 +292,7 @@ export default function DashboardTeachersTab() {
                     Book Lesson with {selectedTeacherForBooking.name}
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    ${selectedTeacherForBooking.hourlyRate} / 50 min session
+                    {formatRate(selectedTeacherForBooking.hourlyRate)} / 50 min session
                   </p>
                 </div>
               </div>

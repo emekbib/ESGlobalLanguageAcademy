@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { generateSlots, formatDateKey, type AvailabilitySlot } from '@/lib/availability/slots';
+import { lessonPriceCents } from '@/lib/pricing';
 import type { TeacherAvailability, TeacherType } from '@/lib/types/database';
 import Link from 'next/link';
 
@@ -34,6 +35,8 @@ type BookingCardProps = {
   teacherType?: TeacherType;
   teacherName?: string;
   teacherAvatar?: string | null;
+  /** False for showcase profiles that have no real teacher account behind them. */
+  bookable?: boolean;
 };
 
 export default function BookingCard({
@@ -42,6 +45,7 @@ export default function BookingCard({
   teacherType = 'community_tutor',
   teacherName = 'Native Educator',
   teacherAvatar = null,
+  bookable = true,
 }: BookingCardProps) {
   const supabase = createSupabaseBrowserClient();
   const [availability, setAvailability] = useState<TeacherAvailability[]>([]);
@@ -64,100 +68,60 @@ export default function BookingCard({
       const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       if (active) setViewerTz(browserTz);
 
-      if (teacherId.startsWith('sample-')) {
-        const sampleAvail: TeacherAvailability[] = [1, 2, 3, 4, 5].map((day) => ({
-          id: `avail-${day}`,
-          teacher_id: teacherId,
-          weekday: day,
-          start_time: '09:00:00',
-          end_time: '17:00:00',
-          timezone: browserTz,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }));
+      if (!bookable || teacherId.startsWith('sample-')) {
         if (active) {
-          setAvailability(sampleAvail);
+          setAvailability([]);
           setExistingBookings([]);
           setLoading(false);
         }
         return;
       }
 
-      // Resolve teacher_id: query both teacher_profiles.id and profiles.user_id
-      let queryIds = [teacherId];
-      const { data: tp } = await supabase
-        .from('teacher_profiles')
-        .select('id, user_id')
-        .or(`id.eq.${teacherId},user_id.eq.${teacherId}`)
-        .maybeSingle();
-
-      if (tp) {
-        queryIds = Array.from(new Set([tp.id, tp.user_id, teacherId]));
-      }
-
-      // Fetch availability from server API first for optimal reliability
-      let avail: any[] | null = null;
+      // Availability: only the teacher's real saved windows. No invented default schedule.
+      let avail: TeacherAvailability[] = [];
       try {
-        const apiRes = await fetch(`/api/teacher/availability?teacherId=${encodeURIComponent(teacherId)}`);
-        if (apiRes.ok) {
-          const apiJson = await apiRes.json();
-          if (Array.isArray(apiJson?.data)) {
-            avail = apiJson.data;
-          }
+        const apiRes = await fetch(`/api/teacher/availability?teacherId=${encodeURIComponent(teacherId)}`, {
+          cache: 'no-store',
+        });
+        const apiJson = await apiRes.json().catch(() => null);
+        if (apiRes.ok && Array.isArray(apiJson?.data)) {
+          avail = apiJson.data;
+        } else {
+          throw new Error(apiJson?.error || 'availability unavailable');
         }
-      } catch (e) {
-        console.warn('Availability API fetch notice:', e);
-      }
-
-      if (!avail) {
+      } catch {
         const { data: directAvail, error: availError } = await supabase
           .from('teacher_availability')
           .select('*')
-          .in('teacher_id', queryIds);
-
-        if (availError) {
-          console.warn('Availability query notice:', availError.message);
-        }
-        avail = directAvail ?? [];
+          .eq('teacher_id', teacherId);
+        if (availError && active) setLoadError(true);
+        avail = (directAvail as TeacherAvailability[] | null) ?? [];
       }
 
-      const { data: bks, error: bksError } = await supabase
-        .from('bookings')
-        .select('start_time_utc, end_time_utc, status, hold_expires_at')
-        .in('teacher_id', queryIds)
-        .in('status', ['pending', 'confirmed']);
-
-      if (bksError) {
-        console.warn('Bookings query notice:', bksError.message);
+      // Busy times: students can't read other students' bookings directly (RLS), so use the
+      // get_teacher_busy_times RPC, which only exposes start/end times. Fall back to what
+      // this user can see if the RPC isn't installed yet.
+      let busy: SlotBooking[] = [];
+      const { data: busyRows, error: busyError } = await supabase.rpc('get_teacher_busy_times', {
+        p_teacher_id: teacherId,
+      });
+      if (!busyError && Array.isArray(busyRows)) {
+        busy = busyRows.map((b: any) => ({ startUtc: new Date(b.start_time_utc).toISOString(), endUtc: new Date(b.end_time_utc).toISOString() }));
+      } else {
+        const { data: bks } = await supabase
+          .from('bookings')
+          .select('start_time_utc, end_time_utc, status, hold_expires_at')
+          .eq('teacher_id', teacherId)
+          .in('status', ['pending', 'confirmed']);
+        const now = Date.now();
+        busy = (bks ?? [])
+          .filter((b) => b.status === 'confirmed' || (b.hold_expires_at && new Date(b.hold_expires_at).getTime() > now))
+          .map((b) => ({ startUtc: new Date(b.start_time_utc).toISOString(), endUtc: new Date(b.end_time_utc).toISOString() }));
       }
-
-      const now = Date.now();
-      const activeBookings = (bks ?? []).filter(
-        (b) =>
-          b.status === 'confirmed' ||
-          (b.hold_expires_at && new Date(b.hold_expires_at).getTime() > now),
-      );
 
       if (active) {
-        // Fallback default working windows if teacher has not added custom hours yet
-        const effectiveAvail =
-          avail && avail.length > 0
-            ? avail
-            : [1, 2, 3, 4, 5].map((d) => ({
-                id: `default-${d}`,
-                teacher_id: teacherId,
-                weekday: d,
-                start_time: '09:00:00',
-                end_time: '17:00:00',
-                timezone: browserTz,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              }));
-
-        setAvailability(effectiveAvail);
-        setExistingBookings(
-          activeBookings.map((b) => ({ startUtc: b.start_time_utc, endUtc: b.end_time_utc })),
-        );
+        setAvailability(avail);
+        setExistingBookings(busy);
         setLoading(false);
       }
     }
@@ -165,7 +129,7 @@ export default function BookingCard({
     return () => {
       active = false;
     };
-  }, [supabase, teacherId]);
+  }, [supabase, teacherId, bookable]);
 
   const slots = useMemo(
     () => generateSlots(availability, viewerTz, lessonMinutes, 14, existingBookings),
@@ -203,13 +167,22 @@ export default function BookingCard({
     return result;
   }, [slots, viewerTz]);
 
+  // Jump the calendar to the first day that actually has an open slot.
+  useEffect(() => {
+    const firstIdx = grouped.findIndex((g) => g.slots.length > 0);
+    if (firstIdx >= 0) setDayOffset(Math.floor(firstIdx / DAYS_PER_PAGE) * DAYS_PER_PAGE);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slots.length > 0 ? slots[0].startUtc : null]);
+
   const visibleDays = grouped.slice(dayOffset, dayOffset + DAYS_PER_PAGE);
 
+  // Same formula the server charges with (lib/pricing.ts) — no hidden defaults.
   const pricePerLesson = useMemo(() => {
-    const hourly = Number(hourlyRate) || 35;
-    const mins = Number(lessonMinutes) || 50;
-    if (mins === 50) return hourly;
-    return Math.round(((hourly * mins) / 50) * 100) / 100;
+    try {
+      return lessonPriceCents(Number(hourlyRate), lessonMinutes) / 100;
+    } catch {
+      return 0;
+    }
   }, [hourlyRate, lessonMinutes]);
 
   const canGoBack = dayOffset > 0;
@@ -222,20 +195,17 @@ export default function BookingCard({
 
   const handleOpenConfirmModal = () => {
     setBookingError(null);
-    const slotToBook = selectedSlot || slots[0];
-    if (!slotToBook) {
-      setBookingError('Please choose an available time slot from the calendar.');
+    // Always book exactly the slot the student picked — never silently pick one for them.
+    if (!selectedSlot) {
+      setBookingError('Please choose a time from the calendar first.');
       return;
-    }
-    if (!selectedSlot && slots[0]) {
-      setSelectedSlot(slots[0]);
     }
     setConfirmModalOpen(true);
   };
 
   const handleProceedToPayment = async () => {
     setBookingError(null);
-    const slotToBook = selectedSlot || slots[0];
+    const slotToBook = selectedSlot;
     if (!slotToBook) {
       setBookingError('Please choose an available time slot from the calendar.');
       setConfirmModalOpen(false);
@@ -254,7 +224,11 @@ export default function BookingCard({
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      // Never leave the student on an endless spinner if the request stalls.
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 60000);
       const res = await fetch('/api/checkout', {
+        signal: controller.signal,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -270,7 +244,8 @@ export default function BookingCard({
         }),
       });
 
-      const data = await res.json();
+      window.clearTimeout(timeout);
+      const data = await res.json().catch(() => null);
 
       if (!res.ok || !data || typeof data.checkoutUrl !== 'string') {
         setBookingError(
@@ -281,22 +256,9 @@ export default function BookingCard({
         return;
       }
 
-      if (data.booking) {
-        try {
-          const storageKey = `es_student_bookings_${user.id}`;
-          const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
-          const existingList: any[] = raw ? JSON.parse(raw) : [];
-          const filtered = existingList.filter((b: any) => b.id !== data.booking.id);
-          filtered.push(data.booking);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(storageKey, JSON.stringify(filtered));
-          }
-        } catch {}
-      }
-
       window.location.assign(data.checkoutUrl);
     } catch {
-      setBookingError('An unexpected error occurred while starting checkout.');
+      setBookingError('We couldn’t reach the payment page. You have not been charged — please try again.');
       setBookingInProgress(false);
       setConfirmModalOpen(false);
     }
@@ -313,7 +275,7 @@ export default function BookingCard({
     );
   }
 
-  const activeSlot = selectedSlot || slots[0];
+  const activeSlot = selectedSlot;
 
   return (
     <>
@@ -325,7 +287,7 @@ export default function BookingCard({
           </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-950 dark:text-white">
-              ${pricePerLesson}
+              ${pricePerLesson.toFixed(2)}
             </span>
             <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">/ {lessonMinutes} min session</span>
           </div>
@@ -387,7 +349,13 @@ export default function BookingCard({
               <div className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50 px-4 py-6 text-center">
                 <Clock className="mx-auto h-5 w-5 text-stone-400" />
                 <p className="mt-2 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                  No open slots found for these dates.
+                  {!bookable
+                    ? 'This profile is a preview and is not taking bookings yet.'
+                    : loadError
+                    ? 'We couldn’t load this teacher’s calendar. Please refresh the page.'
+                    : availability.length === 0
+                    ? 'This teacher hasn’t published their availability yet.'
+                    : 'All of this teacher’s times in the next two weeks are booked.'}
                 </p>
               </div>
             ) : (
@@ -437,7 +405,7 @@ export default function BookingCard({
             <button
               type="button"
               onClick={handleOpenConfirmModal}
-              disabled={bookingInProgress || slots.length === 0}
+              disabled={bookingInProgress || slots.length === 0 || !selectedSlot}
               className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-stone-950 dark:bg-stone-100 py-3.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white active:scale-95 disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
             >
               {bookingInProgress ? (
@@ -449,7 +417,7 @@ export default function BookingCard({
                 <span>No Open Slots Scheduled</span>
               ) : (
                 <>
-                  <span>{selectedSlot ? 'Review & Book Slot' : 'Instant Book Lesson'}</span>
+                  <span>{selectedSlot ? `Review & Book · ${selectedSlot.dayLocal}, ${selectedSlot.startLocal}` : 'Select a time above'}</span>
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 dark:bg-stone-950/20 text-amber-300 dark:text-stone-950 transition-transform group-hover:translate-x-0.5">
                     <ArrowRight className="h-3 w-3" />
                   </span>
@@ -469,7 +437,7 @@ export default function BookingCard({
           <div className="border-t border-stone-150 dark:border-stone-800 pt-3 text-center">
             <p className="flex items-center justify-center gap-1.5 text-[11px] text-stone-400 dark:text-stone-500 font-medium">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              100% Escrow Protection · Instant Confirmation
+              Secure payment via Stripe · You review the total before paying
             </p>
           </div>
         </div>

@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
         router.push('/admin');
       } else {
         // Log them out and show error since they aren't an admin
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' });
         setError('Access Denied: You do not have administrative privileges.');
         setLoading(false);
       }

@@ -96,22 +96,9 @@ export default function OnboardingPage() {
       return;
     }
 
-    if (role === 'teacher') {
-      await supabase.from('teacher_profiles').upsert(
-        {
-          user_id: user.id,
-          languages_taught: [targetLanguage || 'Amharic'],
-          languages_spoken: [targetLanguage || 'Amharic', 'English'],
-          hourly_rate: 35,
-          years_experience: 3,
-          teacher_type: 'community_tutor',
-          specialties: [learningGoal || 'Conversational Fluency'],
-          application_status: 'approved',
-          is_published: true,
-        },
-        { onConflict: 'user_id' }
-      );
-    }
+    // Teachers create their teacher profile (bio, rate, languages) on /teacher/onboarding.
+    // A published teacher profile requires a bio, so creating one here always failed
+    // silently and left new teachers without a profile (no availability, no bookings).
 
     router.replace(role === 'teacher' ? '/teacher/onboarding' : '/dashboard');
   }
