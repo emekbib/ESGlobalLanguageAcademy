@@ -53,20 +53,10 @@ export function generateSlots(
   const slots: AvailabilitySlot[] = [];
   const safeViewerTz = viewerTimezone || 'UTC';
 
-  // Ensure default availability if teacher has not added windows yet
-  const effectiveAvail: TeacherAvailability[] =
-    availability && availability.length > 0
-      ? availability
-      : [1, 2, 3, 4, 5].map((d) => ({
-          id: `default-${d}`,
-          teacher_id: 'default',
-          weekday: d,
-          start_time: '09:00:00',
-          end_time: '17:00:00',
-          timezone: safeViewerTz,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }));
+  // Only the teacher's real, saved availability produces bookable slots. (Previously an
+  // invented Mon–Fri 9–5 schedule was used when a teacher had none, so every teacher
+  // showed the same times regardless of what they had set.)
+  const effectiveAvail: TeacherAvailability[] = availability ?? [];
 
   const WEEKDAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 

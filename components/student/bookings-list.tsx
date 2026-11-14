@@ -5,12 +5,17 @@ import Link from 'next/link';
 import { Calendar, Clock, MessageSquare } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/lib/types/database';
 import CompleteBookingButton from '@/components/teacher/complete-booking-button';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { cancellationMessage } from '@/lib/payments/refund-policy';
 
 type EnrichedBooking = Pick<
   Booking,
   'id' | 'teacher_id' | 'student_id' | 'start_time_utc' | 'end_time_utc' | 'status'
-> & { teacher_name: string; teacher_avatar: string | null };
+> & {
+  teacher_name: string;
+  teacher_avatar: string | null;
+  amount_cents?: number | null;
+  payment_intent_id?: string | null;
+};
 
 const STATUS_STYLES: Record<BookingStatus, string> = {
   pending: 'bg-amber-50 text-amber-700 border border-amber-200/60',
@@ -61,7 +66,8 @@ export default function BookingsList({
   const [mounted, setMounted] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
-  const supabase = createSupabaseBrowserClient();
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelNotice, setCancelNotice] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -71,38 +77,33 @@ export default function BookingsList({
 
   const handleCancelBooking = async (bookingId: string) => {
     setCancellingId(bookingId);
+    setCancelError(null);
+    setCancelNotice(null);
     try {
-      // 1. Try DB update
-      await supabase
-        .from('bookings')
-        .update({ status: 'cancelled' })
-        .eq('id', bookingId);
-
-      // 2. Also update local storage across all student bookings keys
-      if (typeof window !== 'undefined') {
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.startsWith('es_student_bookings_')) {
-            try {
-              const raw = localStorage.getItem(k);
-              if (raw) {
-                const list: any[] = JSON.parse(raw);
-                const updated = list.map((b) => (b.id === bookingId ? { ...b, status: 'cancelled' } : b));
-                localStorage.setItem(k, JSON.stringify(updated));
-              }
-            } catch {}
-          }
-        }
+      // Cancels server-side and issues the Stripe refund when the policy allows.
+      const res = await fetch('/api/bookings/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        setCancelError(data?.error || 'We could not cancel this lesson. Please try again.');
+        return;
       }
-
+      setCancelNotice(
+        data.refundedCents > 0
+          ? `Lesson cancelled. A refund of $${(data.refundedCents / 100).toFixed(2)} has been issued.`
+          : 'Lesson cancelled.',
+      );
       setConfirmCancelId(null);
       if (onBookingCancelled) {
         onBookingCancelled();
       } else {
-        window.location.reload();
+        window.setTimeout(() => window.location.reload(), 1500);
       }
-    } catch (err) {
-      console.error('Failed to cancel booking:', err);
+    } catch {
+      setCancelError('We could not reach the server. Your lesson was not cancelled.');
     } finally {
       setCancellingId(null);
     }
@@ -119,6 +120,13 @@ export default function BookingsList({
         </h2>
       </div>
 
+      {cancelError && (
+        <div className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{cancelError}</div>
+      )}
+      {cancelNotice && (
+        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-medium text-emerald-700">{cancelNotice}</div>
+      )}
+
       {bookings.length === 0 ? (
         <div className="rounded-3xl border border-slate-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 px-6 py-10 text-center shadow-sm">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 dark:bg-stone-800 text-slate-400 dark:text-stone-500">
@@ -133,7 +141,8 @@ export default function BookingsList({
           {bookings.map((booking) => {
             const start = formatLocal(booking.start_time_utc);
             const end = formatLocal(booking.end_time_utc);
-            const otherParty = viewerRole === 'student' ? booking.teacher_name : 'Student';
+            // For teachers, the loader puts the STUDENT's name in teacher_name (the "other party" field).
+            const otherParty = booking.teacher_name || (viewerRole === 'student' ? 'your teacher' : 'your student');
             const messageUrl =
               viewerRole === 'student'
                 ? `/dashboard?tab=messages&contactId=${booking.teacher_id}`
@@ -183,11 +192,19 @@ export default function BookingsList({
                     </Link>
                   </div>
 
-                  {viewerRole === 'student' &&
-                    (booking.status === 'confirmed' || booking.status === 'pending') && (
-                      <div className="flex items-center gap-2">
+                  {(booking.status === 'confirmed' || booking.status === 'pending') &&
+                    new Date(booking.start_time_utc).getTime() > Date.now() && (
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         {isConfirming ? (
                           <>
+                            <span className="w-full text-right text-[11px] font-medium text-stone-500 dark:text-stone-400">
+                              {cancellationMessage({
+                                actor: viewerRole,
+                                paid: booking.status === 'confirmed' && Boolean(booking.payment_intent_id),
+                                amountCents: booking.amount_cents,
+                                startUtc: booking.start_time_utc,
+                              })}
+                            </span>
                             <button
                               type="button"
                               onClick={() => void handleCancelBooking(booking.id)}

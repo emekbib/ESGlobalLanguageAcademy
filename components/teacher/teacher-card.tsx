@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Star, BadgeCheck } from 'lucide-react';
+import { formatRate } from '@/lib/pricing';
 
 export type TeacherCardData = {
   id: string;
@@ -71,7 +72,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
 
         {/* Price */}
         <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 font-medium">
-          <span className="font-bold text-stone-950 dark:text-white text-sm">${teacher.hourlyRate}</span>
+          <span className="font-bold text-stone-950 dark:text-white text-sm">{formatRate(teacher.hourlyRate)}</span>
           {' / 50 min'}
         </p>
 

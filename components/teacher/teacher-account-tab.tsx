@@ -18,6 +18,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getSameUser } from '@/lib/auth/same-user';
 
 const FOCUS_LANGUAGES = [
   'Amharic',
@@ -28,6 +29,7 @@ const FOCUS_LANGUAGES = [
 
 type TeacherAccountTabProps = {
   profile: {
+    user_id: string;
     role: string;
     full_name: string;
     avatar_url: string | null;
@@ -104,12 +106,9 @@ export default function TeacherAccountTab({
     setErrorMessage('');
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { user, error: identityError } = await getSameUser(supabase, profile.user_id);
       if (!user) {
-        setErrorMessage('Session expired. Please sign in again.');
+        setErrorMessage(identityError ?? 'Session expired. Please sign in again.');
         setSaving(false);
         return;
       }
@@ -121,7 +120,9 @@ export default function TeacherAccountTab({
         .eq('user_id', user.id);
 
       if (profileErr) {
-        console.warn('Profile name update note:', profileErr.message);
+        setErrorMessage(profileErr.message || 'Failed to save your name.');
+        setSaving(false);
+        return;
       }
 
       // 2. Update or Insert teacher profile

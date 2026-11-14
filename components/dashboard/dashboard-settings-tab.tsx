@@ -4,14 +4,17 @@ import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { User, Globe, Clock, Shield, Check, Loader2, Moon, Sun, Monitor } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getSameUser } from '@/lib/auth/same-user';
 
 export default function DashboardSettingsTab({
+  userId,
   fullName,
   avatarUrl,
   role = 'student',
   initialLanguage = 'Amharic',
   onNameUpdate,
 }: {
+  userId: string;
   fullName: string;
   avatarUrl: string | null;
   role?: string;
@@ -27,6 +30,7 @@ export default function DashboardSettingsTab({
   );
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const normalizeTargetLang = (l: string | null | undefined): string => {
     if (!l) return 'Amharic';
@@ -39,10 +43,7 @@ export default function DashboardSettingsTab({
 
   useEffect(() => {
     setMounted(true);
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('es_student_target_language') : null;
-    if (stored) {
-      setSelectedLanguage(normalizeTargetLang(stored));
-    } else if (initialLanguage) {
+    if (initialLanguage) {
       setSelectedLanguage(normalizeTargetLang(initialLanguage));
     }
   }, [initialLanguage]);
@@ -53,25 +54,27 @@ export default function DashboardSettingsTab({
     e.preventDefault();
     setSaving(true);
     setSavedSuccess(false);
+    setSaveError('');
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('profiles').update({
-          full_name: name,
-          bio: selectedLanguage,
-        }).eq('user_id', user.id);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('es_student_target_language', selectedLanguage);
-        }
-        if (onNameUpdate) {
-          onNameUpdate(name);
-        }
+      const { user, error: identityError } = await getSameUser(supabase, userId);
+      if (!user) {
+        setSaveError(identityError ?? 'Please sign in again.');
+        return;
       }
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: name.trim(), bio: selectedLanguage })
+        .eq('user_id', user.id);
+      if (error) {
+        setSaveError(error.message || 'Could not save your settings.');
+        return;
+      }
+      if (onNameUpdate) onNameUpdate(name.trim());
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
-    } catch {
-      // ignore
+    } catch (err: any) {
+      setSaveError(err?.message || 'Could not save your settings.');
     } finally {
       setSaving(false);
     }
@@ -281,6 +284,9 @@ export default function DashboardSettingsTab({
             )}
           </button>
 
+          {saveError && (
+            <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">{saveError}</p>
+          )}
           {savedSuccess && (
             <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
               <Check className="h-4 w-4" />

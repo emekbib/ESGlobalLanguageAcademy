@@ -105,34 +105,15 @@ export function useTeachers() {
           languages: normalizedLangs.length > 0 ? normalizedLangs : ['Amharic'],
           rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 5.0,
           lessonsTaught: lessonCounts.get(t.id) ?? 0,
-          hourlyRate: Number(t.hourly_rate) || 35,
+          hourlyRate: Number(t.hourly_rate),
           teacherType: t.teacher_type ?? 'community_tutor',
           specialties: t.specialties ?? [],
         };
       });
 
-      // Include any user who registered as a teacher but whose profile is not yet in teacherProfiles
-      const existingUserIds = new Set(teacherProfiles.map((t) => t.user_id));
-      const additionalTeachers: TeacherCardData[] = (teacherProfilesFromUsers ?? [])
-        .filter(
-          (p) =>
-            !existingUserIds.has(p.user_id) &&
-            p.full_name &&
-            p.full_name.trim().length > 2 &&
-            p.full_name.trim().toLowerCase() !== 'not'
-        )
-        .map((p) => ({
-          id: p.user_id,
-          userId: p.user_id,
-          name: p.full_name || 'Native Educator',
-          avatarUrl: p.avatar_url ?? null,
-          languages: ['Amharic'],
-          rating: 5.0,
-          lessonsTaught: 0,
-          hourlyRate: 35,
-          teacherType: 'community_tutor',
-          specialties: ['Conversational Fluency'],
-        }));
+      // Only teachers with a real teacher profile (rate, languages, bio) are listed. Accounts
+      // that haven't finished teacher setup are not shown with invented prices/schedules.
+      const additionalTeachers: TeacherCardData[] = [];
 
       // Clean name helper to strip demo tags and special characters
       const cleanName = (n: string) =>

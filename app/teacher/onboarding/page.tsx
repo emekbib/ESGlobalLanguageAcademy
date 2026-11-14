@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Check, Loader2, DollarSign, Video, GraduationCap, ShieldCheck } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getSameUser } from '@/lib/auth/same-user';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { TeacherType } from '@/lib/types/database';
+import { formatRate } from '@/lib/pricing';
 
 const AVAILABLE_LANGUAGES = [
   'Amharic',
@@ -43,6 +45,7 @@ export default function TeacherOnboardingPage() {
   const [videoIntroUrl, setVideoIntroUrl] = useState<string>('');
   const [degreeTitle, setDegreeTitle] = useState<string>('');
   const [institution, setInstitution] = useState<string>('');
+  const [ownerUserId, setOwnerUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -54,6 +57,22 @@ export default function TeacherOnboardingPage() {
         router.replace('/auth');
         return;
       }
+
+      // Only teacher accounts may create a teacher profile.
+      const { data: ownProfile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!ownProfile) {
+        router.replace('/onboarding');
+        return;
+      }
+      if (ownProfile.role !== 'teacher') {
+        router.replace(ownProfile.role === 'admin' ? '/admin' : '/dashboard');
+        return;
+      }
+      if (active) setOwnerUserId(user.id);
 
       const { data: existing } = await supabase
         .from('teacher_profiles')
@@ -96,11 +115,15 @@ export default function TeacherOnboardingPage() {
     setSaving(true);
     setError('');
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    if (!ownerUserId) {
+      setError('Your session could not be verified. Please reload the page.');
+      setSaving(false);
+      return;
+    }
+    const { user, error: identityError } = await getSameUser(supabase, ownerUserId);
     if (!user) {
-      router.replace('/auth');
+      setError(identityError ?? 'Please sign in again.');
+      setSaving(false);
       return;
     }
 
@@ -351,7 +374,7 @@ export default function TeacherOnboardingPage() {
                   />
                 </div>
                 <p className="mt-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
-                  You earn ${hourlyRate} per completed lesson.
+                  You earn {formatRate(hourlyRate)} per 50-minute lesson, before the 20% platform fee.
                 </p>
               </div>
 

@@ -19,6 +19,7 @@ import ReviewsSection, { type Review } from '@/components/teacher/reviews-sectio
 import TeacherVideoPlayer from '@/components/teacher/teacher-video-player';
 import type { TeacherType } from '@/lib/types/database';
 import { getSampleTeacherById } from '@/lib/data/sample-teachers';
+import { formatRate } from '@/lib/pricing';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -52,48 +53,12 @@ export default async function TeacherProfilePage({
     teacher = tByUserId;
   }
 
-  // Also check if id is a teacher's user_id in profiles
-  let fallbackUserProfile = null;
-  if (!teacher) {
-    const { data: p } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role')
-      .eq('user_id', id)
-      .maybeSingle();
-    if (p && p.role === 'teacher') {
-      fallbackUserProfile = p;
-    }
-  }
+  // Only real teacher profiles are bookable. Showcase (sample) profiles are display-only.
+  // (Previously, accounts without a teacher profile got a page with an invented $35 rate,
+  // and sample profiles were linked to real accounts by matching first names.)
+  const sample = !teacher ? getSampleTeacherById(id) : null;
 
-  // Check sample teachers fallback if not found in database
-  let sample = !teacher && !fallbackUserProfile ? getSampleTeacherById(id) : null;
-
-  // If viewing a sample teacher, check if a live registered educator matches this educator (e.g. Bethelhem Mengistu)
-  // to ensure bio edits in teacher dashboard seamlessly sync with the public profile
-  if (sample && !teacher) {
-    const firstName = sample.name.split(' ')[0];
-    const { data: matchedProfile } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url')
-      .ilike('full_name', `%${firstName}%`)
-      .limit(1)
-      .maybeSingle();
-
-    if (matchedProfile) {
-      const { data: matchedTeacherProfile } = await supabase
-        .from('teacher_profiles')
-        .select('*')
-        .eq('user_id', matchedProfile.user_id)
-        .maybeSingle();
-
-      if (matchedTeacherProfile) {
-        teacher = matchedTeacherProfile;
-        fallbackUserProfile = matchedProfile;
-      }
-    }
-  }
-
-  if (!teacher && !fallbackUserProfile && !sample) {
+  if (!teacher && !sample) {
     notFound();
   }
 
@@ -112,18 +77,9 @@ export default async function TeacherProfilePage({
   let yearsExperience = 3;
   let videoIntroUrl: string | null = null;
   let reviews: Review[] = [];
-  const educatorUserId = teacher ? teacher.user_id : fallbackUserProfile ? fallbackUserProfile.user_id : null;
+  const educatorUserId = teacher ? teacher.user_id : null;
 
-  if (fallbackUserProfile && !teacher) {
-    fullName = fallbackUserProfile.full_name || 'Native Educator';
-    avatarUrl = fallbackUserProfile.avatar_url;
-    languagesTaught = ['Amharic'];
-    languagesSpoken = ['Amharic', 'English'];
-    teacherType = 'community_tutor';
-    hourlyRate = 35;
-    bio = 'Certified native speaker offering 1-on-1 personalized conversational practice and language lessons.';
-    specialties = ['Conversational Fluency', 'Pronunciation'];
-  } else if (teacher) {
+  if (teacher) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, avatar_url')
@@ -399,7 +355,8 @@ export default async function TeacherProfilePage({
           <aside id="booking-section" className="lg:w-[380px] lg:shrink-0 scroll-mt-24">
             <div className="lg:sticky lg:top-28">
               <BookingCard
-                teacherId={id}
+                teacherId={teacher ? teacher.id : id}
+                bookable={!!teacher}
                 hourlyRate={hourlyRate}
                 teacherType={teacherType}
                 teacherName={fullName}
@@ -416,7 +373,7 @@ export default async function TeacherProfilePage({
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Lesson Rate</p>
             <p className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
-              ${hourlyRate} <span className="text-xs font-semibold text-stone-400">/ 50 min</span>
+              {formatRate(hourlyRate)} <span className="text-xs font-semibold text-stone-400">/ 50 min</span>
             </p>
           </div>
           <a

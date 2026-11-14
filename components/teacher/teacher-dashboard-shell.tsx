@@ -35,6 +35,7 @@ import TeacherAccountTab from './teacher-account-tab';
 import DashboardMessagesTab from '@/components/dashboard/dashboard-messages-tab';
 import NotificationBell from '@/components/notifications/notification-bell';
 import { useMessageNotifications } from '@/hooks/use-message-notifications';
+import { formatRate } from '@/lib/pricing';
 
 type BookingItem = {
   id: string;
@@ -43,6 +44,8 @@ type BookingItem = {
   start_time_utc: string;
   end_time_utc: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  amount_cents?: number | null;
+  payment_intent_id?: string | null;
   created_at: string;
   teacher_name: string;
   teacher_avatar: string | null;
@@ -95,8 +98,8 @@ export default function TeacherDashboardShell({
     try {
       const { data: bks } = await supabase
         .from('bookings')
-        .select('id, teacher_id, student_id, start_time_utc, end_time_utc, status, created_at')
-        .or(`teacher_id.eq.${teacherProfile.id},teacher_id.eq.${profile.user_id}`)
+        .select('id, teacher_id, student_id, start_time_utc, end_time_utc, status, created_at, hold_expires_at, amount_cents, payment_intent_id')
+        .eq('teacher_id', teacherProfile.id)
         .order('start_time_utc', { ascending: true });
 
       if (bks) {
@@ -106,7 +109,10 @@ export default function TeacherDashboardShell({
           : { data: [] };
         const studentMap = new Map((students ?? []).map((s) => [s.user_id, s]));
 
-        const enriched: BookingItem[] = bks.map((b) => {
+        const nowMs = Date.now();
+        const enriched: BookingItem[] = bks
+          .filter((b) => !(b.status === 'pending' && (!b.hold_expires_at || new Date(b.hold_expires_at).getTime() < nowMs)))
+          .map(({ hold_expires_at: _hold, ...b }) => {
           const s = studentMap.get(b.student_id);
           return {
             ...b,
@@ -684,7 +690,7 @@ export default function TeacherDashboardShell({
                       <div className="mt-4">
                         <div className="flex items-baseline gap-1.5">
                           <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
-                            ${teacherProfile.hourly_rate ?? 35}
+                            {formatRate(teacherProfile.hourly_rate)}
                           </span>
                           <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">USD</span>
                         </div>
@@ -839,6 +845,7 @@ export default function TeacherDashboardShell({
                         bookings={liveUpcoming}
                         title="Upcoming Student Lessons"
                         emptyMessage="No upcoming student lessons scheduled."
+                        onBookingCancelled={fetchLiveBookings}
                         viewerRole="teacher"
                       />
                       <BookingsList
@@ -882,6 +889,7 @@ export default function TeacherDashboardShell({
                     bookings={liveUpcoming}
                     title="Upcoming Student Lessons"
                     emptyMessage="No upcoming student lessons scheduled."
+                        onBookingCancelled={fetchLiveBookings}
                     viewerRole="teacher"
                   />
                   <BookingsList

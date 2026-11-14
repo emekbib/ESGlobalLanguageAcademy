@@ -1,366 +1,211 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
-import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { ALLOWED_LESSON_MINUTES, PLATFORM_FEE_RATE, lessonPriceCents } from '@/lib/pricing';
 
-function getClients(request: Request, serverClient: any) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_SUPABASE_URL || '';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_SUPABASE_ANON_KEY || '';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const HOLD_MINUTES = 15;
 
-  const authHeader = request.headers.get('authorization');
-  const bearerToken = authHeader?.startsWith('Bearer ')
-    ? authHeader.replace('Bearer ', '').trim()
-    : null;
-
-  let userClient = serverClient;
-  if (bearerToken) {
-    userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: `Bearer ${bearerToken}` },
-      },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-  }
-
-  // If service role key is configured, use it for authoritative database operations
-  let writeClient = userClient;
-  if (serviceRoleKey) {
-    writeClient = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-  }
-
-  return { userClient, writeClient, bearerToken };
-}
-
+/**
+ * Starts a paid booking.
+ *
+ * Rules (each one fixes a QA finding):
+ *  - The price is computed HERE from the teacher's rate and the lesson length. The amount
+ *    the client displays is only used to detect a stale quote; it is never charged.
+ *  - The booking is created as a 15-minute `pending` hold, never `confirmed`. It becomes
+ *    `confirmed` only after Stripe reports the Checkout Session as paid
+ *    (see lib/payments/confirm-booking.ts, called from the success redirect).
+ *  - If Stripe is unavailable the hold is released and an error is returned. There is
+ *    no "free confirmation" fallback.
+ *  - Showcase (sample) profiles cannot be booked.
+ */
 export async function POST(req: Request) {
+  let createdBookingId: string | null = null;
+  let db: any = null;
+  const t0 = Date.now();
+  const mark = (step: string) => {
+    if (process.env.CHECKOUT_TIMING) console.log(`[checkout] ${step} +${Date.now() - t0}ms`);
+  };
+
   try {
     const serverClient = await createSupabaseServerClient();
-    const { userClient, writeClient } = getClients(req, serverClient);
+    db = serverClient;
 
-    // Get user from server cookie client first, fallback to userClient
-    let { data: { user } } = await serverClient.auth.getUser();
+    let {
+      data: { user },
+    } = await serverClient.auth.getUser();
+
+    // Fallback to the bearer token sent by the booking card (cookie edge cases).
     if (!user) {
-      const { data: authData } = await userClient.auth.getUser();
-      user = authData?.user ?? null;
+      const auth = req.headers.get('authorization');
+      const token = auth?.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+      if (token) {
+        const bearerClient = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_SUPABASE_URL || '',
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_SUPABASE_ANON_KEY || '',
+          {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { persistSession: false, autoRefreshToken: false },
+          },
+        );
+        const { data } = await bearerClient.auth.getUser(token);
+        if (data?.user) {
+          user = data.user;
+          db = bearerClient;
+        }
+      }
     }
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Please sign in to schedule a lesson.' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Please sign in to book a lesson.' }, { status: 401 });
     }
 
+    mark('auth');
     const body = await req.json();
-    const { teacherId, startUtc, endUtc, track, quotedPrice } = body;
+    mark('body');
+    const { teacherId, startUtc, lessonMinutes, quotedPrice } = body ?? {};
 
-    if (!teacherId || !startUtc || !endUtc) {
+    if (typeof teacherId !== 'string' || !UUID_RE.test(teacherId)) {
       return NextResponse.json(
-        { error: 'Missing booking parameters.' },
-        { status: 400 }
+        { error: 'This profile is a preview and is not taking bookings yet.' },
+        { status: 400 },
       );
+    }
+
+    const minutes = Number(lessonMinutes);
+    if (!ALLOWED_LESSON_MINUTES.includes(minutes as any)) {
+      return NextResponse.json({ error: 'Please choose a 30, 50, or 60 minute lesson.' }, { status: 400 });
     }
 
     const start = new Date(startUtc);
-    const end = new Date(endUtc);
-    const durationMinutes = Math.max(
-      30,
-      Math.round((end.getTime() - start.getTime()) / 60000)
-    );
+    if (Number.isNaN(start.getTime()) || start.getTime() < Date.now()) {
+      return NextResponse.json({ error: 'That time is no longer available. Please pick another.' }, { status: 400 });
+    }
+    const end = new Date(start.getTime() + minutes * 60_000);
 
-    const origin =
-      req.headers.get('origin') ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      'http://localhost:3000';
-
-    // 1. Sample Teachers (Bethelhem Mengistu, Fatuma Hassan, etc.)
-    if (typeof teacherId === 'string' && (teacherId.startsWith('sample-') || teacherId.includes('sample'))) {
-      const sampleTeacher = SAMPLE_TEACHERS.find((t) => t.id === teacherId);
-      const teacherName = sampleTeacher ? sampleTeacher.name : 'Native Educator';
-      const teacherAvatar = sampleTeacher ? sampleTeacher.avatarUrl : null;
-      const hourlyRate = sampleTeacher ? sampleTeacher.hourlyRate : 28;
-      const amountCents = quotedPrice
-        ? Math.round(Number(quotedPrice) * 100)
-        : Math.round(((hourlyRate * durationMinutes) / 50) * 100);
-      const platformFeeCents = Math.round(amountCents * 0.2);
-      const teacherPayoutCents = amountCents - platformFeeCents;
-
-      // Find matching teacher_profile in Supabase ONLY if the educator genuinely matches by name
-      let targetTeacherProfileId: string | null = null;
-      if (sampleTeacher) {
-        const firstName = sampleTeacher.name.split(' ')[0];
-        const { data: matchedProfile } = await writeClient
-          .from('profiles')
-          .select('user_id')
-          .ilike('full_name', `%${firstName}%`)
-          .limit(1)
-          .maybeSingle();
-
-        if (matchedProfile) {
-          const { data: tp } = await writeClient
-            .from('teacher_profiles')
-            .select('id')
-            .eq('user_id', matchedProfile.user_id)
-            .maybeSingle();
-          if (tp) targetTeacherProfileId = tp.id;
-        }
-      }
-
-      const generatedId = `bk_sample_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-      let bookingId: string = generatedId;
-
-      if (targetTeacherProfileId) {
-        try {
-          const { data: bookingRecord, error: insertError } = await writeClient
-            .from('bookings')
-            .insert({
-              student_id: user.id,
-              teacher_id: targetTeacherProfileId,
-              start_time_utc: start.toISOString(),
-              end_time_utc: end.toISOString(),
-              status: 'confirmed',
-              amount_cents: amountCents,
-              platform_fee_cents: platformFeeCents,
-              teacher_payout_cents: teacherPayoutCents,
-            })
-            .select('id, amount_cents')
-            .maybeSingle();
-
-          if (bookingRecord) {
-            bookingId = bookingRecord.id;
-          } else if (insertError) {
-            console.warn('Booking insertion notice (sample):', insertError.message);
-          }
-        } catch (err: any) {
-          console.warn('Booking insertion notice:', err?.message || err);
-        }
-      }
-
-      const confirmedBookingPayload = {
-        id: bookingId,
-        student_id: user.id,
-        teacher_id: targetTeacherProfileId || teacherId,
-        teacher_name: teacherName,
-        teacher_avatar: teacherAvatar,
-        start_time_utc: start.toISOString(),
-        end_time_utc: end.toISOString(),
-        status: 'confirmed',
-        amount_cents: amountCents,
-        track: track || 'track_1',
-        created_at: new Date().toISOString(),
-      };
-
-      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-      if (stripeSecretKey && !stripeSecretKey.includes('placeholder')) {
-        try {
-          const stripe = new Stripe(stripeSecretKey, {
-            apiVersion: '2024-06-20' as any,
-          });
-
-          const session = await stripe.checkout.sessions.create({
-            mode: 'payment',
-            line_items: [
-              {
-                price_data: {
-                  currency: 'usd',
-                  product_data: {
-                    name: `1-on-1 Lesson with ${teacherName}`,
-                    description: `Private language tutoring session (${durationMinutes} min)`,
-                  },
-                  unit_amount: amountCents,
-                },
-                quantity: 1,
-              },
-            ],
-            metadata: {
-              teacher_id: targetTeacherProfileId || teacherId,
-              student_id: user.id,
-              booking_id: bookingId,
-              start_time_utc: start.toISOString(),
-              end_time_utc: end.toISOString(),
-              is_sample: 'true',
-            },
-            success_url: `${origin}/dashboard?payment=success&teacher=${encodeURIComponent(
-              teacherName
-            )}&booking_id=${bookingId}`,
-            cancel_url: `${origin}/dashboard?payment=cancelled`,
-          });
-
-          if (session.url) {
-            return NextResponse.json({
-              checkoutUrl: session.url,
-              booking: confirmedBookingPayload,
-            });
-          }
-        } catch (stripeErr: any) {
-          console.warn('Stripe checkout creation note:', stripeErr?.message);
-        }
-      }
-
-      return NextResponse.json({
-        checkoutUrl: `${origin}/dashboard?booking=confirmed&teacher=${encodeURIComponent(
-          teacherName
-        )}&booking_id=${bookingId}`,
-        booking: confirmedBookingPayload,
-      });
+    // The booking must belong to a student account.
+    const { data: me } = await db.from('profiles').select('role').eq('user_id', user.id).maybeSingle();
+    if (!me || me.role !== 'student') {
+      return NextResponse.json({ error: 'Only student accounts can book lessons.' }, { status: 403 });
     }
 
-    // 2. Real Database Teacher
-    let { data: teacher } = await writeClient
+    const { data: teacher } = await db
       .from('teacher_profiles')
-      .select('id, user_id, hourly_rate, stripe_account_id, stripe_onboarding_complete')
+      .select('id, user_id, hourly_rate, is_published')
       .eq('id', teacherId)
       .maybeSingle();
 
-    if (!teacher) {
-      const { data: tByUserId } = await writeClient
-        .from('teacher_profiles')
-        .select('id, user_id, hourly_rate, stripe_account_id, stripe_onboarding_complete')
-        .eq('user_id', teacherId)
-        .maybeSingle();
-      teacher = tByUserId;
+    if (!teacher || !teacher.is_published) {
+      return NextResponse.json({ error: 'This teacher is not taking bookings right now.' }, { status: 404 });
+    }
+    if (teacher.user_id === user.id) {
+      return NextResponse.json({ error: 'You cannot book a lesson with yourself.' }, { status: 400 });
     }
 
-    if (!teacher) {
+    // Price is authoritative on the server.
+    const amountCents = lessonPriceCents(Number(teacher.hourly_rate), minutes);
+    if (quotedPrice != null && Math.round(Number(quotedPrice) * 100) !== amountCents) {
       return NextResponse.json(
-        { error: 'Teacher profile not found.' },
-        { status: 404 }
+        { error: 'This teacher’s price has changed. Please refresh the page to see the current price.' },
+        { status: 409 },
+      );
+    }
+    const platformFeeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
+    const teacherPayoutCents = amountCents - platformFeeCents;
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey || stripeSecretKey.includes('placeholder')) {
+      return NextResponse.json(
+        { error: 'Payments are not configured yet, so lessons cannot be booked. Please contact support.' },
+        { status: 503 },
       );
     }
 
-    // Fetch teacher's name and avatar
-    const { data: teacherUser } = await writeClient
+    const { data: teacherUser } = await db
       .from('profiles')
-      .select('full_name, avatar_url')
+      .select('full_name')
       .eq('user_id', teacher.user_id)
       .maybeSingle();
+    const teacherName = teacherUser?.full_name || 'your teacher';
 
-    const teacherName = teacherUser?.full_name || 'Native Educator';
-    const teacherAvatar = teacherUser?.avatar_url || null;
-
-    const hourlyRate = Number(teacher.hourly_rate) || 35;
-    const amountCents = quotedPrice
-      ? Math.round(Number(quotedPrice) * 100)
-      : Math.round(((hourlyRate * durationMinutes) / 50) * 100);
-    const platformFeeCents = Math.round(amountCents * 0.2);
-    const teacherPayoutCents = amountCents - platformFeeCents;
-    const holdExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-
-    let bookingId: string = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    let bookingCreated = false;
-
-    const { data: booking, error: bookingError } = await writeClient
+    mark('validated');
+    // 1. Reserve the slot as a pending hold. The DB exclusion constraint rejects overlaps.
+    const { data: booking, error: bookingError } = await db
       .from('bookings')
       .insert({
         student_id: user.id,
         teacher_id: teacher.id,
         start_time_utc: start.toISOString(),
         end_time_utc: end.toISOString(),
-        status: 'confirmed',
-        hold_expires_at: holdExpiresAt,
+        status: 'pending',
+        hold_expires_at: new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString(),
         amount_cents: amountCents,
         platform_fee_cents: platformFeeCents,
         teacher_payout_cents: teacherPayoutCents,
       })
-      .select('id, amount_cents')
-      .maybeSingle();
+      .select('id')
+      .single();
 
-    if (booking?.id) {
-      bookingId = booking.id;
-      bookingCreated = true;
-    } else if (bookingError) {
-      console.error('Booking insertion failure:', bookingError);
+    if (bookingError || !booking) {
+      const overlap =
+        bookingError?.code === '23P01' || /overlap|exclusion/i.test(bookingError?.message ?? '');
       return NextResponse.json(
         {
-          error: bookingError.message.includes('permission denied')
-            ? 'Booking permission check failed. Database permissions must be granted to save bookings.'
-            : bookingError.message || 'Slot could not be booked in database.',
+          error: overlap
+            ? 'Someone just booked that time. Please choose another slot.'
+            : 'We couldn’t reserve that time. Please try again.',
         },
-        { status: 400 }
+        { status: overlap ? 409 : 400 },
       );
     }
+    createdBookingId = booking.id;
+    mark('hold-created');
 
-    const confirmedBookingPayload = {
-      id: bookingId,
-      student_id: user.id,
-      teacher_id: teacher.id,
-      teacher_name: teacherName,
-      teacher_avatar: teacherAvatar,
-      start_time_utc: start.toISOString(),
-      end_time_utc: end.toISOString(),
-      status: 'confirmed',
-      amount_cents: amountCents,
-      track: track || 'track_1',
-      created_at: new Date().toISOString(),
-    };
-
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    if (stripeSecretKey && !stripeSecretKey.includes('placeholder')) {
-      try {
-        const stripe = new Stripe(stripeSecretKey, {
-          apiVersion: '2024-06-20' as any,
-        });
-
-        const session = await stripe.checkout.sessions.create({
-          mode: 'payment',
-          line_items: [
-            {
-              price_data: {
-                currency: 'usd',
-                product_data: {
-                  name: `1-on-1 Lesson with ${teacherName}`,
-                  description: `Private language tutoring session (${durationMinutes} min)`,
-                },
-                unit_amount: amountCents,
-              },
-              quantity: 1,
+    // 2. Create the Stripe Checkout Session — the student reviews and pays there.
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' as any });
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer_email: user.email ?? undefined,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${minutes}-minute lesson with ${teacherName}`,
+              description: `Starts ${start.toUTCString()}`,
             },
-          ],
-          payment_intent_data: {
-            metadata: { booking_id: bookingId },
+            unit_amount: amountCents,
           },
-          metadata: { booking_id: bookingId },
-          success_url: `${origin}/dashboard?payment=success&teacher=${encodeURIComponent(
-            teacherName
-          )}&booking_id=${bookingId}`,
-          cancel_url: `${origin}/dashboard?payment=cancelled`,
-        });
+          quantity: 1,
+        },
+      ],
+      metadata: { booking_id: booking.id, student_id: user.id, teacher_id: teacher.id },
+      payment_intent_data: { metadata: { booking_id: booking.id } },
+      expires_at: Math.floor(Date.now() / 1000) + 31 * 60, // Stripe minimum is 30 min
+      success_url: `${origin}/dashboard?payment=success&booking_id=${booking.id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/dashboard?payment=cancelled&booking_id=${booking.id}`,
+    });
 
-        if (bookingCreated) {
-          try {
-            await writeClient
-              .from('bookings')
-              .update({ checkout_session_id: session.id })
-              .eq('id', bookingId);
-          } catch {}
-        }
+    mark('stripe-session');
+    if (!session.url) throw new Error('Stripe did not return a checkout URL.');
 
-        if (session.url) {
-          return NextResponse.json({
-            checkoutUrl: session.url,
-            booking: confirmedBookingPayload,
-          });
-        }
-      } catch (stripeErr) {
-        console.error('Stripe session creation error:', stripeErr);
-      }
-    }
+    await db.from('bookings').update({ checkout_session_id: session.id }).eq('id', booking.id);
 
-    // Direct confirmation fallback so the lesson appears immediately in student's dashboard
     return NextResponse.json({
-      checkoutUrl: `${origin}/dashboard?booking=confirmed&teacher=${encodeURIComponent(
-        teacherName
-      )}&booking_id=${bookingId}`,
-      booking: confirmedBookingPayload,
+      checkoutUrl: session.url,
+      booking: { id: booking.id, amount_cents: amountCents, start_time_utc: start.toISOString() },
     });
   } catch (err: any) {
     console.error('Checkout API error:', err);
+    // Release the hold so the slot isn't blocked by a checkout that never started.
+    if (createdBookingId && db) {
+      await db.from('bookings').update({ status: 'cancelled' }).eq('id', createdBookingId);
+    }
     return NextResponse.json(
-      { error: err?.message || 'Failed to initiate checkout.' },
-      { status: 500 }
+      { error: 'We couldn’t start the payment. Your card has not been charged. Please try again.' },
+      { status: 500 },
     );
   }
 }

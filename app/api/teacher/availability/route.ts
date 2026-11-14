@@ -23,6 +23,26 @@ function getAuthenticatedClient(request: Request, serverClient: any) {
   return serverClient;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Resolve the teacher profile the signed-in user is allowed to edit.
+ * Teachers can only ever edit their OWN profile (looked up by their user id; the
+ * client-supplied id is ignored). Admins may target a specific teacher profile id.
+ */
+async function resolveEditableTeacherProfile(client: any, userId: string, requestedTeacherId?: string) {
+  const { data: profile } = await client.from('profiles').select('role').eq('user_id', userId).maybeSingle();
+  const isAdmin = profile?.role === 'admin';
+
+  if (isAdmin && requestedTeacherId && UUID_RE.test(requestedTeacherId)) {
+    const { data } = await client.from('teacher_profiles').select('id, user_id').eq('id', requestedTeacherId).maybeSingle();
+    return data ?? null;
+  }
+
+  const { data } = await client.from('teacher_profiles').select('id, user_id').eq('user_id', userId).maybeSingle();
+  return data ?? null;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -36,11 +56,15 @@ export async function GET(request: Request) {
     const client = getAuthenticatedClient(request, serverClient);
 
     // Resolve teacher_profile id if teacherId was user_id
+    if (!UUID_RE.test(teacherId)) {
+      return NextResponse.json({ success: true, data: [] });
+    }
     let resolvedTeacherId = teacherId;
     const { data: tp } = await client
       .from('teacher_profiles')
       .select('id')
       .or(`id.eq.${teacherId},user_id.eq.${teacherId}`)
+      .limit(1)
       .maybeSingle();
 
     if (tp?.id) {
@@ -81,7 +105,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { teacherId, weekday, start_time, end_time, timezone } = body;
+    const { teacherId, weekday, timezone } = body;
+    const norm = (t: unknown) => (typeof t === 'string' && /^\d{2}:\d{2}$/.test(t) ? `${t}:00` : t);
+    const start_time = norm(body.start_time) as string;
+    const end_time = norm(body.end_time) as string;
 
     if (typeof weekday !== 'number' || weekday < 0 || weekday > 6) {
       return NextResponse.json({ error: 'Valid weekday (0-6) is required.' }, { status: 400 });
@@ -91,27 +118,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'End time must be after start time.' }, { status: 400 });
     }
 
-    // Resolve teacher profile
-    const { data: tp } = await client
-      .from('teacher_profiles')
-      .select('id, user_id')
-      .or(`id.eq.${teacherId},user_id.eq.${effectiveUser.id}`)
-      .maybeSingle();
-
+    const tp = await resolveEditableTeacherProfile(client, effectiveUser.id, teacherId);
     if (!tp) {
-      return NextResponse.json({ error: 'Teacher profile not found.' }, { status: 404 });
-    }
-
-    // Verify ownership (or admin)
-    const { data: profile } = await client
-      .from('profiles')
-      .select('role')
-      .eq('user_id', effectiveUser.id)
-      .maybeSingle();
-
-    const isAdmin = profile?.role === 'admin';
-    if (!isAdmin && tp.user_id !== effectiveUser.id) {
-      return NextResponse.json({ error: 'You can only update your own availability.' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Finish setting up your teacher profile before adding availability.' },
+        { status: 404 },
+      );
     }
 
     // Check overlap with existing windows
@@ -248,15 +260,11 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { teacherId, timezone } = body;
 
-    if (!teacherId || !timezone) {
-      return NextResponse.json({ error: 'teacherId and timezone are required.' }, { status: 400 });
+    if (!timezone) {
+      return NextResponse.json({ error: 'timezone is required.' }, { status: 400 });
     }
 
-    const { data: tp } = await client
-      .from('teacher_profiles')
-      .select('id, user_id')
-      .or(`id.eq.${teacherId},user_id.eq.${effectiveUser.id}`)
-      .maybeSingle();
+    const tp = await resolveEditableTeacherProfile(client, effectiveUser.id, teacherId);
 
     if (!tp) {
       return NextResponse.json({ error: 'Teacher profile not found.' }, { status: 404 });

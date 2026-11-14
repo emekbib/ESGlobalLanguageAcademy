@@ -46,9 +46,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { receiver_id, content, sender_id } = body;
+    const { receiver_id, content } = body;
 
-    const senderUserId = effectiveUser?.id || sender_id;
+    // The sender is ALWAYS the authenticated user — never a value supplied by the client.
+    const senderUserId = effectiveUser?.id;
 
     if (!senderUserId) {
       return NextResponse.json(

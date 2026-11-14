@@ -78,7 +78,7 @@ export default function FilterSidebar({
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Price range</label>
           <span className="text-xs font-semibold text-stone-800 dark:text-stone-200">
-            ${filters.minPrice ?? 5}–${filters.maxPrice ?? 50} / hr
+            ${filters.minPrice ?? 5}–${filters.maxPrice ?? 50} / 50 min
           </span>
         </div>
         <Slider

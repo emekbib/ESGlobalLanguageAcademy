@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
+import { formatRate } from '@/lib/pricing';
 
 type BookingItem = {
   id: string;
@@ -164,7 +165,7 @@ export default function DashboardSpotlight({
                   {spotlightTeacher.languages.join(' • ')}
                 </p>
                 <p className="text-xs text-amber-600 dark:text-amber-400 font-bold mt-0.5">
-                  ${spotlightTeacher.hourlyRate} / 50 min
+                  {formatRate(spotlightTeacher.hourlyRate)} / 50 min
                 </p>
               </div>
             </div>

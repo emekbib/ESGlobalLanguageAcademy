@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 import BookingCard from '@/components/teacher/booking-card';
+import { formatRate } from '@/lib/pricing';
 
 export default function DashboardTutorsTab({
   tutors,
@@ -92,7 +93,7 @@ export default function DashboardTutorsTab({
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                  {tutor.languages.join(' & ')}{' '}Instructor · ${tutor.hourlyRate} / 50 min
+                  {tutor.languages.join(' & ')}{' '}Instructor · {formatRate(tutor.hourlyRate)} / 50 min
                 </p>
                 <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold">
                   {tutor.lessonsTaught > 0 && tutor.rating !== null && tutor.rating !== undefined ? (
@@ -155,7 +156,7 @@ export default function DashboardTutorsTab({
                   Book 1-on-1 with {selectedTeacher.name}
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
-                  {selectedTeacher.languages.join(' · ')} · ${selectedTeacher.hourlyRate} / 50 min
+                  {selectedTeacher.languages.join(' · ')} · {formatRate(selectedTeacher.hourlyRate)} / 50 min
                 </p>
               </div>
               <button
