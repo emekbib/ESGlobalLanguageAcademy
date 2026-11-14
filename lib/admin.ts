@@ -17,7 +17,7 @@ export async function requireAdmin() {
     .from('profiles')
     .select('user_id, role, full_name, avatar_url')
     .eq('user_id', user.id)
-    .maybeSingle();
+    .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
   // Strict role check: ONLY admin role is permitted. Students and teachers are immediately redirected.
   if (!profile || profile.role !== 'admin') {
@@ -68,7 +68,7 @@ export async function requireAdminApi() {
     .from('profiles')
     .select('user_id, role, full_name, avatar_url')
     .eq('user_id', user.id)
-    .maybeSingle();
+    .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
   if (!profile || profile.role !== 'admin') {
     return {

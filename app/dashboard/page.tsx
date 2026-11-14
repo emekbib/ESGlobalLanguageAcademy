@@ -37,7 +37,7 @@ export default async function DashboardPage({
     .from('profiles')
     .select('user_id, role, full_name, avatar_url, bio')
     .eq('user_id', user.id)
-    .maybeSingle();
+    .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
   if (profileError) {
     return <ErrorDisplay message="We couldn’t load your profile. Please try again." />;

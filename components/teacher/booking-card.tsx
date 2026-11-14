@@ -224,6 +224,14 @@ export default function BookingCard({
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      // If no local session, verify with server before proceeding
+      if (!session) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.push('/auth');
+          return;
+        }
+      }
       // Never leave the student on an endless spinner if the request stalls.
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 60000);

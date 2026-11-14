@@ -566,7 +566,7 @@ export default function DashboardMessagesTab({
                     .from('profiles')
                     .select('user_id, full_name, avatar_url, role')
                     .eq('user_id', otherPartyId)
-                    .maybeSingle();
+                    .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
                   if (prof) {
                     const newContact: Contact = {
@@ -854,8 +854,12 @@ export default function DashboardMessagesTab({
       const { data: { session } } = await supabase.auth.getSession();
       let token = session?.access_token;
       if (!token) {
-        const { data: refreshed } = await supabase.auth.refreshSession();
-        token = refreshed.session?.access_token;
+        // Verify with server before attempting refresh
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setSendError('Your session has expired. Please sign in again.');
+          return;
+        }
       }
 
       const res = await fetch('/api/messages/send', {

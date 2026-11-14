@@ -20,18 +20,19 @@ export default function LogoutModal({
   const handleConfirmLogout = async () => {
     setLoading(true);
     try {
-      // 1. Client-side sign out. 'local' scope only ends THIS browser's session; the
-      // default 'global' scope also revokes the user's sessions on every other device.
       markIntentionalAuthChange();
+
+      // 1. Client-side sign out — clear the browser session first.
       await supabase.auth.signOut({ scope: 'local' });
-    } catch {}
 
-    try {
-      // 2. Server-side cookie clear
-      await fetch('/api/auth/signout', { method: 'POST' });
-    } catch {}
+      // 2. Server-side cookie clear — await it and check the result.
+      const res = await fetch('/api/auth/signout', { method: 'POST' });
+      const data = await res.json().catch(() => null);
 
-    try {
+      if (!res.ok || (data && data.success === false)) {
+        console.error('[logout] Server sign-out failed:', data?.error);
+      }
+
       // 3. Clear all user-specific local storage items
       if (typeof window !== 'undefined') {
         const keysToRemove: string[] = [];
@@ -43,9 +44,13 @@ export default function LogoutModal({
         }
         keysToRemove.forEach((k) => localStorage.removeItem(k));
       }
-    } catch {}
-
-    window.location.href = '/auth';
+    } catch (err) {
+      console.error('[logout] Error during sign out:', err);
+    } finally {
+      setLoading(false);
+      // Use a full page navigation so the middleware sees the cleared cookies.
+      window.location.href = '/auth?signed_out=1';
+    }
   };
 
   return (

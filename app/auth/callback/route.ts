@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
-      .maybeSingle();
+      .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
     if (!profile) {
       return NextResponse.redirect(`${origin}/onboarding`);

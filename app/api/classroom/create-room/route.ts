@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       .from('profiles')
       .select('full_name')
       .eq('user_id', user.id)
-      .maybeSingle();
+      .order('created_at', { ascending: true }).limit(1).maybeSingle();
     const userName = callerProfile?.full_name || (isTeacher ? 'Educator' : 'Student');
 
     const start = new Date(booking.start_time_utc);

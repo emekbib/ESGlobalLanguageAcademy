@@ -1,13 +1,24 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, CheckCircle2, Lock, Mail, ShieldCheck, Star } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowRight, CheckCircle2, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getProfileByUserId } from '@/lib/supabase/profile';
+import { markIntentionalAuthChange } from '@/components/auth/session-guard';
 
 export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthForm />
+    </Suspense>
+  );
+}
+
+function AuthForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authMethod, setAuthMethod] = useState<'password' | 'magic-link'>('password');
@@ -15,11 +26,58 @@ export default function AuthPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent'>('idle');
   const [error, setError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [infoMessage, setInfoMessage] = useState('');
   const supabase = createSupabaseBrowserClient();
+
+  useEffect(() => {
+    const signedOut = searchParams.get('signed_out');
+    const sessionChanged = searchParams.get('session_changed');
+    if (signedOut) {
+      setInfoMessage('You have been signed out. Please sign in to continue.');
+    } else if (sessionChanged) {
+      setInfoMessage('Your session changed in another tab. Please sign in again to continue.');
+    }
+  }, [searchParams]);
+
+  // Clear any stale local session on mount so the sign-in form shows cleanly
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        // A stale session exists — clear it so it doesn't auto-restore
+        void supabase.auth.signOut({ scope: 'local' });
+      }
+    });
+  }, [supabase]);
+
+  async function verifySessionAndRedirect(expectedUserId: string) {
+    // Verify with getUser() — server-validated, not the unvalidated local session
+    const { data: { user }, error: verifyError } = await supabase.auth.getUser();
+
+    if (verifyError || !user || user.id !== expectedUserId) {
+      setError('Sign-in verification failed. The session could not be confirmed. Please try again.');
+      setStatus('idle');
+      return;
+    }
+
+    const profile = await getProfileByUserId<{ role: string }>(supabase, user.id, 'role');
+
+    markIntentionalAuthChange();
+
+    if (!profile) {
+      window.location.href = '/onboarding';
+    } else if (profile.role === 'admin') {
+      window.location.href = '/admin';
+    } else if (profile.role === 'teacher') {
+      window.location.href = '/teacher/dashboard';
+    } else {
+      window.location.href = '/dashboard';
+    }
+  }
 
   async function handleAuthSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+    setInfoMessage('');
     setStatus('loading');
 
     if (authMethod === 'magic-link') {
@@ -56,21 +114,7 @@ export default function AuthPage() {
         });
 
         if (!fallbackSignInError && signInData.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('user_id', signInData.user.id)
-            .maybeSingle();
-
-          if (!profile) {
-            router.push('/onboarding');
-          } else if (profile.role === 'admin') {
-            router.push('/admin');
-          } else if (profile.role === 'teacher') {
-            router.push('/teacher/dashboard');
-          } else {
-            router.push('/dashboard');
-          }
+          await verifySessionAndRedirect(signInData.user.id);
           return;
         }
 
@@ -84,7 +128,9 @@ export default function AuthPage() {
       }
 
       if (data.session) {
-        router.push('/onboarding');
+        // New sign-up with immediate session — go to onboarding
+        markIntentionalAuthChange();
+        window.location.href = '/onboarding';
         return;
       }
 
@@ -95,7 +141,7 @@ export default function AuthPage() {
       });
 
       if (!directSignInError && directSignIn.session) {
-        router.push('/onboarding');
+        await verifySessionAndRedirect(directSignIn.user!.id);
         return;
       }
 
@@ -113,21 +159,7 @@ export default function AuthPage() {
       }
 
       if (data.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .maybeSingle();
-
-        if (!profile) {
-          router.push('/onboarding');
-        } else if (profile.role === 'admin') {
-          router.push('/admin');
-        } else if (profile.role === 'teacher') {
-          router.push('/teacher/dashboard');
-        } else {
-          router.push('/dashboard');
-        }
+        await verifySessionAndRedirect(data.user.id);
       }
     }
   }
@@ -186,6 +218,7 @@ export default function AuthPage() {
                 onClick={() => {
                   setMode('signin');
                   setError('');
+                  setInfoMessage('');
                 }}
                 className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-all ${
                   mode === 'signin'
@@ -200,6 +233,7 @@ export default function AuthPage() {
                 onClick={() => {
                   setMode('signup');
                   setError('');
+                  setInfoMessage('');
                 }}
                 className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition-all ${
                   mode === 'signup'
@@ -222,6 +256,12 @@ export default function AuthPage() {
                   : 'Connect with native educators across Amharic, Tigrinya, Afaan Oromo & Somali.'}
               </p>
             </div>
+
+            {infoMessage && (
+              <div className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3 text-xs font-medium text-amber-700 dark:text-amber-300">
+                {infoMessage}
+              </div>
+            )}
 
             {/* Google OAuth Button */}
             <button

@@ -90,7 +90,7 @@ export function useMessageNotifications({
                 .from('profiles')
                 .select('full_name')
                 .eq('user_id', newMsg.sender_id)
-                .maybeSingle();
+                .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
               if (senderProfile?.full_name) {
                 senderName = senderProfile.full_name;

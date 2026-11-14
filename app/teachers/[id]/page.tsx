@@ -84,7 +84,7 @@ export default async function TeacherProfilePage({
       .from('profiles')
       .select('full_name, avatar_url')
       .eq('user_id', teacher.user_id)
-      .maybeSingle();
+      .order('created_at', { ascending: true }).limit(1).maybeSingle();
     if (!profile) notFound();
 
     fullName = profile.full_name;

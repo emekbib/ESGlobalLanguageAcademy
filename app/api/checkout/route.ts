@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     const end = new Date(start.getTime() + minutes * 60_000);
 
     // The booking must belong to a student account.
-    const { data: me } = await db.from('profiles').select('role').eq('user_id', user.id).maybeSingle();
+    const { data: me } = await db.from('profiles').select('role').eq('user_id', user.id).order('created_at', { ascending: true }).limit(1).maybeSingle();
     if (!me || me.role !== 'student') {
       return NextResponse.json({ error: 'Only student accounts can book lessons.' }, { status: 403 });
     }
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
       .from('profiles')
       .select('full_name')
       .eq('user_id', teacher.user_id)
-      .maybeSingle();
+      .order('created_at', { ascending: true }).limit(1).maybeSingle();
     const teacherName = teacherUser?.full_name || 'your teacher';
 
     mark('validated');

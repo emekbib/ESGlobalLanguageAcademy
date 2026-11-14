@@ -4,8 +4,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 function redirectWithCookies(request: NextRequest, response: NextResponse, path: string) {
   const redirectResponse = NextResponse.redirect(new URL(path, request.url));
   // Copy refreshed auth cookies onto the redirect with their ORIGINAL attributes.
-  // Overriding maxAge here used to turn Supabase's cookie deletions (maxAge 0) into
-  // 7-day cookies, leaving a corrupted half-session that later signed the user out.
   response.cookies.getAll().forEach((cookie) => {
     redirectResponse.cookies.set(cookie);
   });
@@ -13,20 +11,37 @@ function redirectWithCookies(request: NextRequest, response: NextResponse, path:
 }
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
 
   if (pathname === '/' && request.nextUrl.searchParams.has('code')) {
-    return redirectWithCookies(request, response, `/auth/callback${request.nextUrl.search}`);
+    let initResponse = NextResponse.next({ request });
+    return redirectWithCookies(request, initResponse, `/auth/callback${request.nextUrl.search}`);
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase URL or Anon Key is missing from environment. Skipping session check.');
-    return response;
+    console.error('[middleware] Supabase URL or Anon Key is missing from environment. FAILING CLOSED.');
+    const protectedRoutes =
+      pathname.startsWith('/admin') ||
+      pathname === '/dashboard' ||
+      pathname.startsWith('/teacher/dashboard') ||
+      pathname.startsWith('/account') ||
+      pathname.startsWith('/onboarding');
+
+    if (protectedRoutes) {
+      const failRedirect = NextResponse.redirect(new URL('/auth', request.url));
+      return failRedirect;
+    }
+    // For public routes, still delete any auth cookies that may exist
+    const failResponse = NextResponse.next({ request });
+    return failResponse;
   }
+
+  // Create the response once. setAll will mutate this response object's cookies
+  // rather than recreating it, so previously-set cookies are preserved.
+  let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
     supabaseUrl,
@@ -37,9 +52,10 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => {
+            // Set on the request cookies so subsequent getUser() calls see the refreshed token
+            request.cookies.set(name, value);
+            // Set on the response so the browser receives the refreshed cookie
             response.cookies.set(name, value, {
               ...options,
               path: options?.path || '/',
@@ -53,10 +69,12 @@ export async function updateSession(request: NextRequest) {
   );
 
   try {
+    // getUser() is the authority for token refresh. It refreshes server-side.
+    // The client should not also auto-refresh — see lib/supabase/client.ts.
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     const hasAuthCookie = request.cookies.getAll().some((c) => c.name.includes('-auth-token'));
     if (!user && hasAuthCookie) {
-      console.warn('[auth] auth cookie present but no valid user', pathname, authError?.name, authError?.status, authError?.message);
+      console.warn('[middleware] auth cookie present but no valid user', pathname, authError?.name, authError?.status, authError?.message);
     }
 
     // 1. Strict admin unauthenticated guard
@@ -76,10 +94,13 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (user) {
+      // Deterministic profile lookup — order by created_at, take first, never maybeSingle on duplicates
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, suspended_at')
         .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(1)
         .maybeSingle();
 
       // If user is suspended, block access
@@ -124,10 +145,18 @@ export async function updateSession(request: NextRequest) {
       }
     }
   } catch (err) {
-    console.warn('Middleware auth check warning:', err);
+    console.warn('[middleware] auth check warning:', err);
     // Security fail-safe: never allow uncaught errors to leak /admin
     if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
       return redirectWithCookies(request, response, '/admin/login');
+    }
+    // For other protected routes, fail closed
+    if (
+      pathname === '/dashboard' ||
+      pathname.startsWith('/teacher/dashboard') ||
+      pathname.startsWith('/account')
+    ) {
+      return redirectWithCookies(request, response, '/auth');
     }
   }
 

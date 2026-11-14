@@ -71,7 +71,7 @@ export default function AccountPage() {
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
       if (profileError || !profile) {
         router.replace('/onboarding');

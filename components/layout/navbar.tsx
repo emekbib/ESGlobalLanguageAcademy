@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GraduationCap, Menu, X, Bell, Moon, Sun } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getProfileByUserId } from '@/lib/supabase/profile';
 import ProfileMenu from '@/components/account/profile-menu';
 import { useTheme } from 'next-themes';
 
@@ -32,62 +33,41 @@ export default function Navbar({
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
-    
+
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        setIsLoggedIn(true);
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role, full_name, avatar_url')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        const profile = await getProfileByUserId<{
+          role: string;
+          full_name: string;
+          avatar_url: string | null;
+        }>(supabase, user.id, 'role, full_name, avatar_url');
+
         if (profile) {
-          const isEstephanos =
-            user.id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
-            user.id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
-            (profile.role === 'admin' && profile.full_name?.includes('Teacher Demo'));
-          const cleanName = isEstephanos ? 'Estephanos Mekbib' : profile.full_name;
-
-          setUserRole(profile.role);
-          setUserProfile({ full_name: cleanName, avatar_url: profile.avatar_url });
-        }
-      } else {
-        const { data: { user: directUser } } = await supabase.auth.getUser();
-        if (directUser) {
           setIsLoggedIn(true);
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, full_name, avatar_url')
-            .eq('user_id', directUser.id)
-            .maybeSingle();
-          if (profile) {
-            const isEstephanos =
-              directUser.id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
-              directUser.id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
-              (profile.role === 'admin' && profile.full_name?.includes('Teacher Demo'));
-            const cleanName = isEstephanos ? 'Estephanos Mekbib' : profile.full_name;
-
-            setUserRole(profile.role);
-            setUserProfile({ full_name: cleanName, avatar_url: profile.avatar_url });
-          }
+          setUserRole(profile.role);
+          setUserProfile({ full_name: profile.full_name, avatar_url: profile.avatar_url });
         } else {
-          setIsLoggedIn(false);
+          setIsLoggedIn(true);
           setUserRole(null);
           setUserProfile(null);
         }
+      } else {
+        setIsLoggedIn(false);
+        setUserRole(null);
+        setUserProfile(null);
       }
     };
-    
+
     void checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session);
+      if (event === 'INITIAL_SESSION') return;
       if (session?.user) {
         void checkUser();
       } else {
+        setIsLoggedIn(false);
         setUserRole(null);
         setUserProfile(null);
       }
@@ -175,7 +155,7 @@ export default function Navbar({
               >
                 Dashboard
               </Link>
-              
+
               <div className={`flex items-center gap-2 border-l pl-4 ${isOverHeroTransparent ? 'border-white/20' : 'border-stone-200 dark:border-stone-800'}`}>
                 <button
                   type="button"

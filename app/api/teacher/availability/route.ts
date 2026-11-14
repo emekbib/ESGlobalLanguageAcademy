@@ -31,7 +31,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * client-supplied id is ignored). Admins may target a specific teacher profile id.
  */
 async function resolveEditableTeacherProfile(client: any, userId: string, requestedTeacherId?: string) {
-  const { data: profile } = await client.from('profiles').select('role').eq('user_id', userId).maybeSingle();
+  const { data: profile } = await client.from('profiles').select('role').eq('user_id', userId).order('created_at', { ascending: true }).limit(1).maybeSingle();
   const isAdmin = profile?.role === 'admin';
 
   if (isAdmin && requestedTeacherId && UUID_RE.test(requestedTeacherId)) {
@@ -218,7 +218,7 @@ export async function DELETE(request: Request) {
       .from('profiles')
       .select('role')
       .eq('user_id', effectiveUser.id)
-      .maybeSingle();
+      .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
     const isAdmin = profile?.role === 'admin';
     if (!isAdmin && tp?.user_id !== effectiveUser.id) {

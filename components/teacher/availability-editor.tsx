@@ -51,6 +51,10 @@ export default function AvailabilityEditor({ teacherId }: { teacherId: string })
   async function getAuthHeader(): Promise<Record<string, string>> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return {};
+      }
       if (session?.access_token) {
         return { Authorization: `Bearer ${session.access_token}` };
       }

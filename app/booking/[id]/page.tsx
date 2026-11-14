@@ -51,7 +51,7 @@ export default async function BookingPage({
         .from('profiles')
         .select('full_name, avatar_url')
         .eq('user_id', teacher.user_id)
-        .maybeSingle()
+        .order('created_at', { ascending: true }).limit(1).maybeSingle()
     : { data: null };
 
   const start = new Date(booking.start_time_utc);

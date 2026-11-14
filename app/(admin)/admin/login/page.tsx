@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
         .from('profiles')
         .select('role')
         .eq('user_id', data.user.id)
-        .maybeSingle();
+        .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
       if (profile?.role === 'admin') {
         router.push('/admin');
