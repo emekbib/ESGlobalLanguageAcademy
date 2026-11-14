@@ -821,7 +821,12 @@ export default function TeacherDashboardShell({
                   {/* Payout Setup */}
                   <ConnectPayoutButton
                     connected={Boolean(
-                      teacherProfile.stripe_account_id && teacherProfile.stripe_onboarding_complete,
+                      teacherProfile.stripe_account_id &&
+                        teacherProfile.stripe_onboarding_complete &&
+                        !teacherProfile.stripe_account_id.startsWith('acct_sim_'),
+                    )}
+                    simulated={Boolean(
+                      teacherProfile.stripe_account_id?.startsWith('acct_sim_'),
                     )}
                   />
 
@@ -914,7 +919,12 @@ export default function TeacherDashboardShell({
                   </div>
                   <ConnectPayoutButton
                     connected={Boolean(
-                      teacherProfile.stripe_account_id && teacherProfile.stripe_onboarding_complete,
+                      teacherProfile.stripe_account_id &&
+                        teacherProfile.stripe_onboarding_complete &&
+                        !teacherProfile.stripe_account_id.startsWith('acct_sim_'),
+                    )}
+                    simulated={Boolean(
+                      teacherProfile.stripe_account_id?.startsWith('acct_sim_'),
                     )}
                   />
                 </div>

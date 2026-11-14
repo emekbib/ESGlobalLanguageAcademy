@@ -9,15 +9,18 @@ import {
   ArrowRight,
   RefreshCw,
   AlertCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
 type ConnectPayoutButtonProps = {
   connected: boolean;
+  simulated?: boolean;
 };
 
-export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonProps) {
+export default function ConnectPayoutButton({ connected, simulated = false }: ConnectPayoutButtonProps) {
   const router = useRouter();
   const [isConnected, setIsConnected] = useState(connected);
+  const [isSimulated, setIsSimulated] = useState(simulated);
   const [loading, setLoading] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [error, setError] = useState('');
@@ -26,7 +29,8 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
 
   useEffect(() => {
     setIsConnected(connected);
-  }, [connected]);
+    setIsSimulated(simulated);
+  }, [connected, simulated]);
 
   async function startOnboarding() {
     setLoading(true);
@@ -42,7 +46,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
       const data = await res.json();
 
       if (!res.ok || !data) {
-        setError(data?.error || 'We couldn’t open payout setup. Please try again.');
+        setError(data?.error || "We couldn't open payout setup. Please try again.");
         setCanSimulate(true);
         setLoading(false);
         return;
@@ -55,7 +59,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
         router.refresh();
       }
     } catch (err: any) {
-      setError(err?.message || 'We couldn’t open payout setup. Please try again.');
+      setError(err?.message || "We couldn't open payout setup. Please try again.");
       setCanSimulate(true);
     } finally {
       setLoading(false);
@@ -76,12 +80,10 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setIsConnected(true);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('es_teacher_payout_simulated', 'true');
-        }
-        setSuccessMsg('Stripe Connect payout account simulated and linked successfully! Payout status is now active.');
-        setTimeout(() => setSuccessMsg(''), 4000);
+        setIsSimulated(true);
+        setIsConnected(false);
+        setSuccessMsg('Simulation activated for demo purposes only. This does NOT set up real Stripe payouts — no real bank account is linked and no real transfers will be made.');
+        setTimeout(() => setSuccessMsg(''), 6000);
         router.refresh();
       } else {
         setError(data?.error || 'Failed to simulate connection.');
@@ -96,10 +98,8 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
   async function handleDisconnect() {
     setLoading(true);
     try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('es_teacher_payout_simulated');
-      }
       setIsConnected(false);
+      setIsSimulated(false);
       const res = await fetch('/api/teacher/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,6 +113,8 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
     }
   }
 
+  const showConnected = isConnected && !isSimulated;
+
   return (
     <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -121,17 +123,17 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
             Escrow &amp; Banking
           </span>
           <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-stone-950 dark:text-white">
-            {isConnected ? 'Payout Account Active' : 'Set Up Direct Stripe Payouts'}
+            {showConnected ? 'Payout Account Active' : 'Set Up Direct Stripe Payouts'}
           </h2>
           <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-stone-500 dark:text-stone-400 font-medium">
-            {isConnected
+            {showConnected
               ? 'Your bank account is securely linked via Stripe Express. Earnings from each completed 1-on-1 language lesson are automatically transferred to your account.'
               : 'Connect your bank account via Stripe Express to receive direct payouts after each 1-on-1 session is completed.'}
           </p>
         </div>
 
         <div className="shrink-0 self-start">
-          {isConnected ? (
+          {showConnected ? (
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 ring-1 ring-emerald-500/20 shadow-sm">
               <CheckCircle2 className="h-6 w-6" />
             </div>
@@ -143,7 +145,20 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
         </div>
       </div>
 
-      {isConnected ? (
+      {/* Simulation warning banner — never presented as real payout status */}
+      {isSimulated && !showConnected && (
+        <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-400/10 p-4 text-xs font-medium text-amber-800 dark:text-amber-300 flex items-start gap-2.5 animate-fade-in">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <div>
+            <p className="font-bold">Simulation Mode — Not Real Payouts</p>
+            <p className="mt-0.5 text-[11px] leading-relaxed">
+              A simulated Stripe Connect account is active for demo purposes only. No real bank account is linked and no real transfers will be made. To accept real payouts, connect Stripe Express below.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {showConnected ? (
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
             <span className="relative flex h-2 w-2">
@@ -189,21 +204,21 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
             onClick={handleSimulate}
             disabled={loading || simulating}
             className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 dark:bg-amber-400/10 px-5 py-3 text-xs font-bold text-amber-800 dark:text-amber-300 transition hover:bg-amber-500/20 cursor-pointer"
-            title="Simulate Stripe Connect for demo/testing without leaving the app"
+            title="Simulate Stripe Connect for demo/testing — this does NOT set up real payouts"
           >
             {simulating ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <CreditCard className="h-3.5 w-3.5 text-amber-500" />
             )}
-            <span>Simulate Connect (Demo Test)</span>
+            <span>Simulate Connect (Demo Only)</span>
           </button>
         </div>
       )}
 
       {successMsg && (
-        <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-fade-in">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-400/10 p-4 text-xs font-medium text-amber-800 dark:text-amber-300 flex items-start gap-2.5 animate-fade-in">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
           <p className="font-semibold">{successMsg}</p>
         </div>
       )}
@@ -216,7 +231,7 @@ export default function ConnectPayoutButton({ connected }: ConnectPayoutButtonPr
               <p className="font-semibold">{error}</p>
               {canSimulate && (
                 <p className="text-[11px] text-stone-600 dark:text-stone-400">
-                  Tip: Use the <strong className="text-stone-900 dark:text-white">“Simulate Connect (Demo Test)”</strong> button above to instantly activate payout status for demo and client presentation.
+                  Tip: Use the <strong className="text-stone-900 dark:text-white">&ldquo;Simulate Connect (Demo Only)&rdquo;</strong> button above to preview the payout dashboard for demo and client presentation. This does <strong>not</strong> set up real Stripe payouts.
                 </p>
               )}
             </div>

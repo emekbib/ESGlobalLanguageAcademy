@@ -117,7 +117,7 @@ export async function POST(req: Request) {
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey || stripeSecretKey.includes('placeholder')) {
       return NextResponse.json(
-        { error: 'Payments are not configured yet, so lessons cannot be booked. Please contact support.' },
+        { error: 'Booking is unavailable because STRIPE_SECRET_KEY is not configured on the server. Please ask the site owner to add it in the Vercel dashboard under Settings > Environment Variables.' },
         { status: 503 },
       );
     }
