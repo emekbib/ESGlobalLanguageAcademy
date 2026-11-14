@@ -3,8 +3,7 @@
 import { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTeachers } from '@/hooks/use-teachers';
-import TeacherCard, { TeacherCardData } from '@/components/teacher/teacher-card';
-import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
+import TeacherCard from '@/components/teacher/teacher-card';
 
 const CATEGORIES = [
   { id: 'all', label: 'All Faculty' },
@@ -19,14 +18,11 @@ export default function FeaturedTeachers() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Render the final list once. Previously sample teachers were shown while loading and
-  // then swapped for the real list, so the carousel visibly changed (e.g. 8 → 9 cards).
+  // Real teachers from the database only — no sample/demo teachers.
   const sourceTeachers = loading
     ? []
     : dbTeachers && dbTeachers.length > 0
     ? dbTeachers.slice(0, 8)
-    : error
-    ? SAMPLE_TEACHERS.slice(0, 8)
     : [];
 
   const filteredTeachers = sourceTeachers.filter((teacher) => {
@@ -118,6 +114,13 @@ export default function FeaturedTeachers() {
             Array.from({ length: 4 }).map((_, i) => (
               <div key={`skeleton-${i}`} className="h-[380px] w-[270px] shrink-0 animate-pulse rounded-3xl bg-stone-100" />
             ))}
+          {!loading && filteredTeachers.length === 0 && (
+            <div className="flex h-[380px] w-full items-center justify-center">
+              <p className="text-sm font-medium text-stone-400">
+                {error ? 'We couldn\'t load faculty right now. Please try again.' : 'No educators match this filter yet.'}
+              </p>
+            </div>
+          )}
           {filteredTeachers.map((teacher, index) => (
             <div key={`${teacher.id}-${index}`} className="w-[270px] shrink-0">
               <TeacherCard teacher={teacher} />

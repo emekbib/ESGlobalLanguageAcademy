@@ -18,7 +18,7 @@ export type TeacherCardData = {
 };
 
 export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
-  const avg = teacher.rating > 0 ? teacher.rating.toFixed(1) : '5.0';
+  const avg = teacher.rating > 0 ? teacher.rating.toFixed(1) : null;
 
   return (
     <Link
@@ -57,7 +57,7 @@ export default function TeacherCard({ teacher }: { teacher: TeacherCardData }) {
             </h3>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {teacher.lessonsTaught > 0 ? (
+            {teacher.lessonsTaught > 0 && avg ? (
               <>
                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                 <span className="text-xs font-bold text-stone-900 dark:text-stone-200">{avg}</span>

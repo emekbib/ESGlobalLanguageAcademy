@@ -4,11 +4,6 @@ import { useEffect, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Profile, TeacherProfile } from '@/lib/types/database';
 import type { TeacherCardData } from '@/components/teacher/teacher-card';
-import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
-
-type RawTeacher = TeacherProfile & {
-  profile: Pick<Profile, 'full_name' | 'avatar_url'> | null;
-};
 
 export const APPROVED_LANGUAGES = ['Amharic', 'Tigrinya', 'Afaan Oromo', 'Somali'] as const;
 
@@ -33,6 +28,28 @@ export type TeacherFilters = {
 
 export type SortOption = 'popular' | 'rating' | 'price_low' | 'price_high';
 
+// Demo / QA marker: names containing "(Teacher Demo)" or starting with "QA " are
+// test accounts that must never appear in the public directory.
+function isDemoOrQaName(name: string | null | undefined): boolean {
+  if (!name) return true;
+  const lower = name.toLowerCase().trim();
+  return (
+    lower.includes('(teacher demo)') ||
+    lower.includes('teacher demo') ||
+    lower.startsWith('qa ') ||
+    lower.includes('rahel teacher')
+  );
+}
+
+// Profile is incomplete (and must not be listed) if critical fields are missing.
+function isProfileIncomplete(t: TeacherProfile, profileName: string | null): boolean {
+  if (!profileName || profileName.trim().length < 2) return true;
+  if (!t.hourly_rate || Number(t.hourly_rate) <= 0) return true;
+  if (!t.languages_taught || t.languages_taught.length === 0) return true;
+  if (!t.bio || t.bio.trim().length < 10 || t.bio.toLowerCase().includes('introduce yourself')) return true;
+  return false;
+}
+
 export function useTeachers() {
   const supabase = createSupabaseBrowserClient();
   const [teachers, setTeachers] = useState<TeacherCardData[]>([]);
@@ -44,20 +61,21 @@ export function useTeachers() {
     let active = true;
 
     async function load() {
-      // 1. Fetch all teacher profiles
-      const { data: rawTeacherProfiles } = await supabase
+      // Only published, approved teacher profiles are listed in the public directory.
+      const { data: rawTeacherProfiles, error: fetchError } = await supabase
         .from('teacher_profiles')
         .select('*')
-        .or('application_status.is.null,application_status.neq.rejected')
+        .eq('is_published', true)
+        .eq('application_status', 'approved')
         .order('created_at', { ascending: false });
 
-      // 2. Also fetch all users with role 'teacher' from profiles
-      const { data: teacherProfilesFromUsers } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url')
-        .eq('role', 'teacher');
-
       if (!active) return;
+
+      if (fetchError) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
 
       const teacherProfiles = rawTeacherProfiles ?? [];
       const userIds = teacherProfiles.map((t) => t.user_id);
@@ -90,69 +108,48 @@ export function useTeachers() {
         lessonCounts.set(b.teacher_id, (lessonCounts.get(b.teacher_id) ?? 0) + 1);
       }
 
-      const enriched: TeacherCardData[] = teacherProfiles.map((t) => {
+      const enriched: TeacherCardData[] = [];
+      const seenIds = new Set<string>();
+
+      for (const t of teacherProfiles) {
+        // Deduplicate by teacher_profile id — never by name.
+        if (seenIds.has(t.id)) continue;
+        seenIds.add(t.id);
+
         const profile = profileMap.get(t.user_id);
+        const profileName = profile?.full_name ?? null;
+
+        // Exclude demo/QA accounts by name marker.
+        if (isDemoOrQaName(profileName)) continue;
+
+        // Exclude incomplete profiles — no invented rates, languages, or names.
+        if (isProfileIncomplete(t, profileName)) continue;
+
         const stats = reviewStats.get(t.id);
         const rawLangs: string[] = Array.isArray(t.languages_taught) ? t.languages_taught : [];
         const normalizedLangs: string[] = Array.from(
           new Set(rawLangs.map((l) => normalizeLanguageName(l)).filter((l): l is string => Boolean(l)))
         );
-        return {
+
+        enriched.push({
           id: t.id,
           userId: t.user_id,
-          name: profile?.full_name ?? 'Language Teacher',
+          name: profileName!,
           avatarUrl: profile?.avatar_url ?? null,
-          languages: normalizedLangs.length > 0 ? normalizedLangs : ['Amharic'],
-          rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 5.0,
+          languages: normalizedLangs,
+          rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 0,
           lessonsTaught: lessonCounts.get(t.id) ?? 0,
           hourlyRate: Number(t.hourly_rate),
           teacherType: t.teacher_type ?? 'community_tutor',
           specialties: t.specialties ?? [],
-        };
-      });
-
-      // Only teachers with a real teacher profile (rate, languages, bio) are listed. Accounts
-      // that haven't finished teacher setup are not shown with invented prices/schedules.
-      const additionalTeachers: TeacherCardData[] = [];
-
-      // Clean name helper to strip demo tags and special characters
-      const cleanName = (n: string) =>
-        n.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/[^a-z0-9]/g, '').trim();
-
-      // Deduplicate real teachers so multiple database entries don't duplicate cards
-      const uniqueRealMap = new Map<string, TeacherCardData>();
-      for (const t of [...enriched, ...additionalTeachers]) {
-        if (!t.name || t.name.trim().toLowerCase() === 'not') continue;
-        const key = cleanName(t.name);
-        const existing = uniqueRealMap.get(key);
-        if (!existing) {
-          uniqueRealMap.set(key, t);
-        } else {
-          // Prefer teacher with avatarUrl, higher lessons taught, or verified status
-          if ((!existing.avatarUrl && t.avatarUrl) || t.lessonsTaught > existing.lessonsTaught) {
-            uniqueRealMap.set(key, t);
-          }
-        }
+        });
       }
-      const allRealTeachers = Array.from(uniqueRealMap.values());
 
-      // Deduplicate sample educators matching any real educator by base name
-      const existingBaseNames = new Set(allRealTeachers.map((t) => cleanName(t.name)));
-      const filteredSampleTeachers = SAMPLE_TEACHERS.filter((st) => {
-        return !existingBaseNames.has(cleanName(st.name));
-      });
-
-      // Show real registered teachers at the top, followed by deduplicated sample educators
-      const allTeachers: TeacherCardData[] =
-        allRealTeachers.length > 0
-          ? [...allRealTeachers, ...filteredSampleTeachers]
-          : SAMPLE_TEACHERS;
-
-      setTeachers(allTeachers);
+      setTeachers(enriched);
 
       // Discovered approved languages for filter sidebar
       const discoveredLangs = new Set(
-        allTeachers.flatMap((t) => (t.languages ?? []).map(normalizeLanguageName).filter(Boolean))
+        enriched.flatMap((t) => (t.languages ?? []).map(normalizeLanguageName).filter(Boolean))
       );
       const activeApproved = APPROVED_LANGUAGES.filter((lang) => discoveredLangs.has(lang));
       setAllLanguages(activeApproved.length > 0 ? activeApproved : [...APPROVED_LANGUAGES]);

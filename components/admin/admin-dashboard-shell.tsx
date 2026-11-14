@@ -37,8 +37,8 @@ type TeacherProfile = {
   user_id: string;
   bio: string | null;
   languages_taught: string[] | null;
-  hourly_rate: number;
-  years_experience: number;
+  hourly_rate: number | null;
+  years_experience: number | null;
   teacher_type: string;
   application_status: string;
   credentials: string[] | null;
@@ -114,16 +114,21 @@ export default function AdminDashboardShell({
   const [searchLearnersQuery, setSearchLearnersQuery] = useState('');
   const [liveReviews, setLiveReviews] = useState<FlaggedReview[]>(flaggedReviews);
 
-  // Local accounts state with 'Not' filtered out
-  const [localAccounts, setLocalAccounts] = useState<UserAccount[]>(() =>
-    accounts.filter(
+  // Local accounts state with 'Not' filtered out, deduplicated by user_id
+  const [localAccounts, setLocalAccounts] = useState<UserAccount[]>(() => {
+    const seen = new Set<string>();
+    return accounts.filter(
       (a) =>
         a.full_name &&
         a.full_name.trim().toLowerCase() !== 'not' &&
         a.full_name.trim().length >= 3 &&
         a.user_id !== 'd0863492-7ff4-4dbd-870d-f06b4d37c95e'
-    )
-  );
+    ).filter((a) => {
+      if (seen.has(a.user_id)) return false;
+      seen.add(a.user_id);
+      return true;
+    });
+  });
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeletingUser, setIsDeletingUser] = useState<string | null>(null);
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
@@ -876,9 +881,17 @@ export default function AdminDashboardShell({
                               <p className="font-display font-bold text-sm text-stone-950 dark:text-white">
                                 {name}
                               </p>
-                              {teacher.teacher_type === 'professional' ? (
+                              {teacher.teacher_type === 'professional' && teacher.application_status === 'approved' ? (
                                 <span className="rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 px-2 py-0.2 text-[9px] font-bold uppercase tracking-wider">
                                   Track 2 Verified
+                                </span>
+                              ) : teacher.teacher_type === 'professional' && teacher.application_status === 'pending' ? (
+                                <span className="rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 px-2 py-0.2 text-[9px] font-bold uppercase tracking-wider">
+                                  Track 2 Pending
+                                </span>
+                              ) : teacher.teacher_type === 'professional' ? (
+                                <span className="rounded-full bg-stone-500/10 text-stone-700 dark:text-stone-300 border border-stone-500/20 px-2 py-0.2 text-[9px] font-bold uppercase tracking-wider">
+                                  Track 2 {teacher.application_status || 'Pending'}
                                 </span>
                               ) : (
                                 <span className="rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 px-2 py-0.2 text-[9px] font-bold uppercase tracking-wider">

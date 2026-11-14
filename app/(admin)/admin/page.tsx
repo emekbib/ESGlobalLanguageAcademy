@@ -69,27 +69,22 @@ export default async function AdminPage() {
     }
   });
 
-  // Sanitize accounts: Remove corrupted records like 'Not' and ensure Estephanos is properly classified as Admin
+  // Sanitize accounts: Remove corrupted records like 'Not'. Deduplicate by user_id so
+  // the same person never appears multiple times. Do not force-reclassify accounts as admin
+  // by name matching — use the actual role from the database.
+  const seenUserIds = new Set<string>();
   const sanitizedAccounts = (accounts ?? []).filter(
     (acc) =>
       acc.full_name &&
       acc.full_name.trim().toLowerCase() !== 'not' &&
       acc.full_name.trim().length >= 3 &&
       acc.user_id !== 'd0863492-7ff4-4dbd-870d-f06b4d37c95e'
-  ).map((acc) => {
-    const isEstephanos =
-      acc.user_id === '86f00894-4c35-4dc9-b4fd-bc2d963e5bb1' ||
-      acc.user_id === '3d9d7c11-1d5b-4af3-bd5c-5bd12bc1106f' ||
-      acc.full_name?.toLowerCase().includes('estephanos');
-
-    if (isEstephanos) {
-      return {
-        ...acc,
-        full_name: 'Estephanos Mekbib',
-        role: 'admin',
-      };
-    }
-
+  ).filter((acc) => {
+    // Deduplicate by user_id — keep only the first occurrence.
+    if (seenUserIds.has(acc.user_id)) return false;
+    seenUserIds.add(acc.user_id);
+    return true;
+  }).map((acc) => {
     if (acc.full_name.trim().toLowerCase() === 'meareg') {
       return {
         ...acc,

@@ -18,7 +18,6 @@ import BookingCard from '@/components/teacher/booking-card';
 import ReviewsSection, { type Review } from '@/components/teacher/reviews-section';
 import TeacherVideoPlayer from '@/components/teacher/teacher-video-player';
 import type { TeacherType } from '@/lib/types/database';
-import { getSampleTeacherById } from '@/lib/data/sample-teachers';
 import { formatRate } from '@/lib/pricing';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +28,19 @@ const BADGE_LABEL: Record<TeacherType, string> = {
   community_tutor: 'Native Community Tutor',
 };
 
+// Demo / QA marker: names containing "(Teacher Demo)" or starting with "QA " are
+// test accounts that must never render a bookable detail page.
+function isDemoOrQaName(name: string | null | undefined): boolean {
+  if (!name) return true;
+  const lower = name.toLowerCase().trim();
+  return (
+    lower.includes('(teacher demo)') ||
+    lower.includes('teacher demo') ||
+    lower.startsWith('qa ') ||
+    lower.includes('rahel teacher')
+  );
+}
+
 export default async function TeacherProfilePage({
   params,
 }: {
@@ -37,11 +49,13 @@ export default async function TeacherProfilePage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  // Try fetching from database first (by teacher_profile id or user_id)
+  // Only published, approved teacher profiles are bookable on detail pages.
   let { data: teacher } = await supabase
     .from('teacher_profiles')
     .select('*')
     .eq('id', id)
+    .eq('is_published', true)
+    .eq('application_status', 'approved')
     .maybeSingle();
 
   if (!teacher) {
@@ -49,100 +63,78 @@ export default async function TeacherProfilePage({
       .from('teacher_profiles')
       .select('*')
       .eq('user_id', id)
+      .eq('is_published', true)
+      .eq('application_status', 'approved')
       .maybeSingle();
     teacher = tByUserId;
   }
 
-  // Only real teacher profiles are bookable. Showcase (sample) profiles are display-only.
-  // (Previously, accounts without a teacher profile got a page with an invented $35 rate,
-  // and sample profiles were linked to real accounts by matching first names.)
-  const sample = !teacher ? getSampleTeacherById(id) : null;
-
-  if (!teacher && !sample) {
+  // No teacher profile found that is published and approved → 404.
+  // Sample/demo profiles are no longer rendered as bookable pages.
+  if (!teacher) {
     notFound();
   }
 
-  // Define normalized fields whether from DB or sample
-  let fullName = '';
-  let avatarUrl: string | null = null;
-  let languagesTaught: string[] = [];
-  let languagesSpoken: string[] = [];
-  let teacherType: TeacherType = 'professional';
-  let hourlyRate = 35;
-  let rating = 5.0;
-  let totalLessons = 0;
-  let bio = '';
-  let specialties: string[] = [];
-  let credentials: string[] = [];
-  let yearsExperience = 3;
-  let videoIntroUrl: string | null = null;
-  let reviews: Review[] = [];
-  const educatorUserId = teacher ? teacher.user_id : null;
+  // Fetch the linked profile to check for demo/QA markers.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, avatar_url')
+    .eq('user_id', teacher.user_id)
+    .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
-  if (teacher) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name, avatar_url')
-      .eq('user_id', teacher.user_id)
-      .order('created_at', { ascending: true }).limit(1).maybeSingle();
-    if (!profile) notFound();
+  if (!profile) notFound();
 
-    fullName = profile.full_name;
-    avatarUrl = profile.avatar_url;
-    languagesTaught = teacher.languages_taught ?? [];
-    languagesSpoken = teacher.languages_spoken ?? [];
-    teacherType = teacher.teacher_type as TeacherType;
-    hourlyRate = Number(teacher.hourly_rate);
-    bio = teacher.bio ?? '';
-    specialties = teacher.specialties ?? [];
-    credentials = teacher.credentials ?? [];
-    yearsExperience = teacher.years_experience ?? 3;
-    videoIntroUrl = teacher.video_intro_url;
+  // Exclude demo/QA accounts from bookable detail pages.
+  if (isDemoOrQaName(profile.full_name)) notFound();
 
-    const { data: rawReviews } = await supabase
-      .from('reviews')
-      .select('id, rating, comment, created_at, student_id')
-      .eq('teacher_id', teacher.id)
-      .order('created_at', { ascending: false });
+  const fullName = profile.full_name;
+  const avatarUrl = profile.avatar_url;
+  const languagesTaught: string[] = teacher.languages_taught ?? [];
+  const languagesSpoken: string[] = teacher.languages_spoken ?? [];
+  const teacherType = (teacher.teacher_type as TeacherType) ?? 'community_tutor';
+  const hourlyRate = Number(teacher.hourly_rate);
+  const bio = teacher.bio ?? '';
+  const specialties: string[] = teacher.specialties ?? [];
+  const credentials: string[] = teacher.credentials ?? [];
+  const yearsExperience = teacher.years_experience ?? null;
+  const videoIntroUrl = teacher.video_intro_url;
+  const educatorUserId = teacher.user_id;
 
-    const studentIds = Array.from(new Set((rawReviews ?? []).map((r) => r.student_id)));
-    const { data: studentProfiles } = studentIds.length
-      ? await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .in('user_id', studentIds)
-      : { data: null };
+  // Reviews
+  const { data: rawReviews } = await supabase
+    .from('reviews')
+    .select('id, rating, comment, created_at, student_id')
+    .eq('teacher_id', teacher.id)
+    .order('created_at', { ascending: false });
 
-    const studentMap = new Map((studentProfiles ?? []).map((p) => [p.user_id, p.full_name]));
+  const studentIds = Array.from(new Set((rawReviews ?? []).map((r) => r.student_id)));
+  const { data: studentProfiles } = studentIds.length
+    ? await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', studentIds)
+    : { data: null };
 
-    reviews = (rawReviews ?? []).map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment ?? '',
-      createdAt: r.created_at,
-      studentName: studentMap.get(r.student_id) ?? 'Student',
-    }));
+  const studentMap = new Map((studentProfiles ?? []).map((p) => [p.user_id, p.full_name]));
 
-    rating = reviews.length
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : 5.0;
-    totalLessons = await fetchLessonCount(supabase, teacher.id);
-  } else if (sample) {
-    fullName = sample.name;
-    avatarUrl = sample.avatarUrl;
-    languagesTaught = sample.languages;
-    languagesSpoken = sample.languages_spoken;
-    teacherType = sample.teacherType;
-    hourlyRate = sample.hourlyRate;
-    rating = sample.rating;
-    totalLessons = sample.lessonsTaught;
-    bio = sample.bio;
-    specialties = sample.specialties ?? [];
-    credentials = sample.education ?? [];
-    yearsExperience = 5;
-    videoIntroUrl = sample.video_intro_url ?? null;
-    reviews = sample.reviews;
-  }
+  const reviews: Review[] = (rawReviews ?? []).map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment ?? '',
+    createdAt: r.created_at,
+    studentName: studentMap.get(r.student_id) ?? 'Student',
+  }));
+
+  const hasReviews = reviews.length > 0;
+  const rating = hasReviews
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
+  const totalLessons = await fetchLessonCount(supabase, teacher.id);
+
+  // Profile completeness: don't show invented values for missing fields.
+  const hasBio = bio && bio.trim().length > 10 && !bio.toLowerCase().includes('introduce yourself');
+  const hasRate = hourlyRate > 0;
+  const hasExperience = yearsExperience != null && yearsExperience > 0;
 
   const firstName = fullName.split(' ')[0];
 
@@ -164,7 +156,7 @@ export default async function TeacherProfilePage({
         <div className="flex flex-col gap-10 lg:flex-row">
           {/* Main Column */}
           <div className="min-w-0 flex-1 space-y-8">
-            {/* Teacher Profile Header Card (Intro.co luxury style) */}
+            {/* Teacher Profile Header Card */}
             <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
                 <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 shadow-md sm:h-32 sm:w-32">
@@ -186,7 +178,7 @@ export default async function TeacherProfilePage({
                     {teacherType === 'professional' ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300">
                         <BadgeCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                        Verified for Track 2
+                        Certified Professional Teacher
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-stone-200/80 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-1 text-xs font-bold text-stone-800 dark:text-stone-200">
@@ -200,7 +192,7 @@ export default async function TeacherProfilePage({
                   </h1>
 
                   <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-stone-600 dark:text-stone-400 font-medium">
-                    {totalLessons > 0 ? (
+                    {hasReviews ? (
                       <>
                         <div className="flex items-center gap-1 font-bold text-stone-950 dark:text-white">
                           <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
@@ -221,17 +213,19 @@ export default async function TeacherProfilePage({
                   </div>
 
                   {/* Languages Taught */}
-                  <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs font-semibold text-stone-400 mr-1">Teaches:</span>
-                    {languagesTaught.map((lang: string) => (
-                      <span
-                        key={lang}
-                        className="rounded-full bg-stone-950 dark:bg-stone-800 dark:border dark:border-stone-700 px-3.5 py-1 text-xs font-bold text-white shadow-sm"
-                      >
-                        {lang}
-                      </span>
-                    ))}
-                  </div>
+                  {languagesTaught.length > 0 && (
+                    <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                      <span className="text-xs font-semibold text-stone-400 mr-1">Teaches:</span>
+                      {languagesTaught.map((lang: string) => (
+                        <span
+                          key={lang}
+                          className="rounded-full bg-stone-950 dark:bg-stone-800 dark:border dark:border-stone-700 px-3.5 py-1 text-xs font-bold text-white shadow-sm"
+                        >
+                          {lang}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Also Speaks (non-redundant) */}
                   {(() => {
@@ -279,111 +273,119 @@ export default async function TeacherProfilePage({
               </div>
             )}
 
-            {/* About Section */}
-            <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                Biography &amp; Methodology
-              </span>
-              <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-stone-950 dark:text-white">
-                About {firstName}
-              </h2>
-              <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 dark:text-stone-300 font-medium sm:text-base">
-                {bio && bio.trim().length > 10 && !bio.toLowerCase().includes('introduce yourself')
-                  ? bio
-                  : `Selam! I am ${fullName}, a dedicated language educator with ESGlobal Language Academy. My teaching methodology emphasizes authentic conversational fluency, cultural immersion, and personalized 1-on-1 pacing tailored to each learner's heritage, travel, or academic goals.`}
-              </p>
+            {/* About Section — only if bio exists */}
+            {hasBio && (
+              <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                  Biography &amp; Methodology
+                </span>
+                <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-stone-950 dark:text-white">
+                  About {firstName}
+                </h2>
+                <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-stone-600 dark:text-stone-300 font-medium sm:text-base">
+                  {bio}
+                </p>
 
-              {/* Teaching Specialties */}
-              {specialties && specialties.length > 0 && (
-                <div className="mt-8 border-t border-stone-100 dark:border-stone-800 pt-6">
-                  <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
-                    Teaching Specialties
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {specialties.map((s: string) => (
-                      <span
-                        key={s}
-                        className="rounded-full border border-stone-200 dark:border-stone-700 bg-stone-50/60 dark:bg-stone-800 px-4 py-1.5 text-xs font-semibold text-stone-800 dark:text-stone-300"
-                      >
-                        {s}
-                      </span>
-                    ))}
+                {/* Teaching Specialties */}
+                {specialties && specialties.length > 0 && (
+                  <div className="mt-8 border-t border-stone-100 dark:border-stone-800 pt-6">
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
+                      Teaching Specialties
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {specialties.map((s: string) => (
+                        <span
+                          key={s}
+                          className="rounded-full border border-stone-200 dark:border-stone-700 bg-stone-50/60 dark:bg-stone-800 px-4 py-1.5 text-xs font-semibold text-stone-800 dark:text-stone-300"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Credentials & Education */}
-              {credentials && credentials.length > 0 && (
-                <div className="mt-8 border-t border-stone-100 dark:border-stone-800 pt-6">
-                  <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
-                    Accreditations &amp; Degrees
-                  </p>
-                  <ul className="space-y-2.5">
-                    {credentials.map((c: string) => (
-                      <li key={c} className="flex items-center gap-2.5 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-medium">
-                        <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                        <span>{c}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                {/* Credentials & Education */}
+                {credentials && credentials.length > 0 && (
+                  <div className="mt-8 border-t border-stone-100 dark:border-stone-800 pt-6">
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-stone-400">
+                      Accreditations &amp; Degrees
+                    </p>
+                    <ul className="space-y-2.5">
+                      {credentials.map((c: string) => (
+                        <li key={c} className="flex items-center gap-2.5 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-medium">
+                          <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          <span>{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-              {/* Experience Badge */}
-              <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm">
-                  <GraduationCap className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-display text-lg font-bold text-stone-950 dark:text-white">
-                    {yearsExperience}+ Years Experience
-                  </p>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    Verified native educator with direct 1-on-1 student instruction
-                  </p>
-                </div>
+                {/* Experience Badge — only if years_experience is set */}
+                {hasExperience && (
+                  <div className="mt-8 flex items-center gap-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/50 p-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 dark:bg-stone-800 text-amber-300 shadow-sm">
+                      <GraduationCap className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="font-display text-lg font-bold text-stone-950 dark:text-white">
+                        {yearsExperience}+ Years Experience
+                      </p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                        Verified native educator with direct 1-on-1 student instruction
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {/* Student Reviews */}
-            <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
-              <ReviewsSection reviews={reviews} />
-            </div>
+            {hasReviews && (
+              <div className="overflow-hidden rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] sm:p-8">
+                <ReviewsSection reviews={reviews} />
+              </div>
+            )}
           </div>
 
-          {/* Right Column: Sticky Booking Card */}
-          <aside id="booking-section" className="lg:w-[380px] lg:shrink-0 scroll-mt-24">
-            <div className="lg:sticky lg:top-28">
-              <BookingCard
-                teacherId={teacher ? teacher.id : id}
-                bookable={!!teacher}
-                hourlyRate={hourlyRate}
-                teacherType={teacherType}
-                teacherName={fullName}
-                teacherAvatar={avatarUrl}
-              />
-            </div>
-          </aside>
+          {/* Right Column: Sticky Booking Card — only if rate is set */}
+          {hasRate && (
+            <aside id="booking-section" className="lg:w-[380px] lg:shrink-0 scroll-mt-24">
+              <div className="lg:sticky lg:top-28">
+                <BookingCard
+                  teacherId={teacher.id}
+                  bookable={true}
+                  hourlyRate={hourlyRate}
+                  teacherType={teacherType}
+                  teacherName={fullName}
+                  teacherAvatar={avatarUrl}
+                />
+              </div>
+            </aside>
+          )}
         </div>
       </section>
 
-      {/* Mobile Sticky Booking Bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 p-4 shadow-2xl backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Lesson Rate</p>
-            <p className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
-              {formatRate(hourlyRate)} <span className="text-xs font-semibold text-stone-400">/ 50 min</span>
-            </p>
+      {/* Mobile Sticky Booking Bar — only if rate is set */}
+      {hasRate && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 p-4 shadow-2xl backdrop-blur-md lg:hidden">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Lesson Rate</p>
+              <p className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
+                {formatRate(hourlyRate)} <span className="text-xs font-semibold text-stone-400">/ 50 min</span>
+              </p>
+            </div>
+            <a
+              href="#booking-section"
+              className="inline-flex items-center justify-center rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white active:scale-95"
+            >
+              Select Slot
+            </a>
           </div>
-          <a
-            href="#booking-section"
-            className="inline-flex items-center justify-center rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-md transition hover:bg-stone-800 dark:hover:bg-white active:scale-95"
-          >
-            Select Slot
-          </a>
         </div>
-      </div>
+      )}
 
       {/* Footer */}
       <Footer />
