@@ -21,7 +21,7 @@ import Footer from '@/components/layout/footer';
 const TESTIMONIALS = [
   {
     quote:
-      'I wanted my 8-year-old daughter to read the Fidel script and speak Amharic like her grandparents back home. Bethelhem’s patience and cultural storytelling made all the difference. She now reads children’s books and sings traditional songs fluently.',
+      'I wanted my 8-year-old daughter to read the Fidel script and speak Amharic like her grandparents back home. The patience and cultural storytelling from her educator made all the difference. She now reads children’s books and sings traditional songs fluently.',
     author: 'Selamawit Bekele',
     role: 'Heritage Parent & Tech Lead',
     location: 'Washington, D.C.',
@@ -31,21 +31,21 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      'Growing up in Seattle, I could understand basic Tigrigna but froze whenever I tried speaking with my grandparents. After 8 weeks with Semhar, I held an entire dinner conversation in Tigrigna without switching to English. Truly life-changing.',
-    author: 'Samuel Ghebre',
-    role: 'Healthcare Analyst',
-    location: 'Seattle, WA',
-    language: 'Conversational Tigrigna',
+      'My kids were born in London and never spoke Afaan Oromo. After three months of weekly lessons, they greet their grandmother in Oromo every weekend. The Qubee lessons made reading feel natural for them.',
+    author: 'Gamachu Bekele',
+    role: 'Diaspora Parent',
+    location: 'London, UK',
+    language: 'Afaan Oromo & Qubee',
     avatar:
       'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=240&auto=format&fit=crop',
   },
   {
     quote:
-      'Preparing for community legal and medical advocacy across the Twin Cities required accurate terminology and formal dialect mastery. Dawit and Ayan provided rigorous, professional-grade 1-on-1 coaching that exceeded expectations.',
+      'Preparing for community legal and medical advocacy required accurate terminology and formal dialect mastery. The 1-on-1 coaching I received was rigorous, professional, and exceeded all my expectations.',
     author: 'Farhan Abdi',
     role: 'Community Legal Advocate',
     location: 'Minneapolis, MN',
-    language: 'Somali & Afaan Oromo',
+    language: 'Somali',
     avatar:
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=240&auto=format&fit=crop',
   },
@@ -85,18 +85,13 @@ export default function Home() {
               />
               <img
                 className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1589156280159-27698a70f29e?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Semhar"
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Fatuma"
               />
               <img
                 className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Dawit"
-              />
-              <img
-                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Mebrahtu"
+                src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=120&auto=format&fit=crop"
+                alt="Tutor Chaltu"
               />
               <img
                 className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
@@ -111,7 +106,7 @@ export default function Home() {
             </div>
           </div>
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
-            Master Conversations in Amharic, Tigrinya, Afaan Oromo &amp; Somali
+            Master Conversations in Amharic, Afaan Oromo &amp; Somali
           </h1>
 
           <p className="mx-auto mt-5 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg text-white drop-shadow-[0_2px_16px_rgba(0,0,0,1)] leading-relaxed" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7)' }}>
@@ -276,7 +271,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
-                  Fidel (Amharic &amp; Tigrinya) &amp; Qubee (Oromo) reading mastery
+                  Fidel (Amharic) &amp; Qubee (Oromo) reading mastery
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />

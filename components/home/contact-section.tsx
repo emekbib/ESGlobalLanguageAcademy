@@ -9,7 +9,6 @@ export default function ContactSection() {
 
   const languages = [
     'Amharic',
-    'Tigrinya',
     'Somali',
     'Afaan Oromo'
   ];

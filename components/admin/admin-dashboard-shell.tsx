@@ -182,7 +182,7 @@ export default function AdminDashboardShell({
       language: 'Afaan Oromo',
       track: 'Track 1: General Fluency',
       level: 'A1 - B2 Intermediate',
-      instructor: 'Dawit Tolosa',
+      instructor: 'Bethelhem Mengistu',
       duration: '8 Weeks',
       enrolledCount: 12,
       schedule: 'Saturdays 10:00 AM EST',
@@ -1494,7 +1494,7 @@ export default function AdminDashboardShell({
                       required
                       value={newUserForm.fullName}
                       onChange={(e) => setNewUserForm({ ...newUserForm, fullName: e.target.value })}
-                      placeholder="e.g. Dawit Tolosa"
+                      placeholder="e.g. Bethelhem Mengistu"
                       className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 px-3.5 py-2 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                     />
                   </div>
