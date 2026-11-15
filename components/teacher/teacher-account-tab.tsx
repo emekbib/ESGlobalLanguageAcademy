@@ -63,14 +63,12 @@ export default function TeacherAccountTab({
 
   // Form states initialized from server props
   const [fullName, setFullName] = useState(profile?.full_name || '');
-  const [hourlyRate, setHourlyRate] = useState<number>(teacherProfile?.hourly_rate || 35);
+  const [hourlyRate, setHourlyRate] = useState<number>(teacherProfile?.hourly_rate ?? 0);
   const [yearsExperience, setYearsExperience] = useState<number>(
-    teacherProfile?.years_experience !== undefined ? teacherProfile.years_experience : 3
+    teacherProfile?.years_experience !== undefined && teacherProfile.years_experience !== null ? teacherProfile.years_experience : 0
   );
   const [languagesTaught, setLanguagesTaught] = useState<string[]>(
-    teacherProfile?.languages_taught && teacherProfile.languages_taught.length > 0
-      ? teacherProfile.languages_taught
-      : ['Amharic']
+    teacherProfile?.languages_taught ?? []
   );
   const [bio, setBio] = useState(teacherProfile?.bio || '');
   const [videoIntroUrl, setVideoIntroUrl] = useState(teacherProfile?.video_intro_url || '');
@@ -125,9 +123,9 @@ export default function TeacherAccountTab({
         return;
       }
 
-      // 2. Update or Insert teacher profile
-      const validatedRate = Math.max(5, Math.min(200, Number(hourlyRate) || 35));
-      const validatedLangs = languagesTaught.length > 0 ? languagesTaught : ['Amharic'];
+      // 2. Update the canonical teacher profile row (by id, not user_id)
+      const validatedRate = Number(hourlyRate) || 0;
+      const validatedLangs = languagesTaught;
 
       const teacherPayload = {
         user_id: user.id,
@@ -139,22 +137,31 @@ export default function TeacherAccountTab({
         is_published: true,
       };
 
-      const { data: existing } = await supabase
-        .from('teacher_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
       let teacherErr = null;
-      if (existing?.id) {
+      if (teacherProfile?.id) {
         const { error } = await supabase
           .from('teacher_profiles')
           .update(teacherPayload)
-          .eq('id', existing.id);
+          .eq('id', teacherProfile.id);
         teacherErr = error;
       } else {
-        const { error } = await supabase.from('teacher_profiles').insert(teacherPayload);
-        teacherErr = error;
+        const { data: existing } = await supabase
+          .from('teacher_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (existing?.id) {
+          const { error } = await supabase
+            .from('teacher_profiles')
+            .update(teacherPayload)
+            .eq('id', existing.id);
+          teacherErr = error;
+        } else {
+          const { error } = await supabase.from('teacher_profiles').insert(teacherPayload);
+          teacherErr = error;
+        }
       }
 
       if (teacherErr) {

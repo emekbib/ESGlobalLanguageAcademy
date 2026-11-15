@@ -39,8 +39,29 @@ async function resolveEditableTeacherProfile(client: any, userId: string, reques
     return data ?? null;
   }
 
-  const { data } = await client.from('teacher_profiles').select('id, user_id').eq('user_id', userId).maybeSingle();
-  return data ?? null;
+  // Fetch all rows for this user and pick the canonical one (published/approved preferred).
+  const { data: rows } = await client
+    .from('teacher_profiles')
+    .select('id, user_id, is_published, application_status, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+
+  if (!rows || rows.length === 0) return null;
+  if (rows.length === 1) return rows[0];
+
+  const publishedApproved = rows.filter(
+    (r: any) => r.is_published && (r.application_status === 'approved' || r.application_status == null)
+  );
+  if (publishedApproved.length > 0) {
+    return publishedApproved.sort((a: any, b: any) => b.created_at.localeCompare(a.created_at))[0];
+  }
+
+  const published = rows.filter((r: any) => r.is_published);
+  if (published.length > 0) {
+    return published.sort((a: any, b: any) => b.created_at.localeCompare(a.created_at))[0];
+  }
+
+  return rows.sort((a: any, b: any) => b.created_at.localeCompare(a.created_at))[0];
 }
 
 export async function GET(request: Request) {

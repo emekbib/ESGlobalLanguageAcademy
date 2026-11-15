@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import TeacherDashboardShell from '@/components/teacher/teacher-dashboard-shell';
 import { ErrorDisplay } from '@/components/ui/page-states';
+import { pickCanonicalProfile } from '@/lib/teacher/profile';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ export default async function TeacherDashboardPage({
     .order('created_at', { ascending: true }).limit(1).maybeSingle();
 
   if (profileError) {
-    return <ErrorDisplay message="We couldn’t load your profile. Please try again." />;
+    return <ErrorDisplay message="We couldn't load your profile. Please try again." />;
   }
   if (!profile) redirect('/onboarding');
   if (profile.role === 'student') {
@@ -36,17 +37,22 @@ export default async function TeacherDashboardPage({
     redirect(`/dashboard${qs ? `?${qs}` : ''}`);
   }
 
-  const { data: teacherProfile, error: teacherProfileError } = await supabase
+  // Fetch ALL teacher_profiles rows for this user, then pick the canonical one:
+  // prefer is_published=true AND application_status approved/null; never silently
+  // use the oldest/demo row.
+  const { data: allTeacherRows, error: teacherProfileError } = await supabase
     .from('teacher_profiles')
     .select(
-      'id, bio, languages_taught, hourly_rate, years_experience, video_intro_url, is_published, stripe_account_id, stripe_onboarding_complete',
+      'id, bio, languages_taught, hourly_rate, years_experience, video_intro_url, is_published, application_status, stripe_account_id, stripe_onboarding_complete, teacher_type, created_at',
     )
     .eq('user_id', user.id)
-    .maybeSingle();
+    .order('created_at', { ascending: true });
 
   if (teacherProfileError) {
-    return <ErrorDisplay message="We couldn’t load your teacher profile. Please try again." />;
+    return <ErrorDisplay message="We couldn't load your teacher profile. Please try again." />;
   }
+
+  const teacherProfile = pickCanonicalProfile(allTeacherRows ?? []);
 
   // A teacher without a teacher profile can't save availability or receive bookings.
   // Send them to finish setup instead of showing a read-only placeholder dashboard.
@@ -71,6 +77,7 @@ export default async function TeacherDashboardPage({
     hourly_rate: 30,
     years_experience: 5,
     is_published: false,
+    application_status: null,
     stripe_account_id: null,
     stripe_onboarding_complete: false,
   };
@@ -97,7 +104,7 @@ export default async function TeacherDashboardPage({
       .order('start_time_utc', { ascending: true });
 
     if (bookingsError) {
-      return <ErrorDisplay message="We couldn’t load your lessons. Please try again." />;
+      return <ErrorDisplay message="We couldn't load your lessons. Please try again." />;
     }
 
     const studentIds = Array.from(new Set((bookings ?? []).map((b) => b.student_id)));
@@ -109,7 +116,7 @@ export default async function TeacherDashboardPage({
       : { data: [], error: null };
 
     if (studentError) {
-      return <ErrorDisplay message="We couldn’t load your lessons. Please try again." />;
+      return <ErrorDisplay message="We couldn't load your lessons. Please try again." />;
     }
 
     const studentMap = new Map((studentProfiles ?? []).map((p) => [p.user_id, p]));
@@ -118,13 +125,13 @@ export default async function TeacherDashboardPage({
       // Unpaid holds whose checkout was abandoned are not lessons.
       .filter((b) => !(b.status === 'pending' && (!b.hold_expires_at || new Date(b.hold_expires_at).getTime() < nowMs)))
       .map(({ hold_expires_at: _hold, ...b }) => {
-      const sp = studentMap.get(b.student_id);
-      return {
-        ...b,
-        teacher_name: sp?.full_name ?? 'Student',
-        teacher_avatar: sp?.avatar_url ?? null,
-      };
-    });
+        const sp = studentMap.get(b.student_id);
+        return {
+          ...b,
+          teacher_name: sp?.full_name ?? 'Student',
+          teacher_avatar: sp?.avatar_url ?? null,
+        };
+      });
   }
 
   const now = new Date();

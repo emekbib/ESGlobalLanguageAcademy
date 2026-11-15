@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Profile, TeacherProfile } from '@/lib/types/database';
 import type { TeacherCardData } from '@/components/teacher/teacher-card';
+import { isDemoOrQaName, stripDemoSuffix } from '@/lib/teacher/profile';
 
 export const APPROVED_LANGUAGES = ['Amharic', 'Tigrinya', 'Afaan Oromo', 'Somali'] as const;
 
@@ -28,28 +29,6 @@ export type TeacherFilters = {
 
 export type SortOption = 'popular' | 'rating' | 'price_low' | 'price_high';
 
-// Demo / QA marker: names containing "(Teacher Demo)" or starting with "QA " are
-// test accounts that must never appear in the public directory.
-function isDemoOrQaName(name: string | null | undefined): boolean {
-  if (!name) return true;
-  const lower = name.toLowerCase().trim();
-  return (
-    lower.includes('(teacher demo)') ||
-    lower.includes('teacher demo') ||
-    lower.startsWith('qa ') ||
-    lower.includes('rahel teacher')
-  );
-}
-
-// Profile is incomplete (and must not be listed) if critical fields are missing.
-function isProfileIncomplete(t: TeacherProfile, profileName: string | null): boolean {
-  if (!profileName || profileName.trim().length < 2) return true;
-  if (!t.hourly_rate || Number(t.hourly_rate) <= 0) return true;
-  if (!t.languages_taught || t.languages_taught.length === 0) return true;
-  if (!t.bio || t.bio.trim().length < 10 || t.bio.toLowerCase().includes('introduce yourself')) return true;
-  return false;
-}
-
 export function useTeachers() {
   const supabase = createSupabaseBrowserClient();
   const [teachers, setTeachers] = useState<TeacherCardData[]>([]);
@@ -61,12 +40,12 @@ export function useTeachers() {
     let active = true;
 
     async function load() {
-      // Only published, approved teacher profiles are listed in the public directory.
+      // Published teachers with application_status NULL or 'approved' (not 'rejected' or 'pending').
       const { data: rawTeacherProfiles, error: fetchError } = await supabase
         .from('teacher_profiles')
         .select('*')
         .eq('is_published', true)
-        .eq('application_status', 'approved')
+        .or('application_status.is.null,application_status.eq.approved')
         .order('created_at', { ascending: false });
 
       if (!active) return;
@@ -117,13 +96,13 @@ export function useTeachers() {
         seenIds.add(t.id);
 
         const profile = profileMap.get(t.user_id);
-        const profileName = profile?.full_name ?? null;
+        const rawName = profile?.full_name ?? null;
 
-        // Exclude demo/QA accounts by name marker.
-        if (isDemoOrQaName(profileName)) continue;
+        // Exclude demo/QA accounts by explicit name markers only.
+        // An empty name does NOT mean demo — the teacher just hasn't set it yet.
+        if (isDemoOrQaName(rawName)) continue;
 
-        // Exclude incomplete profiles — no invented rates, languages, or names.
-        if (isProfileIncomplete(t, profileName)) continue;
+        const displayName = stripDemoSuffix(rawName) || 'Language Educator';
 
         const stats = reviewStats.get(t.id);
         const rawLangs: string[] = Array.isArray(t.languages_taught) ? t.languages_taught : [];
@@ -131,15 +110,16 @@ export function useTeachers() {
           new Set(rawLangs.map((l) => normalizeLanguageName(l)).filter((l): l is string => Boolean(l)))
         );
 
+        // No invented defaults — show real values or honest empty states.
         enriched.push({
           id: t.id,
           userId: t.user_id,
-          name: profileName!,
+          name: displayName,
           avatarUrl: profile?.avatar_url ?? null,
           languages: normalizedLangs,
           rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 0,
           lessonsTaught: lessonCounts.get(t.id) ?? 0,
-          hourlyRate: Number(t.hourly_rate),
+          hourlyRate: Number(t.hourly_rate) || 0,
           teacherType: t.teacher_type ?? 'community_tutor',
           specialties: t.specialties ?? [],
         });

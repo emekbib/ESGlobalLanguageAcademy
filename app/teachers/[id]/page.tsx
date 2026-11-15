@@ -19,6 +19,7 @@ import ReviewsSection, { type Review } from '@/components/teacher/reviews-sectio
 import TeacherVideoPlayer from '@/components/teacher/teacher-video-player';
 import type { TeacherType } from '@/lib/types/database';
 import { formatRate } from '@/lib/pricing';
+import { isDemoOrQaName, stripDemoSuffix } from '@/lib/teacher/profile';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -28,18 +29,7 @@ const BADGE_LABEL: Record<TeacherType, string> = {
   community_tutor: 'Native Community Tutor',
 };
 
-// Demo / QA marker: names containing "(Teacher Demo)" or starting with "QA " are
-// test accounts that must never render a bookable detail page.
-function isDemoOrQaName(name: string | null | undefined): boolean {
-  if (!name) return true;
-  const lower = name.toLowerCase().trim();
-  return (
-    lower.includes('(teacher demo)') ||
-    lower.includes('teacher demo') ||
-    lower.startsWith('qa ') ||
-    lower.includes('rahel teacher')
-  );
-}
+
 
 export default async function TeacherProfilePage({
   params,
@@ -49,13 +39,13 @@ export default async function TeacherProfilePage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  // Only published, approved teacher profiles are bookable on detail pages.
+  // Published teachers with application_status NULL or 'approved' are bookable.
   let { data: teacher } = await supabase
     .from('teacher_profiles')
     .select('*')
     .eq('id', id)
     .eq('is_published', true)
-    .eq('application_status', 'approved')
+    .or('application_status.is.null,application_status.eq.approved')
     .maybeSingle();
 
   if (!teacher) {
@@ -64,7 +54,7 @@ export default async function TeacherProfilePage({
       .select('*')
       .eq('user_id', id)
       .eq('is_published', true)
-      .eq('application_status', 'approved')
+      .or('application_status.is.null,application_status.eq.approved')
       .maybeSingle();
     teacher = tByUserId;
   }
@@ -87,7 +77,7 @@ export default async function TeacherProfilePage({
   // Exclude demo/QA accounts from bookable detail pages.
   if (isDemoOrQaName(profile.full_name)) notFound();
 
-  const fullName = profile.full_name;
+  const fullName = stripDemoSuffix(profile.full_name);
   const avatarUrl = profile.avatar_url;
   const languagesTaught: string[] = teacher.languages_taught ?? [];
   const languagesSpoken: string[] = teacher.languages_spoken ?? [];

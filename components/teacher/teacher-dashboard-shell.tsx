@@ -36,6 +36,7 @@ import DashboardMessagesTab from '@/components/dashboard/dashboard-messages-tab'
 import NotificationBell from '@/components/notifications/notification-bell';
 import { useMessageNotifications } from '@/hooks/use-message-notifications';
 import { formatRate } from '@/lib/pricing';
+import { stripDemoSuffix } from '@/lib/teacher/profile';
 
 type BookingItem = {
   id: string;
@@ -66,6 +67,7 @@ type TeacherDashboardShellProps = {
     years_experience: number;
     video_intro_url?: string | null;
     is_published: boolean;
+    application_status?: string | null;
     stripe_account_id?: string | null;
     stripe_onboarding_complete?: boolean | null;
     teacher_type?: string | null;
@@ -174,7 +176,8 @@ export default function TeacherDashboardShell({
     setTheme(isDark ? 'light' : 'dark');
   };
 
-  const firstLetter = profile.full_name?.charAt(0)?.toUpperCase() || 'T';
+  const firstLetter = stripDemoSuffix(profile.full_name)?.charAt(0)?.toUpperCase() || 'T';
+  const displayName = stripDemoSuffix(profile.full_name) || 'Educator';
 
   const NAV_ITEMS = [
     {
@@ -365,13 +368,13 @@ export default function TeacherDashboardShell({
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-950 dark:bg-stone-800 border border-stone-800 dark:border-stone-700 text-xs font-bold text-amber-300 shadow-sm">
                 {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt={profile.full_name} className="h-full w-full object-cover" />
+                  <img src={profile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
                 ) : (
                   firstLetter
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-stone-900 dark:text-white">{profile.full_name}</p>
+                <p className="truncate text-xs font-bold text-stone-900 dark:text-white">{displayName}</p>
                 <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                   Native Educator
                 </p>
@@ -589,7 +592,7 @@ export default function TeacherDashboardShell({
 
             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-stone-200 dark:ring-stone-800 shadow-sm">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.full_name} className="h-full w-full object-cover" />
+                <img src={profile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-stone-950 dark:bg-stone-800 text-xs font-bold text-amber-300">
                   {firstLetter}
@@ -664,7 +667,7 @@ export default function TeacherDashboardShell({
                       Educator Workspace
                     </span>
                     <h2 className="mt-0.5 font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                      Welcome back, {profile.full_name}
+                      Welcome back, {displayName}
                     </h2>
                     <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
                       Manage your teaching profile, weekly availability calendar, and student lesson roster.
