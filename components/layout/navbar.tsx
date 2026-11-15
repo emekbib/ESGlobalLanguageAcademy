@@ -15,6 +15,7 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sessionState, setSessionState] = useState<'loading' | 'known'>('loading');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
@@ -58,6 +59,7 @@ export default function Navbar({
         setUserRole(null);
         setUserProfile(null);
       }
+      setSessionState('known');
     };
 
     void checkUser();
@@ -70,6 +72,7 @@ export default function Navbar({
         setIsLoggedIn(false);
         setUserRole(null);
         setUserProfile(null);
+        setSessionState('known');
       }
     });
 
@@ -114,7 +117,7 @@ export default function Navbar({
             Find a Teacher
           </Link>
 
-          {mounted && !isLoggedIn ? (
+          {mounted && sessionState === 'known' && !isLoggedIn ? (
             <Link
               href="/auth"
               className={`text-sm font-medium transition-colors ${
@@ -127,7 +130,7 @@ export default function Navbar({
             </Link>
           ) : null}
 
-          {(!isLoggedIn || userRole === 'student') && (
+          {(sessionState === 'known' && (!isLoggedIn || userRole === 'student')) && (
             <Link
               href="/teacher/onboarding"
               className={`text-sm font-medium transition-colors ${
@@ -143,7 +146,7 @@ export default function Navbar({
 
         {/* Right action buttons */}
         <div className="hidden items-center gap-5 md:flex">
-          {mounted && isLoggedIn ? (
+          {mounted && sessionState === 'known' && isLoggedIn ? (
             <div className="flex items-center gap-4">
               <Link
                 href={dashboardLink}
@@ -181,7 +184,7 @@ export default function Navbar({
                 )}
               </div>
             </div>
-          ) : mounted ? (
+          ) : mounted && sessionState === 'known' ? (
             <>
               <Link
                 href="/auth"
@@ -204,7 +207,13 @@ export default function Navbar({
                 Sign up
               </Link>
             </>
-          ) : null}
+          ) : (
+            /* Loading state: neutral placeholder occupying the same space as the signed-out buttons */
+            <div className="flex items-center gap-5">
+              <div className="h-4 w-16 rounded-full bg-stone-200/60 dark:bg-stone-800/60 animate-pulse" />
+              <div className="h-9 w-20 rounded-full bg-stone-200/60 dark:bg-stone-800/60 animate-pulse" />
+            </div>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -287,7 +296,9 @@ export default function Navbar({
             </div>
 
             <div className="mt-2 flex flex-col gap-2.5 border-t border-stone-200/80 dark:border-stone-800 pt-4">
-              {isLoggedIn ? (
+              {sessionState === 'loading' ? (
+                <div className="h-11 rounded-2xl bg-stone-200/60 dark:bg-stone-800/60 animate-pulse" />
+              ) : isLoggedIn ? (
                 <Link
                   href={dashboardLink}
                   onClick={() => setMobileOpen(false)}
