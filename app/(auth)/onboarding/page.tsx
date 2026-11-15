@@ -394,7 +394,7 @@ export default function OnboardingPage() {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Bethlehem Mengistu"
+                  placeholder="e.g. Bethelhem Mengistu"
                   className="mt-2 h-12 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm font-semibold text-stone-900 outline-none transition focus:border-stone-950 focus:ring-1 focus:ring-stone-950"
                 />
               </div>

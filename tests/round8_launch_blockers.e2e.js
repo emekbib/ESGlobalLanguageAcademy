@@ -72,7 +72,7 @@ async function signUpViaUi(page, email) {
 
 async function onboard(page, role, name) {
   if (role === 'teacher') await page.getByText('I am a Native Educator').click();
-  await page.fill('input[placeholder="e.g. Bethlehem Mengistu"]', name);
+  await page.fill('input[placeholder="e.g. Bethelhem Mengistu"]', name);
   await page.getByRole('button', { name: role === 'teacher' ? /Continue to Educator Setup/ : /Enter Student Dashboard/ }).click();
 }
 

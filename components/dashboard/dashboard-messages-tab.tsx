@@ -738,6 +738,22 @@ export default function DashboardMessagesTab({
     } catch (err) {
       console.warn('Error deleting message on server:', err);
     }
+
+    // Refresh the contact list preview so the deleted message disappears from the sidebar immediately
+    const remaining = messages.filter((m) => m.id !== msgId && !m.id.startsWith('temp-'));
+    const lastMsg = remaining[remaining.length - 1];
+    setContacts((prev) =>
+      prev.map((c) =>
+        c.id === selectedContact.id
+          ? {
+              ...c,
+              lastMessage: lastMsg?.content,
+              lastMessageSenderId: lastMsg?.sender_id,
+              lastMessageTime: lastMsg?.created_at,
+            }
+          : c
+      )
+    );
   };
 
   // Clear Whole Conversation
@@ -760,6 +776,15 @@ export default function DashboardMessagesTab({
         });
       } catch { }
     }
+
+    // Refresh the contact list preview so the cleared conversation shows no last message
+    setContacts((prev) =>
+      prev.map((c) =>
+        c.id === selectedContact.id
+          ? { ...c, lastMessage: undefined, lastMessageSenderId: undefined, lastMessageTime: undefined }
+          : c
+      )
+    );
   };
 
   // 4. Send Message Handler
