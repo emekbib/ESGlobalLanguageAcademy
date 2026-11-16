@@ -68,11 +68,11 @@ export async function confirmPaidBooking(
   return { ok: true, amountCents: booking.amount_cents };
 }
 
-/** Releases an unpaid hold when the student backs out of Stripe Checkout. */
+/** Deletes an unpaid hold when the student backs out of Stripe Checkout. */
 export async function releaseUnpaidHold(db: any, studentId: string, bookingId: string) {
   await db
     .from('bookings')
-    .update({ status: 'cancelled', hold_expires_at: null })
+    .delete()
     .eq('id', bookingId)
     .eq('student_id', studentId)
     .eq('status', 'pending');

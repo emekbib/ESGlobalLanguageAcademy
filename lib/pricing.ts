@@ -4,7 +4,7 @@
  *
  * A teacher's `hourly_rate` is the price of a standard 50-minute lesson.
  */
-export const ALLOWED_LESSON_MINUTES = [30, 50, 60] as const;
+export const ALLOWED_LESSON_MINUTES = [30, 45, 60] as const;
 export const STANDARD_LESSON_MINUTES = 50;
 export const PLATFORM_FEE_RATE = 0.2;
 

@@ -1,0 +1,33 @@
+{
+  "projectId": "72878747",
+  "functions": {
+    "complete-booking": {
+      "hasChanged": false,
+      "hash": "947166db4fafc18a3d3a0f3aa43a0254868498df7fce22aaf34a159df22f7ec7"
+    },
+    "create-checkout-session": {
+      "hasChanged": false,
+      "hash": "c439469c756636de2ade0753877b6036481f6822765bd33499b678020e0d6b35"
+    },
+    "create-connect-account": {
+      "hasChanged": false,
+      "hash": "488a1630dfb3d71f15afaf9e83d8c8dba55df0694b27dedf94c6bff59d62af7d"
+    },
+    "create-daily-room": {
+      "hasChanged": false,
+      "hash": "145831ad30e9863ee7cfac289d903dc2a113dc9db430bc9f465fd107d2031183"
+    },
+    "release-expired-holds": {
+      "hasChanged": false,
+      "hash": "a60fb32a3f0d239f049eff9920edf1c9dd2ad99333717a4378f6135af9f725f5"
+    },
+    "send-booking-reminders": {
+      "hasChanged": false,
+      "hash": "b351c591037e7fbbc78f4c5f1ea256c035170e0fc7cf8345c53a74afb6684d8a"
+    },
+    "stripe-webhook": {
+      "hasChanged": false,
+      "hash": "4bc1cb2e4730324d8ff3a8bc3403ff868ab509a43d2ac6b5a27d11d8098a87a1"
+    }
+  }
+}

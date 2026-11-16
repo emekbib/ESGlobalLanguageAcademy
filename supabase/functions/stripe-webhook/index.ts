@@ -29,12 +29,12 @@ Deno.serve(async (req: Request) => {
     if (event.type === "checkout.session.expired") {
       const session = event.data.object as Stripe.Checkout.Session;
       const bookingId = session.metadata?.booking_id;
-      if (bookingId) await admin.from("bookings").update({ status: "cancelled" }).eq("id", bookingId).eq("status", "pending");
+      if (bookingId) await admin.from("bookings").delete().eq("id", bookingId).eq("status", "pending");
     }
     if (event.type === "payment_intent.payment_failed") {
       const intent = event.data.object as Stripe.PaymentIntent;
       const bookingId = intent.metadata?.booking_id;
-      if (bookingId) await admin.from("bookings").update({ status: "cancelled" }).eq("id", bookingId).eq("status", "pending");
+      if (bookingId) await admin.from("bookings").delete().eq("id", bookingId).eq("status", "pending");
     }
     if (event.type === "account.updated") {
       const account = event.data.object as Stripe.Account;

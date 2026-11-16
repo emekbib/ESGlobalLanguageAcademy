@@ -8,7 +8,7 @@ import { generateSlots } from '@/lib/availability/slots';
 import type { Booking as SlotBooking } from '@/lib/availability/slots';
 import type { TeacherAvailability } from '@/lib/types/database';
 
-const LESSON_LENGTHS = [30, 45, 60, 90];
+const LESSON_LENGTHS = [30, 45, 60];
 
 type BookingResult = { ok: boolean; message: string };
 

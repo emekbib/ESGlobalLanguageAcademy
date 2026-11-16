@@ -45,7 +45,7 @@ export function formatDateKey(date: Date, timeZone: string): string {
 export function generateSlots(
   availability: TeacherAvailability[],
   viewerTimezone: string,
-  lessonMinutes = 50,
+  lessonMinutes = 45,
   daysAhead = 14,
   bookings: Booking[] = [],
   now = new Date(),

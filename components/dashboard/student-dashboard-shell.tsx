@@ -252,7 +252,13 @@ export default function StudentDashboardShell({
   }, [profile.user_id, fetchLiveBookings, supabase]);
 
   const nextBooking = liveUpcoming.length > 0 ? liveUpcoming[0] : null;
-  const completedCount = livePast.filter((b) => b.status === 'completed').length;
+  const completedCount = useMemo(
+    () => Math.max(
+      livePast.filter((b) => b.status === 'completed').length,
+      past.filter((b) => b.status === 'completed').length,
+    ),
+    [livePast, past]
+  );
   const uniqueTeachersCount = Array.from(
     new Set([...liveUpcoming, ...livePast].map((b) => b.teacher_name))
   ).length;

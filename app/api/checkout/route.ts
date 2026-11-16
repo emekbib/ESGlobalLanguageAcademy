@@ -75,7 +75,7 @@ export async function POST(req: Request) {
 
     const minutes = Number(lessonMinutes);
     if (!ALLOWED_LESSON_MINUTES.includes(minutes as any)) {
-      return NextResponse.json({ error: 'Please choose a 30, 50, or 60 minute lesson.' }, { status: 400 });
+      return NextResponse.json({ error: 'Please choose a 30, 45, or 60 minute lesson.' }, { status: 400 });
     }
 
     const start = new Date(startUtc);
@@ -201,7 +201,7 @@ export async function POST(req: Request) {
     console.error('Checkout API error:', err);
     // Release the hold so the slot isn't blocked by a checkout that never started.
     if (createdBookingId && db) {
-      await db.from('bookings').update({ status: 'cancelled' }).eq('id', createdBookingId);
+      await db.from('bookings').delete().eq('id', createdBookingId);
     }
     return NextResponse.json(
       { error: 'We couldn’t start the payment. Your card has not been charged. Please try again.' },

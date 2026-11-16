@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, Trash2 } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/lib/types/database';
 import CompleteBookingButton from '@/components/teacher/complete-booking-button';
 import { cancellationMessage } from '@/lib/payments/refund-policy';
@@ -68,12 +68,40 @@ export default function BookingsList({
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelNotice, setCancelNotice] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) return null;
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    setDeletingId(bookingId);
+    setCancelError(null);
+    try {
+      const res = await fetch('/api/bookings/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        setCancelError(data?.error || 'We could not remove this booking. Please try again.');
+        return;
+      }
+      setCancelNotice('Cancelled booking removed from your history.');
+      if (onBookingCancelled) {
+        onBookingCancelled();
+      } else {
+        window.setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch {
+      setCancelError('We could not reach the server. The booking was not removed.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleCancelBooking = async (bookingId: string) => {
     setCancellingId(bookingId);
@@ -233,6 +261,23 @@ export default function BookingsList({
                       </div>
                     )}
 
+                  {viewerRole === 'student' && booking.status === 'cancelled' && !booking.payment_intent_id && (
+                    <button
+                      type="button"
+                      onClick={() => void handleDeleteBooking(booking.id)}
+                      disabled={deletingId === booking.id}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer disabled:opacity-50"
+                    >
+                      {deletingId === booking.id ? (
+                        <span className="animate-pulse">Removing…</span>
+                      ) : (
+                        <>
+                          <Trash2 className="h-3 w-3" />
+                          <span>Remove</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                   {viewerRole === 'student' && booking.status === 'completed' && (
                     <Link
                       href={`/booking/${booking.id}#review`}

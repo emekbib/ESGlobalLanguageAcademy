@@ -153,30 +153,6 @@ export default function AdminDashboardShell({
 
   const [courses, setCourses] = useState<CourseItem[]>([
     {
-      id: 'c-1',
-      title: 'Conversational Amharic Foundations',
-      language: 'Amharic',
-      track: 'Track 1: General Fluency',
-      level: 'A1 - A2 Beginner',
-      instructor: 'Bethelhem Tadesse',
-      duration: '8 Weeks',
-      enrolledCount: 18,
-      schedule: 'Tue & Thu 6:00 PM EST',
-      status: 'Active',
-    },
-    {
-      id: 'c-2',
-      title: 'Comprehensive Tigrinya & Fidel Script',
-      language: 'Tigrinya',
-      track: 'Track 1: General Fluency',
-      level: 'A1 - B1 Intermediate',
-      instructor: 'Selamawit Bekele',
-      duration: '10 Weeks',
-      enrolledCount: 14,
-      schedule: 'Mon & Wed 7:00 PM EST',
-      status: 'Active',
-    },
-    {
       id: 'c-3',
       title: 'Afaan Oromo Grammar & Qubee Orthography',
       language: 'Afaan Oromo',
@@ -184,21 +160,9 @@ export default function AdminDashboardShell({
       level: 'A1 - B2 Intermediate',
       instructor: 'Bethelhem Mengistu',
       duration: '8 Weeks',
-      enrolledCount: 12,
+      enrolledCount: 0,
       schedule: 'Saturdays 10:00 AM EST',
       status: 'Active',
-    },
-    {
-      id: 'c-5',
-      title: 'Ge’ez Classical Roots & Liturgical Heritage',
-      language: 'Ge’ez',
-      track: 'Track 2: Professional & Heritage',
-      level: 'All Levels',
-      instructor: 'Dr. Yohannes Gebre',
-      duration: '6 Weeks',
-      enrolledCount: 9,
-      schedule: 'Sundays 2:00 PM EST',
-      status: 'Enrolling',
     },
   ]);
   const [courseLanguageFilter, setCourseLanguageFilter] = useState<string>('all');

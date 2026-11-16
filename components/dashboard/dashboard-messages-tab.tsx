@@ -825,6 +825,7 @@ export default function DashboardMessagesTab({
 
     // 2. Immediately update sidebar contact preview and bump to top
     const activeContactId = selectedContact.id;
+    const prevContactSnapshot = contacts.find((c) => c.id === activeContactId) ?? null;
     setContacts((prevContacts) => {
       const existingIdx = prevContacts.findIndex((c) => c.id === activeContactId);
       if (existingIdx !== -1) {
@@ -914,6 +915,17 @@ export default function DashboardMessagesTab({
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setNewMessage(msgContent);
       setSendError(err?.message || 'Could not deliver message. Please try again.');
+      if (prevContactSnapshot) {
+        setContacts((prevContacts) => {
+          const idx = prevContacts.findIndex((c) => c.id === activeContactId);
+          if (idx === -1) return prevContacts;
+          const restored = prevContacts.map((c) =>
+            c.id === activeContactId ? prevContactSnapshot : c
+          );
+          const withoutActive = restored.filter((c) => c.id !== activeContactId);
+          return [prevContactSnapshot, ...withoutActive];
+        });
+      }
     }
   };
 

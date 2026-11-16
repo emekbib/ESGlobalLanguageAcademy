@@ -21,7 +21,7 @@ export default async function BookingPage({
 
   const { data: booking, error } = await supabase
     .from('bookings')
-    .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, daily_room_url')
+    .select('id, student_id, teacher_id, start_time_utc, end_time_utc, status, daily_room_url, payment_intent_id')
     .eq('id', id)
     .maybeSingle();
 
@@ -42,7 +42,7 @@ export default async function BookingPage({
 
   const { data: teacher } = await supabase
     .from('teacher_profiles')
-    .select('user_id, languages_taught, hourly_rate')
+    .select('user_id, languages_taught, hourly_rate, timezone')
     .eq('id', booking.teacher_id)
     .maybeSingle();
 
@@ -54,6 +54,8 @@ export default async function BookingPage({
         .order('created_at', { ascending: true }).limit(1).maybeSingle()
     : { data: null };
 
+  const teacherTz = teacher?.timezone || 'UTC';
+  const escrowVerified = booking.status === 'confirmed' || booking.status === 'completed';
   const start = new Date(booking.start_time_utc);
   const end = new Date(booking.end_time_utc);
   const canJoin =
@@ -148,20 +150,22 @@ export default async function BookingPage({
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-800/80 px-4 py-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300">
               <CalendarDays className="h-4 w-4 text-amber-500" />
-              <span>{formatDate(start)}</span>
+              <span>{formatDate(start, teacherTz)}</span>
             </span>
 
             <span className="inline-flex items-center gap-2 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-800/80 px-4 py-2.5 text-xs font-semibold text-stone-700 dark:text-stone-300">
               <Clock className="h-4 w-4 text-emerald-500" />
               <span>
-                {formatTime(start)} – {formatTime(end)}
+                {formatTime(start, teacherTz)} – {formatTime(end, teacherTz)}
               </span>
             </span>
 
-            <span className="inline-flex items-center gap-1.5 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-800/80 px-4 py-2.5 text-xs font-semibold text-stone-500 dark:text-stone-400">
-              <ShieldCheck className="h-4 w-4 text-stone-400" />
-              <span>Stripe Escrow Verified</span>
-            </span>
+            {escrowVerified && (
+              <span className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-900/30 px-4 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                <span>Stripe Escrow Verified</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -215,18 +219,20 @@ async function isTeacherForBooking(
   return Boolean(data);
 }
 
-function formatDate(date: Date): string {
+function formatDate(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
+    timeZone,
   }).format(date);
 }
 
-function formatTime(date: Date): string {
+function formatTime(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
+    timeZone,
   }).format(date);
 }

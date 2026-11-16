@@ -52,7 +52,7 @@ export default function BookingCard({
   const [existingBookings, setExistingBookings] = useState<SlotBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [lessonMinutes, setLessonMinutes] = useState(50);
+  const [lessonMinutes, setLessonMinutes] = useState(45);
   const [selectedTrack, setSelectedTrack] = useState<'track_1' | 'track_2'>('track_1');
   const [viewerTz, setViewerTz] = useState('UTC');
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
@@ -308,7 +308,7 @@ export default function BookingCard({
               Session Length
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {[30, 50, 60].map((mins) => (
+              {[30, 45, 60].map((mins) => (
                 <button
                   key={mins}
                   type="button"
