@@ -3,7 +3,7 @@
 -- Includes:
 -- 2 Admin Accounts (Super Admins)
 -- 5 Fake Students (with authentic diaspora / heritage names)
--- 2 Fake Teachers (Amharic, Afaan Oromo)
+-- 1 Fake Teacher (Amharic)
 -- ====================================================================
 
 -- 1. Admins
@@ -44,11 +44,10 @@ VALUES
 ON CONFLICT (user_id) DO UPDATE SET 
   full_name = EXCLUDED.full_name;
 
--- 3. 2 Fake Teachers (Amharic, Afaan Oromo)
+-- 3. 1 Fake Teacher (Amharic)
 INSERT INTO auth.users (id, email, raw_user_meta_data, encrypted_password, email_confirmed_at, role, aud)
 VALUES 
-  ('c0000000-0000-0000-0000-000000000001', 'bethelhem@teacher.test', '{"role": "teacher"}', crypt('teacher123', gen_salt('bf')), now(), 'authenticated', 'authenticated'),
-  ('c0000000-0000-0000-0000-000000000005', 'chaltu@teacher.test', '{"role": "teacher"}', crypt('teacher123', gen_salt('bf')), now(), 'authenticated', 'authenticated')
+  ('c0000000-0000-0000-0000-000000000001', 'bethelhem@teacher.test', '{"role": "teacher"}', crypt('teacher123', gen_salt('bf')), now(), 'authenticated', 'authenticated')
 ON CONFLICT (id) DO UPDATE SET 
   raw_user_meta_data = EXCLUDED.raw_user_meta_data;
 
