@@ -7,6 +7,9 @@ import { refundableCents, type CancelActor } from '@/lib/payments/refund-policy'
  * Cancels a booking and, when the policy allows, refunds the student through Stripe.
  * The refund is issued BEFORE the booking is marked cancelled, so a lesson is never
  * shown as refunded unless Stripe actually accepted the refund.
+ *
+ * Unpaid pending holds (no payment_intent_id) are DELETED, not marked cancelled —
+ * they were never real bookings, just time-slot holds abandoned at checkout.
  */
 export async function POST(req: Request) {
   try {
@@ -47,6 +50,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'This lesson has already started and can no longer be cancelled.' }, { status: 400 });
     }
 
+    // Unpaid pending holds are deleted, not marked cancelled.
+    if (booking.status === 'pending' && !booking.payment_intent_id) {
+      const { error } = await supabase.from('bookings').delete().eq('id', booking.id);
+      if (error) {
+        console.error('Cancel delete failed:', error.message);
+        return NextResponse.json({ error: 'We could not cancel this lesson. Please contact support.' }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, refundedCents: 0, refundId: null });
+    }
+
     const paid = booking.status === 'confirmed' && Boolean(booking.payment_intent_id);
     const refundCents = refundableCents({
       actor,
@@ -75,7 +88,7 @@ export async function POST(req: Request) {
       } catch (err: any) {
         console.error('Stripe refund failed:', err?.message);
         return NextResponse.json(
-          { error: 'We couldn’t process the refund, so the lesson was not cancelled. Please try again or contact support.' },
+          { error: 'We could not process the refund, so the lesson was not cancelled. Please try again or contact support.' },
           { status: 502 },
         );
       }
@@ -96,7 +109,7 @@ export async function POST(req: Request) {
     }
     if (error) {
       console.error('Cancel update failed:', error.message, refundId ? `(refund ${refundId} already issued)` : '');
-      return NextResponse.json({ error: 'We couldn’t cancel this lesson. Please contact support.' }, { status: 500 });
+      return NextResponse.json({ error: 'We could not cancel this lesson. Please contact support.' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, refundedCents: refundCents, refundId });
