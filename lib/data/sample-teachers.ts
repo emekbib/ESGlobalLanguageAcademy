@@ -59,59 +59,6 @@ My teaching method focuses on rapid conversational fluency through immersion, cu
       },
     ],
   },
-  {
-    id: 'sample-7',
-    name: 'Fatuma Hassan',
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop',
-    languages: ['Somali'],
-    rating: 4.96,
-    lessonsTaught: 1100,
-    hourlyRate: 28,
-    teacherType: 'community_tutor',
-    headline: 'Somali Language & Culture Faculty · Somali for Beginners & Healthcare Interpreters',
-    bio: `Soo dhowow! I am Fatuma, a native Somali language coach. I work with diaspora students, healthcare professionals, and humanitarian caseworkers to build authentic Somali speaking skills rapidly.`,
-    languages_spoken: ['Somali (Native)', 'English (Fluent)'],
-    specialties: ['Somali for Beginners', 'Medical Somali Vocabulary', 'Diaspora Reconnection', 'Grammar Basics'],
-    video_intro_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-talking-on-a-video-call-with-her-laptop-42998-large.mp4',
-    education: [
-      'BA in Social Sciences & Translation Studies — Mogadishu University',
-    ],
-    reviews: [
-      {
-        id: 'rev-701',
-        rating: 5,
-        comment: 'Fatuma is so warm and welcoming. She makes you feel comfortable speaking from lesson one.',
-        createdAt: '2026-07-19T17:00:00Z',
-        studentName: 'Amina Yusuf',
-      },
-    ],
-  },
-  {
-    id: 'sample-8',
-    name: 'Chaltu Deressa',
-    avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=800&auto=format&fit=crop',
-    languages: ['Afaan Oromo'],
-    rating: 4.94,
-    lessonsTaught: 720,
-    hourlyRate: 25,
-    teacherType: 'community_tutor',
-    headline: 'Youth & Diaspora Specialist · Interactive Afaan Oromo Speaking',
-    bio: `Akkam! I am Chaltu. I specialize in teaching Afaan Oromo to children, teens, and adults living abroad. My sessions use games, stories, and daily scenarios so learning feels natural and fun.`,
-    languages_spoken: ['Afaan Oromo (Native)', 'English (Fluent)'],
-    specialties: ['Children & Youth', 'Qubee Basics', 'Family Conversation', 'Oromo Traditions'],
-    education: [
-      'BEd in Language Teaching — Adama Science and Technology University',
-    ],
-    reviews: [
-      {
-        id: 'rev-801',
-        rating: 5,
-        comment: 'My kids love learning Afaan Oromo with Chaltu. She is incredibly engaging and patient.',
-        createdAt: '2026-08-25T14:30:00Z',
-        studentName: 'Gamachu Bekele',
-      },
-    ],
-  },
 ];
 
 export function getSampleTeacherById(id: string): SampleTeacherDetail | undefined {

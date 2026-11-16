@@ -189,18 +189,6 @@ export default function AdminDashboardShell({
       status: 'Active',
     },
     {
-      id: 'c-4',
-      title: 'Professional Somali for Healthcare & Advocacy',
-      language: 'Somali',
-      track: 'Track 2: Professional & Heritage',
-      level: 'B1 - C2 Advanced',
-      instructor: 'Fatuma Hassan',
-      duration: '12 Weeks',
-      enrolledCount: 16,
-      schedule: 'Fri & Sun 5:00 PM EST',
-      status: 'Active',
-    },
-    {
       id: 'c-5',
       title: 'Ge’ez Classical Roots & Liturgical Heritage',
       language: 'Ge’ez',

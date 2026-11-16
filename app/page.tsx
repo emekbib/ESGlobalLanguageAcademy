@@ -83,26 +83,6 @@ export default function Home() {
                 src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=120&auto=format&fit=crop"
                 alt="Tutor Bethelhem"
               />
-              <img
-                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Fatuma"
-              />
-              <img
-                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Chaltu"
-              />
-              <img
-                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Fatuma"
-              />
-              <img
-                className="inline-block h-6 w-6 rounded-full object-cover ring-2 ring-white/80"
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop"
-                alt="Tutor Chaltu"
-              />
             </div>
           </div>
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
