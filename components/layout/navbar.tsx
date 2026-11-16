@@ -266,6 +266,7 @@ export default function Navbar({
               <div className="mt-2 flex flex-wrap gap-1.5 px-2">
                 {[
                   { name: 'Amharic', q: 'amharic' },
+                  { name: 'Tigrinya', q: 'tigrinya' },
                   { name: 'Afaan Oromo', q: 'afaan oromo' },
                   { name: 'Somali', q: 'somali' },
                 ].map((l) => (

@@ -8,6 +8,7 @@ import TeacherCard from '@/components/teacher/teacher-card';
 const CATEGORIES = [
   { id: 'all', label: 'All Faculty' },
   { id: 'amharic', label: 'Amharic' },
+  { id: 'tigrinya', label: 'Tigrinya' },
   { id: 'oromo', label: 'Afaan Oromo' },
   { id: 'somali', label: 'Somali' },
 ];

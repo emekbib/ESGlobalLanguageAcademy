@@ -131,8 +131,7 @@ export function useTeachers() {
       const discoveredLangs = new Set(
         enriched.flatMap((t) => (t.languages ?? []).map(normalizeLanguageName).filter(Boolean))
       );
-      const activeApproved = APPROVED_LANGUAGES.filter((lang) => discoveredLangs.has(lang));
-      setAllLanguages(activeApproved);
+      setAllLanguages([...APPROVED_LANGUAGES]);
       setLoading(false);
     }
 

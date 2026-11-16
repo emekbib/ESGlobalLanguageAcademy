@@ -13,11 +13,12 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: 'ESGlobal Language Academy | Book 1-on-1 Lessons with Native Teachers',
   description:
-    'Connect with native educators for personalized 1-on-1 video lessons in Amharic, Afaan Oromo, and Somali. Zero subscriptions, instant scheduling, and escrow protection.',
+    'Connect with native educators for personalized 1-on-1 video lessons in Amharic, Tigrinya, Afaan Oromo, and Somali. Zero subscriptions, instant scheduling, and escrow protection.',
   keywords: [
     'Amharic tutor',
     'learn Amharic online',
-    'learn Amharic online',
+    'Tigrinya tutor',
+    'learn Tigrinya online',
     'Afaan Oromo language teacher',
     'Somali tutor',
     'ESGlobal Language Academy',
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ESGlobal Language Academy | Book 1-on-1 Lessons with Native Teachers',
     description:
-      'Book personalized 1-on-1 language lessons with native teachers in Amharic, Afaan Oromo, and Somali.',
+      'Book personalized 1-on-1 language lessons with native teachers in Amharic, Tigrinya, Afaan Oromo, and Somali.',
     siteName: 'ESGlobal Language Academy',
     type: 'website',
     locale: 'en_US',
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ESGlobal Language Academy | Book 1-on-1 Lessons with Native Teachers',
     description:
-      'Book personalized 1-on-1 language lessons with native teachers in Amharic, Afaan Oromo, and Somali.',
+      'Book personalized 1-on-1 language lessons with native teachers in Amharic, Tigrinya, Afaan Oromo, and Somali.',
   },
 };
 

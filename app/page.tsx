@@ -86,7 +86,7 @@ export default function Home() {
             </div>
           </div>
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.9)]">
-            Master Conversations in Amharic, Afaan Oromo &amp; Somali
+            Master Conversations in Amharic, Tigrinya, Afaan Oromo &amp; Somali
           </h1>
 
           <p className="mx-auto mt-5 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg text-white drop-shadow-[0_2px_16px_rgba(0,0,0,1)] leading-relaxed" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.7)' }}>
