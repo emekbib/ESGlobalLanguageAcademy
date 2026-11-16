@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
+import { containsPersonalContactDetails, CONTACT_DETAILS_BLOCKED_MESSAGE } from '@/lib/messages/contact-details';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -74,7 +75,15 @@ export async function POST(request: Request) {
 
     const trimmedContent = content.trim();
 
-    // 2. Prevent sending a message to oneself
+    // 2. Block personal contact details (emails, phone numbers, social links)
+    if (containsPersonalContactDetails(trimmedContent)) {
+      return NextResponse.json(
+        { error: CONTACT_DETAILS_BLOCKED_MESSAGE },
+        { status: 422 }
+      );
+    }
+
+    // 3. Prevent sending a message to oneself
     if (receiver_id === senderUserId) {
       return NextResponse.json(
         { error: 'You cannot send a message to yourself.' },

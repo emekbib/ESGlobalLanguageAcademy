@@ -852,34 +852,12 @@ export default function DashboardMessagesTab({
       } catch { }
     };
 
-    // 3. Fast background delivery
+    // 3. Fast background delivery — always through server route so contact-detail
+    // blocking is enforced server-side and cannot be bypassed from the browser.
     try {
-      // Direct browser client insertion (fastest path: ~50-150ms roundtrip)
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: currentUser.id,
-          receiver_id: selectedContact.id,
-          content: msgContent,
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        const confirmed = data as Message;
-        setMessages((prev) => {
-          const filtered = prev.filter((m) => m.id !== tempId);
-          return deduplicateMessages([...filtered, confirmed]);
-        });
-        persistConfirmedMsg(confirmed);
-        return;
-      }
-
-      // If client direct insert fails (e.g. sample educator or teacher profile resolution needed), use optimized server route
       const { data: { session } } = await supabase.auth.getSession();
       let token = session?.access_token;
       if (!token) {
-        // Verify with server before attempting refresh
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           setSendError('Your session has expired. Please sign in again.');
@@ -895,7 +873,6 @@ export default function DashboardMessagesTab({
         },
         body: JSON.stringify({
           receiver_id: selectedContact.id,
-          sender_id: currentUser.id,
           content: msgContent,
         }),
       });
