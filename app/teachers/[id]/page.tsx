@@ -364,7 +364,7 @@ export default async function TeacherProfilePage({
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Lesson Rate</p>
               <p className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
-                {formatRate(hourlyRate)} <span className="text-xs font-semibold text-stone-400">/ 50 min</span>
+                {formatRate(hourlyRate)} <span className="text-xs font-semibold text-stone-400">/ 45 min</span>
               </p>
             </div>
             <a

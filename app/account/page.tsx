@@ -376,7 +376,7 @@ export default function AccountPage() {
                   type="url"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
+                  placeholder=""
                   className="w-full rounded-2xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/60 px-4 py-3.5 text-sm font-medium text-stone-900 dark:text-white outline-none transition focus:border-stone-950 dark:focus:border-amber-400 focus:bg-white dark:focus:bg-stone-800"
                 />
                 <p className="mt-1.5 text-[11px] text-stone-400 dark:text-stone-500">

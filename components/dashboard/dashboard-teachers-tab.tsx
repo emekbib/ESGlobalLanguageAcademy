@@ -174,7 +174,7 @@ export default function DashboardTeachersTab() {
                       <span className="font-display text-xl font-black tracking-tight">
                         {formatRate(teacher.hourlyRate)}
                       </span>
-                      <span className="text-xs text-stone-300 font-medium"> / 50 min</span>
+                      <span className="text-xs text-stone-300 font-medium"> / 45 min</span>
                     </div>
                   </div>
 
@@ -292,7 +292,7 @@ export default function DashboardTeachersTab() {
                     Book Lesson with {selectedTeacherForBooking.name}
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    {formatRate(selectedTeacherForBooking.hourlyRate)} / 50 min session
+                    {formatRate(selectedTeacherForBooking.hourlyRate)} / 45 min session
                   </p>
                 </div>
               </div>

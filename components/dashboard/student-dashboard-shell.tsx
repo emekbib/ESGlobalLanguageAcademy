@@ -549,7 +549,7 @@ export default function StudentDashboardShell({
                 </h3>
                 <p className="text-xs text-stone-400 dark:text-stone-500 font-medium">
                   {selectedTeacherForBooking.languages.join(' · ')} · $
-                  {selectedTeacherForBooking.hourlyRate} / 50 min
+                  {selectedTeacherForBooking.hourlyRate} / 45 min
                 </p>
               </div>
             </div>

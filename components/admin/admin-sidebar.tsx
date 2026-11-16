@@ -19,6 +19,7 @@ import {
   Clock,
   CreditCard,
   BookOpen,
+  CalendarDays,
 } from 'lucide-react';
 
 export type AdminTab =
@@ -29,7 +30,8 @@ export type AdminTab =
   | 'courses'
   | 'payments'
   | 'reviews'
-  | 'accounts';
+  | 'accounts'
+  | 'bookings';
 
 type AdminSidebarProps = {
   fullName: string;
@@ -100,6 +102,11 @@ export default function AdminSidebar({
       id: 'courses',
       label: 'Courses & Curriculum',
       icon: Compass,
+    },
+    {
+      id: 'bookings',
+      label: 'Bookings',
+      icon: CalendarDays,
     },
     {
       id: 'payments',
@@ -182,7 +189,7 @@ export default function AdminSidebar({
                         : 'text-stone-400 dark:text-stone-400 group-hover:text-stone-700 dark:group-hover:text-stone-200'
                     }`}
                   />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate text-sm">{item.label}</span>
                   {typeof item.badge === 'number' && item.badge > 0 && (
                     <span
                       className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-bold ${

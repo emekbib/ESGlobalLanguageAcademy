@@ -54,7 +54,7 @@ export default async function BookingPage({
         .order('created_at', { ascending: true }).limit(1).maybeSingle()
     : { data: null };
 
-  const teacherTz = teacher?.timezone || 'UTC';
+  const teacherTz = teacher?.timezone || 'America/New_York';
   const escrowVerified = booking.status === 'confirmed' || booking.status === 'completed';
   const start = new Date(booking.start_time_utc);
   const end = new Date(booking.end_time_utc);
@@ -115,10 +115,10 @@ export default async function BookingPage({
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                  Confirmed 1-on-1 Session
+                  {booking.status === 'cancelled' ? 'Cancelled' : booking.status === 'completed' ? 'Completed' : 'Confirmed'} 1-on-1 Session
                 </span>
                 <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                  Lesson with {teacherProfile?.full_name ?? 'Your Native Educator'}
+                  Lesson with {teacherProfile?.full_name || 'Native Educator'}
                 </h1>
                 {teacher?.languages_taught && (
                   <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 mt-0.5">

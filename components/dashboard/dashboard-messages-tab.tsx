@@ -151,6 +151,7 @@ export default function DashboardMessagesTab({
 
   // Stable reference to the currently open contact to avoid stale closures in realtime handlers
   const selectedContactRef = useRef<Contact | null>(selectedContact);
+  const deletedMessageIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     selectedContactRef.current = selectedContact;
   }, [selectedContact]);
@@ -663,12 +664,14 @@ export default function DashboardMessagesTab({
           )
           .order('created_at', { ascending: true });
 
-        const serverData: Message[] = (!error && data) ? (data as Message[]) : [];
+        const serverData: Message[] = (!error && data)
+          ? (data as Message[]).filter((m) => !deletedMessageIdsRef.current.has(m.id))
+          : [];
 
         setMessages((prev) => {
           const temps = prev.filter((m) => m.id.startsWith('temp-'));
           // Merge server messages, existing messages from previous state, and local storage messages
-          const combined = deduplicateMessages([...serverData, ...localMsgs, ...temps]);
+          const combined = deduplicateMessages([...serverData, ...localMsgs.filter((m) => !deletedMessageIdsRef.current.has(m.id)), ...temps]);
           // Sync back clean non-temp messages to local storage
           try {
             if (typeof window !== 'undefined' && combined.length > 0) {
@@ -713,6 +716,10 @@ export default function DashboardMessagesTab({
     if (!selectedContact) return;
     const storageKey = `es_chat_${currentUser.id}_${selectedContact.id}`;
 
+    // Track the deletion so the initial conversation fetch (if still loading)
+    // does not resurrect the message from the server response.
+    deletedMessageIdsRef.current.add(msgId);
+
     // Optimistically remove from state
     setMessages((prev) => prev.filter((m) => m.id !== msgId));
 
@@ -728,7 +735,7 @@ export default function DashboardMessagesTab({
       }
     } catch { }
 
-    // Call server delete API
+    // Call server delete API and await it before updating UI state
     try {
       await fetch('/api/messages/delete', {
         method: 'POST',
@@ -912,7 +919,19 @@ export default function DashboardMessagesTab({
       }
     } catch (err: any) {
       console.error('Failed to send message:', err);
+      // Remove the optimistic message from EVERY place it could re-render:
+      // React state, localStorage cache, and any pending queue.
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem(storageKey);
+          if (raw) {
+            const list: Message[] = JSON.parse(raw);
+            const filtered = list.filter((m) => m.id !== tempId);
+            localStorage.setItem(storageKey, JSON.stringify(filtered));
+          }
+        }
+      } catch { }
       setNewMessage(msgContent);
       setSendError(err?.message || 'Could not deliver message. Please try again.');
       if (prevContactSnapshot) {

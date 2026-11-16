@@ -687,7 +687,7 @@ export default function TeacherDashboardShell({
                           <DollarSign className="h-4 w-4" />
                         </div>
                         <span className="rounded-full border border-stone-200/60 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-800/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
-                          Per 50 min
+                          Per 45 min
                         </span>
                       </div>
                       <div className="mt-4">

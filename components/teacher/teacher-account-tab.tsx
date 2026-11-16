@@ -263,7 +263,7 @@ export default function TeacherAccountTab({
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-2">
-                Hourly Rate ($ USD / 50 min)
+                Hourly Rate ($ USD / 45 min)
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400">

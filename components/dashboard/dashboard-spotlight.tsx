@@ -165,7 +165,7 @@ export default function DashboardSpotlight({
                   {spotlightTeacher.languages.join(' • ')}
                 </p>
                 <p className="text-xs text-amber-600 dark:text-amber-400 font-bold mt-0.5">
-                  {formatRate(spotlightTeacher.hourlyRate)} / 50 min
+                  {formatRate(spotlightTeacher.hourlyRate)} / 45 min
                 </p>
               </div>
             </div>

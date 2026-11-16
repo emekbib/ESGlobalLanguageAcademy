@@ -360,7 +360,7 @@ export default function TeacherOnboardingPage() {
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-2">
-                  Hourly Rate (USD / 50-min lesson)
+                  Hourly Rate (USD / 45-min lesson)
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">$</span>
@@ -374,7 +374,7 @@ export default function TeacherOnboardingPage() {
                   />
                 </div>
                 <p className="mt-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
-                  You earn {formatRate(hourlyRate)} per 50-minute lesson, before the 20% platform fee.
+                  You earn {formatRate(hourlyRate)} per 45-minute lesson, before the 20% platform fee.
                 </p>
               </div>
 

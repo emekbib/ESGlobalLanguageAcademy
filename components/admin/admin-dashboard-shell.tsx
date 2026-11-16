@@ -21,6 +21,7 @@ import {
   DollarSign,
   Award,
   Calendar,
+  CalendarDays,
   XCircle,
   Plus,
   Trash2,
@@ -151,20 +152,7 @@ export default function AdminDashboardShell({
     status: 'Active' | 'Enrolling' | 'Upcoming';
   };
 
-  const [courses, setCourses] = useState<CourseItem[]>([
-    {
-      id: 'c-3',
-      title: 'Afaan Oromo Grammar & Qubee Orthography',
-      language: 'Afaan Oromo',
-      track: 'Track 1: General Fluency',
-      level: 'A1 - B2 Intermediate',
-      instructor: 'Bethelhem Mengistu',
-      duration: '8 Weeks',
-      enrolledCount: 0,
-      schedule: 'Saturdays 10:00 AM EST',
-      status: 'Active',
-    },
-  ]);
+  const [courses, setCourses] = useState<CourseItem[]>([]);
   const [courseLanguageFilter, setCourseLanguageFilter] = useState<string>('all');
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
   const [newCourseForm, setNewCourseForm] = useState({
@@ -448,6 +436,7 @@ export default function AdminDashboardShell({
                   { id: 'educators', label: 'Faculty Directory', icon: GraduationCap },
                   { id: 'learners', label: 'Learners Directory', icon: BookOpen },
                   { id: 'courses', label: 'Courses & Curriculum', icon: Compass },
+                  { id: 'bookings', label: 'Bookings', icon: CalendarDays },
                   { id: 'payments', label: 'Teacher Payments', icon: CreditCard },
                   { id: 'reviews', label: `Flagged Reviews (${flaggedCount})`, icon: AlertTriangle },
                   { id: 'accounts', label: `User Accounts (${totalAccounts})`, icon: Users },
@@ -693,7 +682,7 @@ export default function AdminDashboardShell({
                                 {educatorName}
                               </h3>
                               <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                                {(app.languages_taught || []).join(' • ')} · {formatRate(app.hourly_rate)} / 50 min · {app.years_experience} yrs exp
+                                {(app.languages_taught || []).join(' • ')} · {formatRate(app.hourly_rate)} / 45 min · {app.years_experience} yrs exp
                               </p>
                             </div>
                           </div>
@@ -866,7 +855,7 @@ export default function AdminDashboardShell({
                               ) : null}
                             </div>
                             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                              {(teacher.languages_taught ?? []).join(' • ') || 'No languages set'} · {formatRate(teacher.hourly_rate)} / 50 min
+                              {(teacher.languages_taught ?? []).join(' • ') || 'No languages set'} · {formatRate(teacher.hourly_rate)} / 45 min
                             </p>
                           </div>
                         </div>
@@ -1049,7 +1038,7 @@ export default function AdminDashboardShell({
                             {name}
                           </td>
                           <td className="py-3.5 text-stone-600 dark:text-stone-300 font-medium">
-                            {formatRate(teacher.hourly_rate)} / 50 min
+                            {formatRate(teacher.hourly_rate)} / 45 min
                           </td>
                           <td className="py-3.5 font-bold text-stone-950 dark:text-white">
                             {stat.completed} sessions
@@ -1240,6 +1229,119 @@ export default function AdminDashboardShell({
                       </div>
                     ))}
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* TAB: BOOKINGS */}
+          {activeTab === 'bookings' && (
+            <section className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_28px_rgba(0,0,0,0.3)]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
+                <div>
+                  <h2 className="font-display text-lg sm:text-xl font-black text-stone-950 dark:text-white">
+                    All Bookings ({bookings.length})
+                  </h2>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    Every lesson booking with student, educator, date/time, status, and payment state.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/60 px-4 py-2 text-right">
+                    <span className="block text-[10px] uppercase font-bold text-stone-400">Confirmed</span>
+                    <span className="font-display font-black text-sm text-emerald-700 dark:text-emerald-400">
+                      {bookings.filter((b) => b.status === 'confirmed').length}
+                    </span>
+                  </div>
+                  <div className="rounded-2xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 px-4 py-2 text-right">
+                    <span className="block text-[10px] uppercase font-bold text-rose-500 dark:text-rose-400">Cancelled</span>
+                    <span className="font-display font-black text-sm text-rose-700 dark:text-rose-400">
+                      {cancelledBookings.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-stone-100 dark:border-stone-800 text-[10px] uppercase tracking-wider text-stone-400">
+                      <th className="pb-3 font-bold">Student</th>
+                      <th className="pb-3 font-bold">Educator</th>
+                      <th className="pb-3 font-bold">Date / Time</th>
+                      <th className="pb-3 font-bold">Status</th>
+                      <th className="pb-3 font-bold">Amount</th>
+                      <th className="pb-3 font-bold">Payment</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+                    {bookings.length > 0 ? (
+                      bookings.map((b) => {
+                        const studentName = names[b.student_id] || 'Student';
+                        const teacher = faculty.find((t) => t.id === b.teacher_id);
+                        const teacherName = teacher ? (names[teacher.user_id] || 'Educator') : 'Educator';
+                        const tz = 'America/New_York';
+                        let dateStr = '';
+                        let timeStr = '';
+                        try {
+                          const d = new Date(b.start_time_utc);
+                          dateStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz }).format(d);
+                          timeStr = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz }).format(d);
+                        } catch (e) {
+                          dateStr = new Date(b.start_time_utc).toLocaleDateString();
+                          timeStr = new Date(b.start_time_utc).toLocaleTimeString();
+                        }
+                        const amount = b.amount_cents ? `${(b.amount_cents / 100).toFixed(2)}` : '—';
+                        const paid = b.status === 'confirmed' || b.status === 'completed';
+                        return (
+                          <tr key={b.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition">
+                            <td className="py-3.5 font-bold text-stone-950 dark:text-white">
+                              {studentName}
+                            </td>
+                            <td className="py-3.5 text-stone-600 dark:text-stone-300 font-medium">
+                              {teacherName}
+                            </td>
+                            <td className="py-3.5 text-stone-600 dark:text-stone-300 font-medium">
+                              {dateStr} · {timeStr} EST
+                            </td>
+                            <td className="py-3.5">
+                              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                                b.status === 'confirmed'
+                                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
+                                  : b.status === 'completed'
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                                  : b.status === 'cancelled'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200/60'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                              }`}>
+                                {b.status}
+                              </span>
+                            </td>
+                            <td className="py-3.5 text-stone-600 dark:text-stone-300 font-medium">
+                              {amount}
+                            </td>
+                            <td className="py-3.5">
+                              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                                paid
+                                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
+                                  : b.status === 'cancelled'
+                                  ? 'bg-stone-100 text-stone-500 border border-stone-200/60'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                              }`}>
+                                {paid ? 'Paid' : b.status === 'cancelled' ? 'N/A' : 'Pending'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-stone-400">
+                          No bookings yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </section>
           )}
