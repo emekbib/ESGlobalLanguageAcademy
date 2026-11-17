@@ -23,7 +23,7 @@
     },
     "send-booking-reminders": {
       "hasChanged": false,
-      "hash": "b351c591037e7fbbc78f4c5f1ea256c035170e0fc7cf8345c53a74afb6684d8a"
+      "hash": "264f7ec8ae0116d6a6df7b6088f4d722729a116add1ded799f7c284414a8aa2f"
     },
     "stripe-webhook": {
       "hasChanged": false,

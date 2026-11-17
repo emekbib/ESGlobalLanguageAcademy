@@ -31,6 +31,7 @@ const TYPE_DOT_COLORS: Record<string, string> = {
   confirmed: 'bg-emerald-500',
   cancelled: 'bg-destructive',
   starting_soon: 'bg-amber-500',
+  missed: 'bg-red-500',
   message: 'bg-amber-400',
 };
 
@@ -100,6 +101,8 @@ export default function NotificationBell({
             ? 'Lesson Cancelled'
             : n.type === 'starting_soon'
             ? 'Lesson Starting Soon'
+            : n.type === 'missed'
+            ? 'Lesson Missed'
             : 'Notification',
         message: n.message,
         read_at: n.read_at,
