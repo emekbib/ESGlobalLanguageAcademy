@@ -406,7 +406,7 @@ export default function StudentDashboardShell({
                         <span className="font-display text-base font-black text-stone-950 dark:text-white">
                           {formatRate(teacher.hourlyRate)}
                           <span className="text-xs font-normal text-stone-400 dark:text-stone-500">
-                            /hr
+                            {' / 45 min'}
                           </span>
                         </span>
                         <button

@@ -695,7 +695,7 @@ export default function TeacherDashboardShell({
                           <span className="font-display text-2xl sm:text-3xl font-black tracking-tight text-stone-950 dark:text-white">
                             {formatRate(teacherProfile.hourly_rate)}
                           </span>
-                          <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">USD</span>
+                          <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">{' / 45 min'}</span>
                         </div>
                         <p className="mt-1 text-xs font-bold text-stone-800 dark:text-stone-200">
                           Lesson Base Rate

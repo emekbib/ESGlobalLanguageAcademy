@@ -110,7 +110,7 @@ export default function Home() {
           {/* Subtle trust line */}
           <p className="mt-4 text-xs text-white/90 font-medium" style={{ textShadow: '0 1px 12px rgba(0,0,0,0.9)' }}>
             <ShieldCheck className="inline h-3.5 w-3.5 text-amber-400 mr-1.5 align-text-bottom" />
-            First 15 min free · $25-30/lesson · Escrow-protected · No subscriptions
+            First 15 min free · $21–$42/lesson · Escrow-protected · No subscriptions
           </p>
         </div>
 
