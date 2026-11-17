@@ -46,6 +46,7 @@ type TeacherProfile = {
   specialties: string[] | null;
   video_intro_url: string | null;
   is_published: boolean;
+  timezone: string | null;
   created_at: string;
 };
 
@@ -1279,7 +1280,7 @@ export default function AdminDashboardShell({
                         const studentName = names[b.student_id] || 'Student';
                         const teacher = faculty.find((t) => t.id === b.teacher_id);
                         const teacherName = teacher ? (names[teacher.user_id] || 'Educator') : 'Educator';
-                        const tz = 'America/New_York';
+                        const tz = teacher?.timezone || 'America/New_York';
                         let dateStr = '';
                         let timeStr = '';
                         try {
@@ -1287,8 +1288,8 @@ export default function AdminDashboardShell({
                           dateStr = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz }).format(d);
                           timeStr = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz }).format(d);
                         } catch (e) {
-                          dateStr = new Date(b.start_time_utc).toLocaleDateString();
-                          timeStr = new Date(b.start_time_utc).toLocaleTimeString();
+                          dateStr = new Date(b.start_time_utc).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                          timeStr = new Date(b.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                         }
                         const amount = b.amount_cents ? `${(b.amount_cents / 100).toFixed(2)}` : '—';
                         const paid = b.status === 'confirmed' || b.status === 'completed';
@@ -1301,7 +1302,7 @@ export default function AdminDashboardShell({
                               {teacherName}
                             </td>
                             <td className="py-3.5 text-stone-600 dark:text-stone-300 font-medium">
-                              {dateStr} · {timeStr} EST
+                              {dateStr} · {timeStr}
                             </td>
                             <td className="py-3.5">
                               <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${

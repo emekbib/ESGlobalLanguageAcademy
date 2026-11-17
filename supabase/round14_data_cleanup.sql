@@ -7,7 +7,7 @@
 --     space it leaves behind are removed; the rest of the bio is preserved.
 UPDATE teacher_profiles
    SET bio = btrim(regexp_replace(bio, '\s*QA-verified bio update for Round 4 testing\.\s*', ' ', 'g'))
- WHERE id = 'dde171b6-0000-0000-0000-000000000000'
+ WHERE id::text LIKE 'dde171b6%'
    AND bio LIKE '%QA-verified bio update for Round 4 testing.%';
 
 -- Fuzzy fallback: if the row id above doesn't match exactly, try by user_id join.
@@ -37,16 +37,4 @@ DELETE FROM messages
 DELETE FROM messages
  WHERE content = 'Round 9 persistence check';
 
--- Also remove any orphaned conversations where these test profiles are the only
--- participants.  This targets rows by the profile names so it is safe.
-DELETE FROM messages
- WHERE sender_id IN (
-     SELECT user_id FROM profiles
-      WHERE full_name ILIKE '%qa teacher%'
-         OR full_name ILIKE '%rahel%teacher77088%'
- )
- OR receiver_id IN (
-     SELECT user_id FROM profiles
-      WHERE full_name ILIKE '%qa teacher%'
-         OR full_name ILIKE '%rahel%teacher77088%'
- );
+
