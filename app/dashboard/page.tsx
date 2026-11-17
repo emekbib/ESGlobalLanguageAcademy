@@ -66,28 +66,44 @@ export default async function DashboardPage({
   }
 
   // 1. Identify teacher IDs from bookings
-  let teacherIds = Array.from(new Set((bookings ?? []).map((b) => b.teacher_id)));
-  let isAllFaculty = false;
+  const teacherIdsFromBookings = Array.from(new Set((bookings ?? []).map((b) => b.teacher_id)));
 
-  let { data: teacherProfiles } = teacherIds.length
+  // Fetch the student's message partners (other participant in any message thread)
+  const { data: messageRows } = await supabase
+    .from('messages')
+    .select('sender_id, receiver_id')
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+
+  const messagePartnerUserIds = new Set<string>();
+  (messageRows ?? []).forEach((m) => {
+    const other = m.sender_id === user.id ? m.receiver_id : m.sender_id;
+    if (other && other !== user.id) messagePartnerUserIds.add(other);
+  });
+
+  // Resolve message partner user_ids -> teacher_profile ids
+  let teacherIdsFromMessages: string[] = [];
+  if (messagePartnerUserIds.size > 0) {
+    const { data: msgTeacherProfiles } = await supabase
+      .from('teacher_profiles')
+      .select('id, user_id')
+      .in('user_id', Array.from(messagePartnerUserIds));
+    teacherIdsFromMessages = (msgTeacherProfiles ?? []).map((tp) => tp.id);
+  }
+
+  // My Tutors = published+approved teachers with whom the student has a booking OR exchanged messages
+  const candidateTeacherIds = Array.from(new Set([...teacherIdsFromBookings, ...teacherIdsFromMessages]));
+  const isAllFaculty = false;
+
+  let { data: teacherProfiles } = candidateTeacherIds.length
     ? await supabase
         .from('teacher_profiles')
         .select('id, user_id, languages_taught, hourly_rate')
-        .in('id', teacherIds)
+        .in('id', candidateTeacherIds)
+        .eq('is_published', true)
+        .or('application_status.is.null,application_status.eq.approved')
     : { data: [] };
 
-  // If student has no bookings yet, load active faculty from database so "My Tutors" is never empty
-  if (!teacherProfiles || teacherProfiles.length === 0) {
-    isAllFaculty = true;
-    const { data: allTeachers } = await supabase
-      .from('teacher_profiles')
-      .select('id, user_id, languages_taught, hourly_rate')
-      .eq('is_published', true)
-      .limit(10);
-    teacherProfiles = allTeachers ?? [];
-
-    teacherIds = (teacherProfiles ?? []).map((t) => t.id);
-  }
+  const teacherIds = (teacherProfiles ?? []).map((t) => t.id);
 
   // Fetch real ratings from reviews table for these teacher profiles
   const { data: teacherReviews } = teacherIds.length

@@ -214,64 +214,6 @@ export default function DashboardMessagesTab({
           }
         }
 
-        // Check if currentUser has a teacher profile
-        const { data: teacherProfile } = await supabase
-          .from('teacher_profiles')
-          .select('id')
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-
-        const teacherProfileId = teacherProfile?.id;
-
-        // Query bookings
-        let bookingTeacherProfileIds: string[] = [];
-
-        if (teacherProfileId) {
-          const { data: bookings } = await supabase
-            .from('bookings')
-            .select('student_id, teacher_id')
-            .or(`student_id.eq.${currentUser.id},teacher_id.eq.${teacherProfileId}`);
-
-          if (bookings) {
-            bookings.forEach((b: any) => {
-              if (b.student_id && b.student_id !== currentUser.id) {
-                uniqueUserIds.add(b.student_id);
-              }
-              if (b.teacher_id && b.teacher_id !== teacherProfileId) {
-                bookingTeacherProfileIds.push(b.teacher_id);
-              }
-            });
-          }
-        } else {
-          const { data: bookings } = await supabase
-            .from('bookings')
-            .select('student_id, teacher_id')
-            .eq('student_id', currentUser.id);
-
-          if (bookings) {
-            bookings.forEach((b: any) => {
-              if (b.teacher_id) bookingTeacherProfileIds.push(b.teacher_id);
-            });
-          }
-        }
-
-        // Resolve teacher_profile IDs -> user_ids
-        if (bookingTeacherProfileIds.length > 0) {
-          const uniqueTeacherProfileIds = Array.from(new Set(bookingTeacherProfileIds));
-          const { data: teacherProfiles } = await supabase
-            .from('teacher_profiles')
-            .select('id, user_id')
-            .in('id', uniqueTeacherProfileIds);
-
-          if (teacherProfiles) {
-            teacherProfiles.forEach((tp) => {
-              if (tp.user_id && tp.user_id !== currentUser.id) {
-                uniqueUserIds.add(tp.user_id);
-              }
-            });
-          }
-        }
-
         // Query direct messages to discover all conversational partners and their latest message
         const lastMsgMap: Record<
           string,
@@ -303,43 +245,6 @@ export default function DashboardMessagesTab({
           }
         } catch {
           // Table might not exist yet
-        }
-
-        // For students: Fetch all educators from profiles & teacher_profiles
-        if (currentUser.role === 'student') {
-          const { data: educators } = await supabase
-            .from('profiles')
-            .select('user_id')
-            .eq('role', 'teacher')
-            .neq('user_id', currentUser.id);
-
-          if (educators) {
-            educators.forEach((e) => uniqueUserIds.add(e.user_id));
-          }
-
-          const { data: tpRows } = await supabase
-            .from('teacher_profiles')
-            .select('user_id')
-            .neq('user_id', currentUser.id);
-
-          if (tpRows) {
-            tpRows.forEach((tp) => {
-              if (tp.user_id) uniqueUserIds.add(tp.user_id);
-            });
-          }
-        }
-
-        // For teachers: Fetch students from profiles
-        if (currentUser.role === 'teacher') {
-          const { data: students } = await supabase
-            .from('profiles')
-            .select('user_id')
-            .eq('role', 'student')
-            .neq('user_id', currentUser.id);
-
-          if (students) {
-            students.forEach((s) => uniqueUserIds.add(s.user_id));
-          }
         }
 
         // Include target contact if provided
@@ -402,17 +307,6 @@ export default function DashboardMessagesTab({
             full_name: targetSample.name,
             avatar_url: targetSample.avatarUrl,
             role: 'teacher',
-          });
-        }
-
-        if (currentUser.role === 'student' && loadedContacts.length === 0) {
-          SAMPLE_TEACHERS.forEach((st) => {
-            loadedContacts.push({
-              id: st.id,
-              full_name: st.name,
-              avatar_url: st.avatarUrl,
-              role: 'teacher',
-            });
           });
         }
 

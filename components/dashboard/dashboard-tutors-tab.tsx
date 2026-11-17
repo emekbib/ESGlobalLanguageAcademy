@@ -9,7 +9,6 @@ import {
   BadgeCheck,
   MessageSquare,
 } from 'lucide-react';
-import { SAMPLE_TEACHERS } from '@/lib/data/sample-teachers';
 import BookingCard from '@/components/teacher/booking-card';
 import { formatRate } from '@/lib/pricing';
 
@@ -27,9 +26,8 @@ export default function DashboardTutorsTab({
   const cleanName = (n: string) =>
     (n || '').toLowerCase().replace(/\s*\(.*?\)\s*/g, '').replace(/[^a-z0-9]/g, '').trim();
 
-  const rawList = tutors && tutors.length > 0 ? tutors : SAMPLE_TEACHERS.slice(0, 3);
   const seen = new Set<string>();
-  const myTutors = rawList.filter((t: any) => {
+  const myTutors = (tutors ?? []).filter((t: any) => {
     const key = cleanName(t.name);
     if (!key || key === 'not' || key.length < 3 || seen.has(key)) return false;
     seen.add(key);
@@ -65,7 +63,28 @@ export default function DashboardTutorsTab({
 
       {/* Tutors List: Intro.co Expert Cards */}
       <div className="space-y-4">
-        {myTutors.map((tutor) => (
+        {myTutors.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-12 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-400 mb-4">
+              <Search className="h-7 w-7" />
+            </div>
+            <h3 className="font-display text-lg font-bold text-stone-950 dark:text-white">
+              No tutors yet
+            </h3>
+            <p className="mt-1.5 text-xs sm:text-sm text-stone-500 dark:text-stone-400 leading-relaxed max-w-sm">
+              Book a lesson or message an educator from the faculty directory to build your personal tutor list.
+            </p>
+            <button
+              type="button"
+              onClick={onFindMore}
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-5 py-2.5 text-xs font-bold text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white cursor-pointer"
+            >
+              <Search className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
+              Browse Faculty
+            </button>
+          </div>
+        ) : (
+          myTutors.map((tutor) => (
           <div
             key={tutor.id}
             className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm transition hover:shadow-md"
@@ -140,7 +159,8 @@ export default function DashboardTutorsTab({
               </button>
             </div>
           </div>
-        ))}
+        ))
+        )}
       </div>
 
       {/* Embedded Booking Modal */}
