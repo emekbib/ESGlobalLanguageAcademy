@@ -251,7 +251,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
-                  Fidel (Amharic) &amp; Qubee (Oromo) reading mastery
+                  Fidel (Amharic, Tigrigna &amp; Geez)
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
