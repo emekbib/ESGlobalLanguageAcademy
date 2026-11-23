@@ -43,7 +43,7 @@ export default async function TeacherDashboardPage({
   const { data: allTeacherRows, error: teacherProfileError } = await supabase
     .from('teacher_profiles')
     .select(
-      'id, bio, languages_taught, hourly_rate, years_experience, video_intro_url, is_published, application_status, stripe_account_id, stripe_onboarding_complete, teacher_type, payout_account_holder, payout_bank_name, payout_account_number, created_at',
+      'id, bio, languages_taught, hourly_rate, years_experience, video_intro_url, is_published, application_status, stripe_account_id, stripe_onboarding_complete, teacher_type, payout_email, created_at',
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: true });
@@ -80,9 +80,7 @@ export default async function TeacherDashboardPage({
     application_status: null,
     stripe_account_id: null,
     stripe_onboarding_complete: false,
-    payout_account_holder: null,
-    payout_bank_name: null,
-    payout_account_number: null,
+    payout_email: null,
   };
 
   let enrichedBookings: Array<{
@@ -152,6 +150,7 @@ export default async function TeacherDashboardPage({
         role: profile.role || 'teacher',
         full_name: profile.full_name || 'Educator',
         avatar_url: profile.avatar_url,
+        email: user.email ?? null,
       }}
       teacherProfile={safeTeacherProfile}
       upcomingBookings={upcomingBookings}

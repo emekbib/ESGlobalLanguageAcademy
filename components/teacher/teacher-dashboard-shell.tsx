@@ -58,6 +58,7 @@ type TeacherDashboardShellProps = {
     role: string;
     full_name: string;
     avatar_url: string | null;
+    email?: string | null;
   };
   teacherProfile: {
     id: string;
@@ -69,9 +70,7 @@ type TeacherDashboardShellProps = {
     is_published: boolean;
     application_status?: string | null;
     teacher_type?: string | null;
-    payout_account_holder?: string | null;
-    payout_bank_name?: string | null;
-    payout_account_number?: string | null;
+    payout_email?: string | null;
   } | null;
   upcomingBookings: BookingItem[];
   pastBookings: BookingItem[];
@@ -827,10 +826,9 @@ export default function TeacherDashboardShell({
                     <WisePayoutForm
                       teacherProfileId={teacherProfile.id}
                       userId={profile.user_id}
+                      defaultEmail={profile.email ?? null}
                       initialPayout={{
-                        payout_account_holder: teacherProfile.payout_account_holder,
-                        payout_bank_name: teacherProfile.payout_bank_name,
-                        payout_account_number: teacherProfile.payout_account_number,
+                        payout_email: teacherProfile.payout_email,
                       }}
                     />
                   )}
@@ -919,17 +917,16 @@ export default function TeacherDashboardShell({
                       Wise Payouts
                     </h2>
                     <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                      You are paid monthly via Wise, directly to your bank account. Add your bank details below so your payouts reach you.
+                      You&apos;re paid monthly via Wise. Your payout goes to the email below — Wise will email you to claim it, and you enter your bank details on Wise&apos;s site.
                     </p>
                   </div>
                   {teacherProfile.id && teacherProfile.id !== 'admin-preview-id' && (
                     <WisePayoutForm
                       teacherProfileId={teacherProfile.id}
                       userId={profile.user_id}
+                      defaultEmail={profile.email ?? null}
                       initialPayout={{
-                        payout_account_holder: teacherProfile.payout_account_holder,
-                        payout_bank_name: teacherProfile.payout_bank_name,
-                        payout_account_number: teacherProfile.payout_account_number,
+                        payout_email: teacherProfile.payout_email,
                       }}
                     />
                   )}

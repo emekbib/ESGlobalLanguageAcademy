@@ -42,9 +42,7 @@ type TeacherAccountTabProps = {
     years_experience?: number;
     video_intro_url?: string | null;
     is_published?: boolean;
-    payout_account_holder?: string | null;
-    payout_bank_name?: string | null;
-    payout_account_number?: string | null;
+    payout_email?: string | null;
   } | null;
   onProfileUpdated?: (updated: any) => void;
 };
