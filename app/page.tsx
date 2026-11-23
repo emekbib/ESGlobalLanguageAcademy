@@ -26,8 +26,6 @@ const TESTIMONIALS = [
     role: 'Heritage Parent & Tech Lead',
     location: 'Washington, D.C.',
     language: 'Amharic & Fidel Literacy',
-    avatar:
-      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=240&auto=format&fit=crop',
   },
   {
     quote:
@@ -36,8 +34,6 @@ const TESTIMONIALS = [
     role: 'Diaspora Parent',
     location: 'London, UK',
     language: 'Afaan Oromo & Qubee',
-    avatar:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=240&auto=format&fit=crop',
   },
   {
     quote:
@@ -46,8 +42,6 @@ const TESTIMONIALS = [
     role: 'Community Legal Advocate',
     location: 'Minneapolis, MN',
     language: 'Somali',
-    avatar:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=240&auto=format&fit=crop',
   },
 ];
 
@@ -355,11 +349,11 @@ export default function Home() {
                 </div>
 
                 <div className="mt-8 flex items-center gap-3.5 border-t border-stone-200/60 pt-5">
-                  <img
-                    src={t.avatar}
-                    alt={t.author}
-                    className="h-11 w-11 rounded-full object-cover ring-1 ring-stone-200 shadow-sm"
-                  />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-600 ring-1 ring-stone-200 shadow-sm">
+                    <span className="text-sm font-bold text-white">
+                      {t.author.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()}
+                    </span>
+                  </div>
                   <div>
                     <h4 className="text-sm font-bold text-stone-900">{t.author}</h4>
                     <p className="text-xs text-stone-500 font-medium">
