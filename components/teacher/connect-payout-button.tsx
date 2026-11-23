@@ -6,237 +6,226 @@ import {
   CheckCircle2,
   CreditCard,
   Loader2,
-  ArrowRight,
-  RefreshCw,
   AlertCircle,
-  AlertTriangle,
+  Pencil,
+  Save,
 } from 'lucide-react';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getSameUser } from '@/lib/auth/same-user';
 
-type ConnectPayoutButtonProps = {
-  connected: boolean;
-  simulated?: boolean;
+type WisePayoutFormProps = {
+  teacherProfileId: string;
+  initialPayout?: {
+    payout_account_holder?: string | null;
+    payout_bank_name?: string | null;
+    payout_account_number?: string | null;
+  } | null;
 };
 
-export default function ConnectPayoutButton({ connected, simulated = false }: ConnectPayoutButtonProps) {
+export default function ConnectPayoutButton({
+  teacherProfileId,
+  initialPayout,
+}: WisePayoutFormProps) {
   const router = useRouter();
-  const [isConnected, setIsConnected] = useState(connected);
-  const [isSimulated, setIsSimulated] = useState(simulated);
-  const [loading, setLoading] = useState(false);
-  const [simulating, setSimulating] = useState(false);
+  const supabase = createSupabaseBrowserClient();
+
+  const [accountHolder, setAccountHolder] = useState(initialPayout?.payout_account_holder ?? '');
+  const [bankName, setBankName] = useState(initialPayout?.payout_bank_name ?? '');
+  const [accountNumber, setAccountNumber] = useState(initialPayout?.payout_account_number ?? '');
+  const [hasSavedDetails, setHasSavedDetails] = useState(
+    Boolean(initialPayout?.payout_account_holder && initialPayout?.payout_bank_name && initialPayout?.payout_account_number),
+  );
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [canSimulate, setCanSimulate] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    setIsConnected(connected);
-    setIsSimulated(simulated);
-  }, [connected, simulated]);
+    setAccountHolder(initialPayout?.payout_account_holder ?? '');
+    setBankName(initialPayout?.payout_bank_name ?? '');
+    setAccountNumber(initialPayout?.payout_account_number ?? '');
+    setHasSavedDetails(
+      Boolean(initialPayout?.payout_account_holder && initialPayout?.payout_bank_name && initialPayout?.payout_account_number),
+    );
+  }, [initialPayout]);
 
-  async function startOnboarding() {
-    setLoading(true);
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!accountHolder.trim() || !bankName.trim() || !accountNumber.trim()) {
+      setError('All three fields are required.');
+      return;
+    }
+
+    setSaving(true);
     setError('');
-    setCanSimulate(false);
+    setSuccess(false);
 
     try {
-      const res = await fetch('/api/teacher/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data) {
-        setError(data?.error || "We couldn't open payout setup. Please try again.");
-        setCanSimulate(true);
-        setLoading(false);
+      const { user, error: identityError } = await getSameUser(supabase, undefined as any);
+      if (!user) {
+        setError(identityError ?? 'Session expired. Please sign in again.');
+        setSaving(false);
         return;
       }
 
-      if (data.onboardingUrl) {
-        window.location.assign(data.onboardingUrl);
-      } else if (data.success) {
-        setIsConnected(true);
-        router.refresh();
+      const { error: updateErr } = await supabase
+        .from('teacher_profiles')
+        .update({
+          payout_account_holder: accountHolder.trim(),
+          payout_bank_name: bankName.trim(),
+          payout_account_number: accountNumber.trim(),
+        })
+        .eq('id', teacherProfileId);
+
+      if (updateErr) {
+        setError(updateErr.message || 'Failed to save payout details.');
+        setSaving(false);
+        return;
       }
+
+      setHasSavedDetails(true);
+      setEditing(false);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 4000);
+      router.refresh();
     } catch (err: any) {
-      setError(err?.message || "We couldn't open payout setup. Please try again.");
-      setCanSimulate(true);
+      setError(err?.message || 'An unexpected error occurred.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
-  async function handleSimulate() {
-    setSimulating(true);
-    setError('');
-
-    try {
-      const res = await fetch('/api/teacher/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'simulate' }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setIsSimulated(true);
-        setIsConnected(false);
-        setSuccessMsg('Simulation activated for demo purposes only. This does NOT set up real Stripe payouts — no real bank account is linked and no real transfers will be made.');
-        setTimeout(() => setSuccessMsg(''), 6000);
-        router.refresh();
-      } else {
-        setError(data?.error || 'Failed to simulate connection.');
-      }
-    } catch (err: any) {
-      setError(err?.message || 'Simulation failed.');
-    } finally {
-      setSimulating(false);
-    }
-  }
-
-  async function handleDisconnect() {
-    setLoading(true);
-    try {
-      setIsConnected(false);
-      setIsSimulated(false);
-      const res = await fetch('/api/teacher/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'disconnect' }),
-      });
-      if (res.ok) {
-        router.refresh();
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const showConnected = isConnected && !isSimulated;
+  const maskedAccountNumber = accountNumber
+    ? `••••${accountNumber.slice(-4)}`
+    : '';
 
   return (
     <div className="rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-            Escrow &amp; Banking
+            Earnings &amp; Payouts
           </span>
           <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-stone-950 dark:text-white">
-            {showConnected ? 'Payout Account Active' : 'Set Up Direct Stripe Payouts'}
+            Set Up Wise Payouts
           </h2>
           <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed text-stone-500 dark:text-stone-400 font-medium">
-            {showConnected
-              ? 'Your bank account is securely linked via Stripe Express. Earnings from each completed 1-on-1 language lesson are automatically transferred to your account.'
-              : 'Connect your bank account via Stripe Express to receive direct payouts after each 1-on-1 session is completed.'}
+            You are paid monthly via Wise, directly to your bank account. Add your bank details below so your payouts reach you.
           </p>
         </div>
 
         <div className="shrink-0 self-start">
-          {showConnected ? (
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 ring-1 ring-emerald-500/20 shadow-sm">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-          ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300 ring-1 ring-stone-200/80 dark:ring-stone-700 shadow-sm">
-              <CreditCard className="h-5 w-5" />
-            </div>
-          )}
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300 ring-1 ring-stone-200/80 dark:ring-stone-700 shadow-sm">
+            <CreditCard className="h-5 w-5" />
+          </div>
         </div>
       </div>
 
-      {/* Simulation warning banner — never presented as real payout status */}
-      {isSimulated && !showConnected && (
-        <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-400/10 p-4 text-xs font-medium text-amber-800 dark:text-amber-300 flex items-start gap-2.5 animate-fade-in">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-          <div>
-            <p className="font-bold">Simulation Mode — Not Real Payouts</p>
-            <p className="mt-0.5 text-[11px] leading-relaxed">
-              A simulated Stripe Connect account is active for demo purposes only. No real bank account is linked and no real transfers will be made. To accept real payouts, connect Stripe Express below.
-            </p>
+      {hasSavedDetails && !editing ? (
+        <div className="mt-6 space-y-4">
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-400/10 px-4 py-3 text-xs font-bold text-emerald-700 dark:text-emerald-300 inline-flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Payout details on file</span>
           </div>
-        </div>
-      )}
-
-      {showConnected ? (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            <span>Direct Bank Transfers Enabled</span>
-          </div>
-
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Account Holder</dt>
+              <dd className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">{accountHolder}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Bank Name</dt>
+              <dd className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">{bankName}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">Account Number</dt>
+              <dd className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">{maskedAccountNumber}</dd>
+            </div>
+          </dl>
           <button
             type="button"
-            onClick={handleDisconnect}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800 px-3.5 py-1.5 text-xs font-semibold text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition cursor-pointer"
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800 px-4 py-2 text-xs font-bold text-stone-600 dark:text-stone-300 transition hover:bg-stone-100 dark:hover:bg-stone-700 cursor-pointer"
           >
-            <RefreshCw className="h-3 w-3" />
-            <span>Reset Connection</span>
+            <Pencil className="h-3.5 w-3.5" />
+            <span>Edit Payout Details</span>
           </button>
         </div>
       ) : (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={startOnboarding}
-            disabled={loading || simulating}
-            className="inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white disabled:opacity-60 cursor-pointer"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Connecting to Stripe…</span>
-              </>
-            ) : (
-              <>
-                <span>Connect Stripe Express</span>
-                <ArrowRight className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSimulate}
-            disabled={loading || simulating}
-            className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 dark:bg-amber-400/10 px-5 py-3 text-xs font-bold text-amber-800 dark:text-amber-300 transition hover:bg-amber-500/20 cursor-pointer"
-            title="Simulate Stripe Connect for demo/testing — this does NOT set up real payouts"
-          >
-            {simulating ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <CreditCard className="h-3.5 w-3.5 text-amber-500" />
-            )}
-            <span>Simulate Connect (Demo Only)</span>
-          </button>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-400/10 p-4 text-xs font-medium text-amber-800 dark:text-amber-300 flex items-start gap-2.5 animate-fade-in">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-          <p className="font-semibold">{successMsg}</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="mt-5 rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 p-4 text-xs font-medium text-red-800 dark:text-red-300 space-y-2 animate-fade-in">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-            <div className="space-y-1">
-              <p className="font-semibold">{error}</p>
-              {canSimulate && (
-                <p className="text-[11px] text-stone-600 dark:text-stone-400">
-                  Tip: Use the <strong className="text-stone-900 dark:text-white">&ldquo;Simulate Connect (Demo Only)&rdquo;</strong> button above to preview the payout dashboard for demo and client presentation. This does <strong>not</strong> set up real Stripe payouts.
-                </p>
-              )}
+        <form onSubmit={handleSave} className="mt-6 space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-2">
+                Account Holder Name
+              </label>
+              <input
+                type="text"
+                value={accountHolder}
+                onChange={(e) => setAccountHolder(e.target.value)}
+                required
+                placeholder="Full name on the bank account"
+                className="w-full rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-sm font-medium text-stone-900 dark:text-stone-100 shadow-sm transition focus:border-stone-950 dark:focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-950 dark:focus:ring-stone-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-2">
+                Bank Name
+              </label>
+              <input
+                type="text"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                required
+                placeholder="e.g. Bank of America"
+                className="w-full rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-sm font-medium text-stone-900 dark:text-stone-100 shadow-sm transition focus:border-stone-950 dark:focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-950 dark:focus:ring-stone-500"
+              />
             </div>
           </div>
-        </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-2">
+              Account Number
+            </label>
+            <input
+              type="text"
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(e.target.value)}
+              required
+              placeholder="Your bank account number"
+              className="w-full rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 px-4 py-3 text-sm font-medium text-stone-900 dark:text-stone-100 shadow-sm transition focus:border-stone-950 dark:focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-950 dark:focus:ring-stone-500"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-2xl border border-red-200/80 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 p-4 text-xs font-medium text-red-800 dark:text-red-300 flex items-start gap-2.5 animate-fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {success && (
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-400/10 p-4 text-xs font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5 animate-fade-in">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>Payout details saved successfully!</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-full bg-stone-950 dark:bg-stone-100 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white dark:text-stone-950 shadow-sm transition hover:bg-stone-800 dark:hover:bg-white disabled:opacity-60 cursor-pointer"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Saving…</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5 text-amber-300 dark:text-stone-950" />
+                <span>Save Payout Details</span>
+              </>
+            )}
+          </button>
+        </form>
       )}
     </div>
   );

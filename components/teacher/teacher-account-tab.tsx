@@ -42,8 +42,9 @@ type TeacherAccountTabProps = {
     years_experience?: number;
     video_intro_url?: string | null;
     is_published?: boolean;
-    stripe_account_id?: string | null;
-    stripe_onboarding_complete?: boolean | null;
+    payout_account_holder?: string | null;
+    payout_bank_name?: string | null;
+    payout_account_number?: string | null;
   } | null;
   onProfileUpdated?: (updated: any) => void;
 };

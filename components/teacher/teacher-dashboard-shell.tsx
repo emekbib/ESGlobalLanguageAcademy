@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import AvailabilityEditor from './availability-editor';
 import BookingsList from '@/components/student/bookings-list';
-import ConnectPayoutButton from './connect-payout-button';
+import WisePayoutForm from './connect-payout-button';
 import LogoutModal from '@/components/dashboard/logout-modal';
 import TeacherAccountTab from './teacher-account-tab';
 import DashboardMessagesTab from '@/components/dashboard/dashboard-messages-tab';
@@ -68,9 +68,10 @@ type TeacherDashboardShellProps = {
     video_intro_url?: string | null;
     is_published: boolean;
     application_status?: string | null;
-    stripe_account_id?: string | null;
-    stripe_onboarding_complete?: boolean | null;
     teacher_type?: string | null;
+    payout_account_holder?: string | null;
+    payout_bank_name?: string | null;
+    payout_account_number?: string | null;
   } | null;
   upcomingBookings: BookingItem[];
   pastBookings: BookingItem[];
@@ -197,7 +198,7 @@ export default function TeacherDashboardShell({
     },
     {
       id: 'payouts',
-      label: 'Stripe Payouts',
+      label: 'Wise Payouts',
       icon: CreditCard,
     },
     {
@@ -216,7 +217,7 @@ export default function TeacherDashboardShell({
     overview: 'Educator Workspace',
     schedule: 'Weekly Availability Schedule',
     bookings: 'Student Lesson Roster',
-    payouts: 'Direct Bank Payouts',
+    payouts: 'Wise Payouts',
     messages: 'Student Messages',
     profile: 'Educator Profile & Account Details',
   };
@@ -822,16 +823,16 @@ export default function TeacherDashboardShell({
                   </div>
 
                   {/* Payout Setup */}
-                  <ConnectPayoutButton
-                    connected={Boolean(
-                      teacherProfile.stripe_account_id &&
-                        teacherProfile.stripe_onboarding_complete &&
-                        !teacherProfile.stripe_account_id.startsWith('acct_sim_'),
-                    )}
-                    simulated={Boolean(
-                      teacherProfile.stripe_account_id?.startsWith('acct_sim_'),
-                    )}
-                  />
+                  {teacherProfile.id && teacherProfile.id !== 'admin-preview-id' && (
+                    <WisePayoutForm
+                      teacherProfileId={teacherProfile.id}
+                      initialPayout={{
+                        payout_account_holder: teacherProfile.payout_account_holder,
+                        payout_bank_name: teacherProfile.payout_bank_name,
+                        payout_account_number: teacherProfile.payout_account_number,
+                      }}
+                    />
+                  )}
 
                   {/* Weekly Availability Schedule */}
                   <div className="space-y-3">
@@ -914,22 +915,22 @@ export default function TeacherDashboardShell({
                 <div className="space-y-6 animate-fade-in">
                   <div className="border-b border-stone-200/80 dark:border-stone-800 pb-3">
                     <h2 className="font-display text-xl sm:text-2xl font-black tracking-tight text-stone-950 dark:text-white">
-                      Direct Bank Payouts
+                      Wise Payouts
                     </h2>
                     <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 font-medium">
-                      Connect your bank account via Stripe Express to receive direct payouts after each 1-on-1 session is completed.
+                      You are paid monthly via Wise, directly to your bank account. Add your bank details below so your payouts reach you.
                     </p>
                   </div>
-                  <ConnectPayoutButton
-                    connected={Boolean(
-                      teacherProfile.stripe_account_id &&
-                        teacherProfile.stripe_onboarding_complete &&
-                        !teacherProfile.stripe_account_id.startsWith('acct_sim_'),
-                    )}
-                    simulated={Boolean(
-                      teacherProfile.stripe_account_id?.startsWith('acct_sim_'),
-                    )}
-                  />
+                  {teacherProfile.id && teacherProfile.id !== 'admin-preview-id' && (
+                    <WisePayoutForm
+                      teacherProfileId={teacherProfile.id}
+                      initialPayout={{
+                        payout_account_holder: teacherProfile.payout_account_holder,
+                        payout_bank_name: teacherProfile.payout_bank_name,
+                        payout_account_number: teacherProfile.payout_account_number,
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </>
