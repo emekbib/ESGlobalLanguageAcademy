@@ -826,6 +826,7 @@ export default function TeacherDashboardShell({
                   {teacherProfile.id && teacherProfile.id !== 'admin-preview-id' && (
                     <WisePayoutForm
                       teacherProfileId={teacherProfile.id}
+                      userId={profile.user_id}
                       initialPayout={{
                         payout_account_holder: teacherProfile.payout_account_holder,
                         payout_bank_name: teacherProfile.payout_bank_name,
@@ -924,6 +925,7 @@ export default function TeacherDashboardShell({
                   {teacherProfile.id && teacherProfile.id !== 'admin-preview-id' && (
                     <WisePayoutForm
                       teacherProfileId={teacherProfile.id}
+                      userId={profile.user_id}
                       initialPayout={{
                         payout_account_holder: teacherProfile.payout_account_holder,
                         payout_bank_name: teacherProfile.payout_bank_name,

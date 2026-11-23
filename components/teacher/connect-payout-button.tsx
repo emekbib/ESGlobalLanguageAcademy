@@ -15,6 +15,7 @@ import { getSameUser } from '@/lib/auth/same-user';
 
 type WisePayoutFormProps = {
   teacherProfileId: string;
+  userId: string;
   initialPayout?: {
     payout_account_holder?: string | null;
     payout_bank_name?: string | null;
@@ -24,6 +25,7 @@ type WisePayoutFormProps = {
 
 export default function ConnectPayoutButton({
   teacherProfileId,
+  userId,
   initialPayout,
 }: WisePayoutFormProps) {
   const router = useRouter();
@@ -61,7 +63,7 @@ export default function ConnectPayoutButton({
     setSuccess(false);
 
     try {
-      const { user, error: identityError } = await getSameUser(supabase, undefined as any);
+      const { user, error: identityError } = await getSameUser(supabase, userId);
       if (!user) {
         setError(identityError ?? 'Session expired. Please sign in again.');
         setSaving(false);
